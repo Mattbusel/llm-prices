@@ -1,0 +1,72 @@
+name: 'LLM price drift check'
+description: 'Fails CI when LLM API prices hard-coded in your repo drift from the official Anthropic, OpenAI, Gemini and DeepSeek pages.'
+author: 'Matthew Busel'
+branding:
+  icon: 'dollar-sign'
+  color: 'orange'
+
+inputs:
+  paths:
+    description: 'Globs to scan, comma or newline separated. Default: the whole repo.'
+    required: false
+    default: '**'
+  exclude:
+    description: 'Globs to skip, comma or newline separated. node_modules, target, dist, build, vendor and .git are always skipped.'
+    required: false
+    default: ''
+  providers:
+    description: 'Providers to check: anthropic, openai, google, deepseek (comma separated). Default: all.'
+    required: false
+    default: 'all'
+  fail-on:
+    description: 'drift: fail when a hard-coded price differs from the official page. missing: also fail when a model used in quotes has no price anywhere in the scanned files. never: report only.'
+    required: false
+    default: 'drift'
+  tolerance:
+    description: 'Relative difference allowed before a price counts as drift. 0.01 means 1%.'
+    required: false
+    default: '0.01'
+  include-tests:
+    description: 'Also scan test files and Rust #[cfg(test)] modules (true/false). Off by default because tests often use made-up prices.'
+    required: false
+    default: 'false'
+  show-matches:
+    description: 'Also list every price that matched (true/false).'
+    required: false
+    default: 'false'
+  annotations:
+    description: 'Post each drifted price as an error annotation on its line (true/false).'
+    required: false
+    default: 'true'
+  working-directory:
+    description: 'Directory to scan. Default: the workspace root.'
+    required: false
+    default: ''
+
+outputs:
+  drift-count:
+    description: 'Number of hard-coded prices that differ from the official pages.'
+    value: ${{ steps.check.outputs.drift-count }}
+  missing-count:
+    description: 'Number of models used without a price.'
+    value: ${{ steps.check.outputs.missing-count }}
+  prices-found:
+    description: 'Number of hard-coded prices found for known models.'
+    value: ${{ steps.check.outputs.prices-found }}
+
+runs:
+  using: 'composite'
+  steps:
+    - id: check
+      shell: bash
+      env:
+        INPUT_PATHS: ${{ inputs.paths }}
+        INPUT_EXCLUDE: ${{ inputs.exclude }}
+        INPUT_PROVIDERS: ${{ inputs.providers }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_TOLERANCE: ${{ inputs.tolerance }}
+        INPUT_INCLUDE_TESTS: ${{ inputs.include-tests }}
+        INPUT_SHOW_MATCHES: ${{ inputs.show-matches }}
+        INPUT_ANNOTATIONS: ${{ inputs.annotations }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: node "${{ github.action_path }}/src/cli.mjs"

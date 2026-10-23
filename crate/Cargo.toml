@@ -1,0 +1,16 @@
+[package]
+name = "llm-prices"
+version = "1.0.0"
+edition = "2021"
+rust-version = "1.70"
+description = "Dated, source-cited LLM API prices (Anthropic, OpenAI, Gemini, DeepSeek) per 1M tokens, with model-id lookup. No dependencies."
+license = "MIT"
+repository = "https://github.com/Mattbusel/llm-prices"
+homepage = "https://github.com/Mattbusel/llm-prices"
+documentation = "https://docs.rs/llm-prices"
+readme = "README.md"
+keywords = ["llm", "pricing", "anthropic", "openai", "gemini"]
+categories = ["api-bindings", "data-structures"]
+include = ["src/**", "prices.json", "README.md", "LICENSE"]
+
+[dependencies]

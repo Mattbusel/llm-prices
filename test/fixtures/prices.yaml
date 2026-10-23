@@ -1,0 +1,20 @@
+# per 1M tokens, USD
+models:
+  claude-haiku-5-5:
+    input: 0.10
+    output: 0.50
+    cache_read: 0.01
+  gemini-3.8-flash:
+    input: 0.75
+    output: 3.75
+  gemini-2.5-flash:
+    input: 0.30
+    output: 2.00   # stale: page says 2.50
+providers:
+  - model: gpt-6.1-sol
+    input: 2.00
+    output: 10.00
+    cached_input: 0.10
+  - model: gpt-6-luna
+    input: 0.10
+    output: 0.40   # stale: page says 0.50

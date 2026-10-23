@@ -1,0 +1,75 @@
+name: refresh prices
+on:
+  schedule:
+    - cron: '23 10 * * *'
+  workflow_dispatch:
+permissions:
+  contents: write
+  pull-requests: write
+  issues: write
+concurrency:
+  group: refresh-prices
+  cancel-in-progress: false
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+
+      - name: Fetch the provider pages and rebuild the table
+        id: update
+        run: |
+          set +e
+          SUMMARY_FILE="$RUNNER_TEMP/summary.md" node scripts/update.mjs
+          echo "code=$?" >> "$GITHUB_OUTPUT"
+          cat "$RUNNER_TEMP/summary.md" >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Open or update a pull request (never merged automatically)
+        if: steps.update.outputs.code == '10' || (steps.update.outputs.code == '2' && hashFiles('prices.json') != '')
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if git diff --quiet -- prices.json; then echo "prices.json unchanged"; exit 0; fi
+          branch=prices/auto-update
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout -B "$branch"
+          git add prices.json prices.toml crate/prices.json crate/src/data.rs test/pages
+          git commit -m "Update prices from provider pages ($(date -u +%F))"
+          git push --force origin "$branch"
+          {
+            echo "The daily refresh read these changes from the official pricing pages."
+            echo
+            cat "$RUNNER_TEMP/summary.md"
+            echo
+            echo "Before merging: open each source URL and confirm the new number, update the pinned values in test/data.test.mjs if one of them changed, and bump crate/Cargo.toml. This PR was opened by a workflow and is never merged automatically."
+          } > "$RUNNER_TEMP/body.md"
+          existing=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh pr edit "$existing" --body-file "$RUNNER_TEMP/body.md"
+          else
+            gh pr create --head "$branch" --base main --title "Price change on a provider page ($(date -u +%F))" --body-file "$RUNNER_TEMP/body.md"
+          fi
+
+      - name: Open or update an issue when a page could not be read
+        if: steps.update.outputs.code == '2'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          title="Pricing page could not be read by the daily refresh"
+          {
+            echo "Run: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+            echo
+            cat "$RUNNER_TEMP/summary.md"
+            echo
+            echo "Rows for the affected provider were kept from the last good run. Check the page by hand: if a price changed, update the parser in scripts/parse/ so the next run picks it up."
+          } > "$RUNNER_TEMP/issue.md"
+          existing=$(gh issue list --state open --search "in:title \"$title\"" --json number --jq '.[0].number')
+          if [ -n "$existing" ]; then
+            gh issue comment "$existing" --body-file "$RUNNER_TEMP/issue.md"
+          else
+            gh issue create --title "$title" --body-file "$RUNNER_TEMP/issue.md"
+          fi

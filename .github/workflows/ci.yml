@@ -1,0 +1,48 @@
+name: ci
+on:
+  push:
+    branches: [main]
+  pull_request:
+permissions:
+  contents: read
+jobs:
+  test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [20, 22]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+      - run: node --test test/scan.test.mjs test/data.test.mjs test/cli.test.mjs
+
+  action:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - id: check
+        uses: ./
+        with:
+          working-directory: test/fixtures
+          fail-on: never
+          annotations: false
+      - name: the fixtures hold exactly 13 stale prices
+        run: test "${{ steps.check.outputs.drift-count }}" = "13"
+      - name: this repo itself has no drift
+        uses: ./
+        with:
+          exclude: test/**
+
+  crate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: crate
+    steps:
+      - uses: actions/checkout@v5
+      - name: crate data matches prices.json
+        run: cmp prices.json ../prices.json
+      - run: cargo test
