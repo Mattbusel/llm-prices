@@ -2,7 +2,7 @@
 
 schema = "https://github.com/Mattbusel/llm-prices#schema"
 unit = "USD per 1M tokens"
-generated = "2026-10-23"
+generated = "2026-10-31"
 
 [sources]
 anthropic = "https://platform.claude.com/docs/en/about-claude/pricing"
@@ -23,7 +23,7 @@ cache_read = 0.25
 batch_input = 5.0
 batch_output = 25.0
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 12.5
@@ -42,7 +42,7 @@ cache_read = 1.0
 batch_input = 5.0
 batch_output = 25.0
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 12.5
@@ -61,7 +61,7 @@ cache_read = 0.2
 batch_input = 2.0
 batch_output = 10.0
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "fast mode (other_tiers.fast) is a separate premium tier; cache multipliers apply on top; US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 5.0
@@ -84,7 +84,7 @@ cache_read = 0.5
 batch_input = 2.5
 batch_output = 12.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "fast mode (other_tiers.fast) is a separate premium tier; cache multipliers apply on top; US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 6.25
@@ -107,7 +107,7 @@ cache_read = 0.5
 batch_input = 2.5
 batch_output = 12.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "fast mode (other_tiers.fast) is a separate premium tier; cache multipliers apply on top; US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 6.25
@@ -130,7 +130,7 @@ cache_read = 0.5
 batch_input = 2.5
 batch_output = 12.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 6.25
@@ -149,7 +149,7 @@ cache_read = 0.5
 batch_input = 2.5
 batch_output = 12.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 6.25
@@ -168,7 +168,7 @@ cache_read = 0.5
 batch_input = 2.5
 batch_output = 12.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 6.25
@@ -187,7 +187,7 @@ cache_read = 1.5
 batch_input = 7.5
 batch_output = 37.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "page marks this model retired on the Claude API; still sold on some cloud platforms; US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 18.75
@@ -206,7 +206,7 @@ cache_read = 1.5
 batch_input = 7.5
 batch_output = 37.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "page marks this model retired on the Claude API; still sold on some cloud platforms; US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 18.75
@@ -225,7 +225,7 @@ cache_read = 0.1
 batch_input = 1.0
 batch_output = 5.0
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 2.5
@@ -244,7 +244,7 @@ cache_read = 0.2
 batch_input = 1.0
 batch_output = 5.0
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 2.5
@@ -263,7 +263,7 @@ cache_read = 0.3
 batch_input = 1.5
 batch_output = 7.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 3.75
@@ -282,7 +282,7 @@ cache_read = 0.3
 batch_input = 1.5
 batch_output = 7.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 3.75
@@ -301,7 +301,7 @@ cache_read = 0.3
 batch_input = 1.5
 batch_output = 7.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "page marks this model retired on the Claude API; still sold on some cloud platforms; US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 3.75
@@ -320,7 +320,7 @@ cache_read = 0.01
 batch_input = 0.05
 batch_output = 0.25
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 0.125
@@ -350,7 +350,7 @@ cache_read = 0.1
 batch_input = 0.5
 batch_output = 2.5
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 1.25
@@ -369,7 +369,7 @@ cache_read = 0.08
 batch_input = 0.4
 batch_output = 2.0
 source_url = "https://platform.claude.com/docs/en/about-claude/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "page marks this model retired on the Claude API; still sold on some cloud platforms; US-only inference (inference_geo \"us\") is 1.1x on Claude 4.6 and later"
 [models.cache_write]
 5m = 1.0
@@ -387,7 +387,7 @@ cache_read = 1.0
 batch_input = 5.0
 batch_output = 25.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.5; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.cache_write]
 30m = 12.5
@@ -429,7 +429,7 @@ cache_read = 0.1
 batch_input = 1.0
 batch_output = 5.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.05; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.cache_write]
 30m = 2.5
@@ -461,6 +461,44 @@ cache_read = 0.6
 
 [[models]]
 provider = "openai"
+model = "gpt-6.1-terra"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 1.0
+output = 5.0
+cache_read = 0.05
+batch_input = 0.5
+batch_output = 2.5
+source_url = "https://developers.openai.com/api/docs/pricing"
+checked = "2026-10-31"
+note = "batch cached input 0.025; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+[models.cache_write]
+30m = 1.25
+12h = 2.5
+[models.long_context]
+threshold_tokens = 272000
+applies_when = "input tokens over 272K (page: short context is up to 272K input tokens)"
+input = 2.0
+output = 7.5
+cache_read = 0.1
+batch_input = 1.0
+batch_output = 3.75
+[models.long_context.cache_write]
+30m = 2.5
+12h = 5.0
+[models.other_tiers]
+[models.other_tiers.flex]
+input = 0.5
+output = 2.5
+cache_read = 0.025
+[models.other_tiers.fast]
+input = 2.0
+output = 10.0
+cache_read = 0.1
+
+[[models]]
+provider = "openai"
 model = "gpt-6-luna"
 aliases = []
 status = "listed"
@@ -471,7 +509,7 @@ cache_read = 0.01
 batch_input = 0.05
 batch_output = 0.25
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.005; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.cache_write]
 30m = 0.125
@@ -509,7 +547,7 @@ cache_read = 0.2
 batch_input = 1.0
 batch_output = 5.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.1; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.cache_write]
 30m = 2.5
@@ -547,7 +585,7 @@ cache_read = 0.4
 batch_input = 2.0
 batch_output = 10.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.2; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.cache_write]
 30m = 5.0
@@ -585,7 +623,7 @@ cache_read = 0.2
 batch_input = 1.0
 batch_output = 6.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.1; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.cache_write]
 30m = 2.5
@@ -623,7 +661,7 @@ cache_read = 0.02
 batch_input = 0.1
 batch_output = 0.6
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.01; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.cache_write]
 30m = 0.25
@@ -661,7 +699,7 @@ cache_read = 0.5
 batch_input = 2.5
 batch_output = 15.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.25; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.long_context]
 threshold_tokens = 272000
@@ -692,7 +730,7 @@ output = 180.0
 batch_input = 15.0
 batch_output = 90.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
 [models.long_context]
 threshold_tokens = 272000
@@ -716,7 +754,7 @@ cache_read = 0.25
 batch_input = 1.25
 batch_output = 7.5
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.13; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.long_context]
 threshold_tokens = 272000
@@ -747,7 +785,7 @@ output = 180.0
 batch_input = 15.0
 batch_output = 90.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
 [models.long_context]
 threshold_tokens = 272000
@@ -773,7 +811,7 @@ cache_read = 0.075
 batch_input = 0.375
 batch_output = 2.25
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.0375; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -797,7 +835,7 @@ cache_read = 0.02
 batch_input = 0.1
 batch_output = 0.625
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.01; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -817,7 +855,7 @@ cache_read = 0.175
 batch_input = 0.875
 batch_output = 7.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.0875; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -840,7 +878,7 @@ output = 168.0
 batch_input = 10.5
 batch_output = 84.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
 
 [[models]]
@@ -855,7 +893,7 @@ cache_read = 0.125
 batch_input = 0.625
 batch_output = 5.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.0625; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -879,7 +917,7 @@ cache_read = 0.125
 batch_input = 0.625
 batch_output = 5.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.0625; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -903,7 +941,7 @@ cache_read = 0.025
 batch_input = 0.125
 batch_output = 1.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.0125; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -927,7 +965,7 @@ cache_read = 0.005
 batch_input = 0.025
 batch_output = 0.2
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "batch cached input 0.0025; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -946,7 +984,7 @@ output = 120.0
 batch_input = 7.5
 batch_output = 60.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
 
 [[models]]
@@ -961,7 +999,7 @@ cache_read = 0.5
 batch_input = 1.0
 batch_output = 4.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.fast]
@@ -981,7 +1019,7 @@ cache_read = 0.1
 batch_input = 0.2
 batch_output = 0.8
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.fast]
@@ -1001,7 +1039,7 @@ cache_read = 0.025
 batch_input = 0.05
 batch_output = 0.2
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.fast]
@@ -1021,7 +1059,7 @@ cache_read = 1.25
 batch_input = 1.25
 batch_output = 5.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.fast]
@@ -1040,7 +1078,7 @@ output = 15.0
 batch_input = 2.5
 batch_output = 7.5
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
 [models.other_tiers]
 [models.other_tiers.fast]
@@ -1059,7 +1097,7 @@ cache_read = 0.075
 batch_input = 0.075
 batch_output = 0.3
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.fast]
@@ -1079,7 +1117,7 @@ cache_read = 7.5
 batch_input = 7.5
 batch_output = 30.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 
 [[models]]
@@ -1093,7 +1131,7 @@ output = 600.0
 batch_input = 75.0
 batch_output = 300.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
 
 [[models]]
@@ -1107,7 +1145,7 @@ output = 80.0
 batch_input = 10.0
 batch_output = 40.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
 
 [[models]]
@@ -1122,7 +1160,7 @@ cache_read = 0.5
 batch_input = 1.0
 batch_output = 4.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -1146,7 +1184,7 @@ cache_read = 0.275
 batch_input = 0.55
 batch_output = 2.2
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -1170,7 +1208,7 @@ cache_read = 0.55
 batch_input = 0.55
 batch_output = 2.2
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
 
 [[models]]
@@ -1184,7 +1222,7 @@ output = 30.0
 batch_input = 5.0
 batch_output = 15.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
 
 [[models]]
@@ -1198,7 +1236,7 @@ output = 60.0
 batch_input = 15.0
 batch_output = 30.0
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
 
 [[models]]
@@ -1210,7 +1248,7 @@ unit = "USD per 1M tokens"
 input = 0.5
 output = 1.5
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
 
 [[models]]
@@ -1224,7 +1262,7 @@ output = 1.5
 batch_input = 0.25
 batch_output = 0.75
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
 
 [[models]]
@@ -1237,7 +1275,7 @@ input = 12.5
 output = 75.0
 cache_read = 1.25
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.cache_write]
 30m = 15.625
@@ -1253,7 +1291,7 @@ input = 12.5
 output = 75.0
 cache_read = 1.25
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 
 [[models]]
@@ -1266,7 +1304,7 @@ input = 5.0
 output = 30.0
 cache_read = 0.5
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 
 [[models]]
@@ -1279,7 +1317,7 @@ input = 1.75
 output = 14.0
 cache_read = 0.175
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
 [models.other_tiers.fast]
@@ -1297,7 +1335,7 @@ input = 1.25
 output = 10.0
 cache_read = 0.125
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 
 [[models]]
@@ -1308,7 +1346,7 @@ status = "listed"
 unit = "USD per 1M tokens"
 input = 0.02
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: output, cache_read, batch_input, batch_output"
 
 [[models]]
@@ -1319,7 +1357,7 @@ status = "listed"
 unit = "USD per 1M tokens"
 input = 0.13
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: output, cache_read, batch_input, batch_output"
 
 [[models]]
@@ -1330,7 +1368,7 @@ status = "listed"
 unit = "USD per 1M tokens"
 input = 0.1
 source_url = "https://developers.openai.com/api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: output, cache_read, batch_input, batch_output"
 
 [[models]]
@@ -1346,7 +1384,7 @@ cache_read = 0.1
 batch_input = 1.0
 batch_output = 5.0
 source_url = "https://ai.google.dev/gemini-api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "prices are the Paid Tier text-token prices; current prices are promotional until the day before 2026-12-01; scheduled holds the published later prices; implicit caching only"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -1378,7 +1416,7 @@ cache_read = 0.075
 batch_input = 0.375
 batch_output = 1.875
 source_url = "https://ai.google.dev/gemini-api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "prices are the Paid Tier text-token prices; current prices are promotional until the day before 2027-01-01; scheduled holds the published later prices; explicit cache storage 0.5 USD per 1M tokens per hour"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -1410,7 +1448,7 @@ cache_read = 0.075
 batch_input = 0.375
 batch_output = 1.875
 source_url = "https://ai.google.dev/gemini-api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "prices are the Paid Tier text-token prices; current prices are promotional until the day before 2027-01-01; scheduled holds the published later prices; explicit cache storage 0.5 USD per 1M tokens per hour"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -1442,7 +1480,7 @@ cache_read = 0.03
 batch_input = 0.15
 batch_output = 1.25
 source_url = "https://ai.google.dev/gemini-api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "prices are the Paid Tier text-token prices; explicit cache storage 1 USD per 1M tokens per hour"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -1467,7 +1505,7 @@ cache_read = 0.025
 batch_input = 0.125
 batch_output = 0.75
 source_url = "https://ai.google.dev/gemini-api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "prices are the Paid Tier text-token prices; explicit cache storage 1 USD per 1M tokens per hour; audio input is priced higher; see page"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -1492,7 +1530,7 @@ cache_read = 0.2
 batch_input = 1.0
 batch_output = 6.0
 source_url = "https://ai.google.dev/gemini-api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "prices are the Paid Tier text-token prices; explicit cache storage 4.5 USD per 1M tokens per hour"
 [models.long_context]
 threshold_tokens = 200000
@@ -1525,7 +1563,7 @@ cache_read = 0.05
 batch_input = 0.25
 batch_output = 1.5
 source_url = "https://ai.google.dev/gemini-api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "prices are the Paid Tier text-token prices; explicit cache storage 1 USD per 1M tokens per hour; audio input is priced higher; see page"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -1550,7 +1588,7 @@ cache_read = 0.125
 batch_input = 0.625
 batch_output = 5.0
 source_url = "https://ai.google.dev/gemini-api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "prices are the Paid Tier text-token prices; explicit cache storage 4.5 USD per 1M tokens per hour"
 [models.long_context]
 threshold_tokens = 200000
@@ -1583,7 +1621,7 @@ cache_read = 0.03
 batch_input = 0.15
 batch_output = 1.25
 source_url = "https://ai.google.dev/gemini-api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "prices are the Paid Tier text-token prices; explicit cache storage 1 USD per 1M tokens per hour; audio input is priced higher; see page"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -1608,7 +1646,7 @@ cache_read = 0.01
 batch_input = 0.05
 batch_output = 0.2
 source_url = "https://ai.google.dev/gemini-api/docs/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "prices are the Paid Tier text-token prices; explicit cache storage 1 USD per 1M tokens per hour; audio input is priced higher; see page"
 [models.other_tiers]
 [models.other_tiers.flex]
@@ -1630,7 +1668,7 @@ input = 0.3
 output = 1.2
 cache_read = 0.006
 source_url = "https://api-docs.deepseek.com/quick_start/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "input/output/cache_read are peak-hour prices; other_tiers.offpeak is the off-peak price (peak hours: 01:00 - 04:00 and 06:00 - 10:00 UTC, Monday through Friday, excluding Chinese public holidays); deepseek-v4-flash and deepseek-v4-flash-vision-exp are retired names now billed at the flash price; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
 [models.other_tiers.offpeak]
@@ -1648,7 +1686,7 @@ input = 1.32
 output = 3.96
 cache_read = 0.044
 source_url = "https://api-docs.deepseek.com/quick_start/pricing"
-checked = "2026-10-23"
+checked = "2026-10-31"
 note = "input/output/cache_read are peak-hour prices; other_tiers.offpeak is the off-peak price (peak hours: 01:00 - 04:00 and 06:00 - 10:00 UTC, Monday through Friday, excluding Chinese public holidays); null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
 [models.other_tiers.offpeak]
