@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Fetches every provider pricing page, parses it, and rewrites prices.json, prices.toml and
-// crate/src/data.rs when a price changed.
+// Fetches every provider pricing page, parses it, and rewrites prices.json and every file
+// generated from it (prices.toml, the crate's data, the Python and npm packages' data; see
+// outputs.mjs) when a price changed.
 //
 //   node scripts/update.mjs                  fetch live pages
 //   node scripts/update.mjs --pages DIR      read saved pages (anthropic.md, openai.md, gemini.md, deepseek.html)
@@ -17,8 +18,7 @@ import { parseAnthropic } from './parse/anthropic.mjs';
 import { parseOpenAI } from './parse/openai.mjs';
 import { parseGemini } from './parse/gemini.mjs';
 import { parseDeepSeek } from './parse/deepseek.mjs';
-import { toToml } from './toml.mjs';
-import { toRust } from './rust.mjs';
+import { generatedFiles } from './outputs.mjs';
 import { excerpt } from './excerpt.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
@@ -128,10 +128,9 @@ async function main() {
   writeFileSync(summaryFile, lines.join('\n') || 'No change.\n');
 
   if (changes.length || force) {
-    writeFileSync(path, JSON.stringify(doc, null, 2) + '\n');
-    writeFileSync(join(root, 'prices.toml'), toToml(doc));
-    writeFileSync(join(root, 'crate', 'src', 'data.rs'), toRust(doc));
-    writeFileSync(join(root, 'crate', 'prices.json'), JSON.stringify(doc, null, 2) + '\n');
+    const text = JSON.stringify(doc, null, 2) + '\n';
+    writeFileSync(path, text);
+    for (const [file, content] of Object.entries(generatedFiles(doc, text))) writeFileSync(join(root, file), content);
     // Keep the parser tests on the same page text the new table came from.
     for (const [file, text] of Object.entries(pages)) writeFileSync(join(root, 'test', 'pages', file), text);
   }

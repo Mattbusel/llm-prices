@@ -1,0 +1,64 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-prices"
+version = "1.2.0"
+description = "Dated, source-cited LLM API prices (Anthropic, OpenAI, Gemini, DeepSeek, Mistral, xAI, Groq, Together, Fireworks, Cohere) per 1M tokens, with provider-aware model-id lookup and exact decimal costs. Zero dependencies."
+readme = { content-type = "text/markdown", text = """
+# llm-prices
+
+Dated, source-cited LLM API prices for Python: the same table as the Rust crate
+[`llm-prices`](https://crates.io/crates/llm-prices), generated from
+[`prices.json`](https://github.com/Mattbusel/llm-prices/blob/main/prices.json). Pure Python, no
+dependencies, no network access. Prices are USD per 1M tokens, and every row carries the
+provider's pricing page and the date it was checked.
+
+```python
+import llm_prices
+from llm_prices import Usage
+
+p = llm_prices.lookup("claude-sonnet-4-6")          # also dated, Bedrock, Vertex, prefixed ids
+groq = llm_prices.lookup_provider("groq", "openai/gpt-oss-120b")
+
+usage = Usage(input=2_048, cache_read=45_000, cache_write_5m=3_500, output=1_024)
+p.cost_usage(usage).total                 # 0.048129 (float)
+p.cost_usage(usage, exact=True).total     # Decimal('0.048129')
+```
+
+`cost_usage` prices prompt-cache reads, cache writes by lifetime, batch discounts and the
+long-context switch. Source and docs: https://github.com/Mattbusel/llm-prices
+""" }
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Matthew Busel" }]
+keywords = ["llm", "pricing", "anthropic", "openai", "gemini", "tokens", "cost"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Topic :: Software Development :: Libraries",
+    "Typing :: Typed",
+]
+dependencies = []
+
+[project.urls]
+Homepage = "https://github.com/Mattbusel/llm-prices"
+Source = "https://github.com/Mattbusel/llm-prices/tree/main/python"
+Changelog = "https://github.com/Mattbusel/llm-prices/blob/main/python/CHANGELOG.md"
+Issues = "https://github.com/Mattbusel/llm-prices/issues"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llm_prices"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/llm_prices", "tests", "CHANGELOG.md", "LICENSE", "pyproject.toml"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests", "src"]
+addopts = "--doctest-modules"

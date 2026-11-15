@@ -1,0 +1,44 @@
+name: publish js
+# Publishes js/ to npm as `@mattbusel/llm-prices` (the unscoped `llm-prices` name belongs to
+# another package) when a tag js-v<version> is pushed, for example js-v1.2.0. The tag must
+# match the version in js/package.json.
+#
+# Publishes with provenance. Uses npm trusted publishing (OIDC) once it is configured for this
+# repository and workflow on npmjs.com; until then (npm only allows it on a package that
+# already exists) it falls back to an NPM_TOKEN repository secret for the first release.
+on:
+  push:
+    tags: ['js-v*']
+permissions:
+  contents: read
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    environment:
+      name: npm
+      url: https://www.npmjs.com/package/@mattbusel/llm-prices
+    permissions:
+      contents: read
+      id-token: write
+    defaults:
+      run:
+        working-directory: js
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+      - name: npm 11.5.1 or later (trusted publishing)
+        run: npm install -g npm@11.21.2
+      - name: the tag matches js/package.json
+        run: |
+          version=$(node -p "require('./package.json').version")
+          test "js-v$version" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME does not match package.json version $version"; exit 1; }
+      - name: the package data is in sync with prices.json
+        run: node ../scripts/build.mjs --check
+      - run: npm ci
+      - run: npm test
+      - run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

@@ -18,6 +18,8 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: node --test test/scan.test.mjs test/data.test.mjs test/cli.test.mjs
+      - name: Rust, Python and npm data are in sync with prices.json
+        run: node scripts/build.mjs --check
 
   action:
     runs-on: ubuntu-latest
@@ -35,6 +37,60 @@ jobs:
         uses: ./
         with:
           exclude: test/**
+
+  python:
+    strategy:
+      matrix:
+        include:
+          - { os: ubuntu-latest, python: '3.9' }
+          - { os: ubuntu-latest, python: '3.11' }
+          - { os: ubuntu-latest, python: '3.13' }
+          - { os: windows-latest, python: '3.12' }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: python
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install pytest build
+      - name: tests and doctests (no runtime dependencies installed)
+        run: python -m pytest
+      - name: sdist and wheel build, and the wheel passes the tests when installed
+        shell: bash
+        run: |
+          python -m build --outdir dist
+          python -m pip install dist/*.whl
+          cd tests && python -m pytest -p no:cacheprovider -o pythonpath= -o addopts= --rootdir . .
+      - name: type hints check under mypy --strict
+        if: matrix.python == '3.13'
+        run: |
+          python -m pip install mypy
+          python -m mypy --strict src/llm_prices
+
+  js:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: [18, 20, 22]
+        exclude:
+          - { os: windows-latest, node: 18 }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: js
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+      - run: npm ci
+      - name: ESM and CommonJS builds, then the tests against both
+        run: npm test
+      - name: the tarball holds the builds
+        run: npm pack --dry-run
 
   crate:
     runs-on: ubuntu-latest

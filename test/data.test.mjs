@@ -10,6 +10,8 @@ import { parseDeepSeek } from '../scripts/parse/deepseek.mjs';
 import { ParseError } from '../scripts/parse/common.mjs';
 import { toToml } from '../scripts/toml.mjs';
 import { toRust } from '../scripts/rust.mjs';
+import { generatedFiles } from '../scripts/outputs.mjs';
+import { packageRows, toPython, toTs } from '../scripts/packages.mjs';
 import { SOURCES, MANUAL_SOURCES } from '../scripts/meta.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -158,4 +160,18 @@ test('hand-checked rows cite their provider page, come after the parsed rows and
 test('crate data.rs, crate/prices.json and prices.toml are regenerated from prices.json', () => {
   assert.equal(readFileSync(join(root, 'crate', 'src', 'data.rs'), 'utf8'), toRust(prices));
   assert.equal(readFileSync(join(root, 'crate', 'prices.json'), 'utf8'), readFileSync(join(root, 'prices.json'), 'utf8'));
+});
+
+test('the Python and npm package data are regenerated from prices.json', () => {
+  const text = readFileSync(join(root, 'prices.json'), 'utf8');
+  for (const [path, content] of Object.entries(generatedFiles(prices, text))) {
+    assert.equal(readFileSync(join(root, path), 'utf8'), content, `${path} is stale: run node scripts/build.mjs`);
+  }
+  // Prices travel as their prices.json text, so no language re-prints a float.
+  const rows = packageRows(prices);
+  assert.equal(rows.length, prices.models.length);
+  assert.equal(rows.find((r) => r.model === 'gpt-4o-mini').cache_read, '0.075');
+  assert.match(toPython(prices), /^ROWS: Tuple\[Dict\[str, Any\], \.\.\.\] = \($/m);
+  assert.match(toTs(prices), /^export const ROWS: readonly RawRow\[\] = \[$/m);
+  assert.throws(() => packageRows({ models: [{ ...prices.models[0], input: 1e-7 }] }), /not a plain decimal/);
 });
