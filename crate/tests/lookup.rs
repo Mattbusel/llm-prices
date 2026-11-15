@@ -45,21 +45,24 @@ fn ids_are_unique() {
     }
 }
 
+/// Only id forms that exist in the wild: the provider's own prefix and `openrouter/` for every
+/// row, Bedrock forms for Anthropic rows and `models/` for Gemini rows. `lookup` happens to
+/// accept other combinations (`us.anthropic.gpt-4o`), but that is tolerated, not promised, so
+/// it is not tested here.
 #[test]
 fn provider_prefixes_resolve() {
     for p in all() {
+        let (own, extra): (&str, &[&str]) = match p.provider {
+            "anthropic" => ("anthropic/", &["bedrock/", "us.anthropic.", "bedrock/us.anthropic."]),
+            "openai" => ("openai/", &["azure/"]),
+            "google" => ("google/", &["models/", "gemini/", "vertex_ai/"]),
+            "deepseek" => ("deepseek/", &[]),
+            other => panic!("new provider {other}: add its prefixes here"),
+        };
         for id in ids(p) {
-            for prefix in ["anthropic/", "bedrock/", "models/", "openrouter/", "us.anthropic.", "bedrock/us.anthropic."] {
+            for prefix in [own, "openrouter/"].iter().chain(extra) {
                 assert_resolves(&format!("{prefix}{id}"), p);
             }
-            let own = match p.provider {
-                "anthropic" => "anthropic/",
-                "openai" => "openai/",
-                "google" => "google/",
-                "deepseek" => "deepseek/",
-                other => panic!("new provider {other}: add its prefix here"),
-            };
-            assert_resolves(&format!("{own}{id}"), p);
         }
     }
 }

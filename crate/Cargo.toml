@@ -1,6 +1,6 @@
 [package]
 name = "llm-prices"
-version = "1.1.0"
+version = "1.1.1"
 edition = "2021"
 rust-version = "1.70"
 description = "Dated, source-cited LLM API prices (Anthropic, OpenAI, Gemini, DeepSeek) per 1M tokens, with model-id lookup. No dependencies."

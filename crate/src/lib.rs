@@ -162,12 +162,38 @@ pub struct Price {
 /// |---|---|---|---|
 /// | `input` | `input_tokens` | `prompt_tokens - prompt_tokens_details.cached_tokens` | `promptTokenCount - cachedContentTokenCount` |
 /// | `cache_read` | `cache_read_input_tokens` | `prompt_tokens_details.cached_tokens` | `cachedContentTokenCount` |
-/// | `cache_write_5m` | `cache_creation.ephemeral_5m_input_tokens` | 0 | 0 |
-/// | `cache_write_1h` | `cache_creation.ephemeral_1h_input_tokens` | 0 | 0 |
+/// | `cache_write_5m` | `cache_creation.ephemeral_5m_input_tokens` | 0 (see below) | 0 |
+/// | `cache_write_1h` | `cache_creation.ephemeral_1h_input_tokens` | 0 (see below) | 0 |
 /// | `output` | `output_tokens` | `completion_tokens` | `candidatesTokenCount + thoughtsTokenCount` |
 ///
 /// When an Anthropic response only reports the total `cache_creation_input_tokens`, those
 /// tokens were written with the default 5-minute lifetime.
+///
+/// **Other cache lifetimes are not covered in 1.x.** `Usage` only has fields for the 5-minute
+/// and 1-hour lifetimes. Some rows price cache writes on other lifetimes: the OpenAI rows
+/// `gpt-6-astra`, `gpt-6-sol`, `gpt-6-luna`, `gpt-6.1-sol`, `gpt-5.6-sol`, `gpt-5.6-terra`,
+/// `gpt-5.6-luna` and `gpt-5.6-cyber` list `"30m"` and `"12h"` prices, including in their
+/// long-context tiers. [`Price::cost_usage`] cannot price those writes, so with the mapping
+/// above it returns a total that leaves them out. Add them yourself with
+/// [`Price::cache_write`]:
+///
+/// ```
+/// use llm_prices::{lookup, Usage};
+///
+/// let p = lookup("gpt-6-sol").unwrap();
+/// assert_eq!(p.cache_write("30m"), Some(2.5));
+///
+/// let written_30m: u64 = 50_000; // cache-write tokens your response reports for 30m
+/// let c = p.cost_usage(&Usage { input: 10_000, output: 1_000, ..Default::default() }).unwrap();
+/// let total = c.total + written_30m as f64 * p.cache_write("30m").unwrap() / 1_000_000.0;
+/// // 10,000 x $2 + 1,000 x $10 + 50,000 x $2.50, all per 1M tokens.
+/// assert!((total - 0.155).abs() < 1e-12);
+/// ```
+///
+/// Those tokens also do not count toward the long-context threshold inside `cost_usage`.
+/// When they push the prompt over [`LongContext::threshold_tokens`], take the rates from
+/// [`Price::long_context`] instead. Fields for more cache lifetimes need a breaking change
+/// (`Usage` is not `#[non_exhaustive]`) and are planned for 2.0.
 #[derive(Debug, Clone, Copy, Default, PartialEq)]
 pub struct Usage {
     /// Uncached input tokens. Do not include tokens counted in `cache_read` or the cache
@@ -247,6 +273,11 @@ impl Price {
     ///   price bills them as ordinary input.
     /// - **Cache writes** bill at [`cache_write("5m")`](Self::cache_write) and
     ///   `cache_write("1h")`.
+    /// - **Other cache lifetimes are not priced.** Rows that price cache writes on other
+    ///   lifetimes (OpenAI `"30m"` and `"12h"`) cannot have those writes priced through
+    ///   [`Usage`] in 1.x. Add `tokens * price.cache_write("30m")` (or `"12h"`), divided by
+    ///   1M, to the total yourself; see [`Usage`] for an example. Setting `cache_write_5m` or
+    ///   `cache_write_1h` on such a row returns `None`.
     ///
     /// Returns `None` when a price it needs is not listed: the input or output price (batch
     /// prices when `usage.batch` is set, long-context prices above the threshold), or the

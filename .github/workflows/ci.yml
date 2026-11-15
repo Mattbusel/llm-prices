@@ -46,7 +46,10 @@ jobs:
       - name: crate data matches prices.json
         run: cmp prices.json ../prices.json
       - run: cargo test
-      - run: cargo clippy --all-targets -- -D warnings
+      - name: clippy on a pinned toolchain (new lints in later stables do not break CI)
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal --component clippy
+          cargo +1.99.0 clippy --all-targets -- -D warnings
       - name: docs build without warnings (every public item documented)
         run: cargo doc --no-deps
         env:
