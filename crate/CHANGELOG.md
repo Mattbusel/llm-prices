@@ -3,6 +3,80 @@
 All notable changes to the `llm-prices` crate. Versions follow semver: price-data-only
 updates are patch releases, new API is a minor release.
 
+## [1.2.0] - 2026-11-14
+
+Table generated 2026-11-14: the 74 Anthropic, OpenAI, Gemini and DeepSeek rows are unchanged
+(checked 2026-10-23); 62 rows for six more providers are new.
+
+### Added
+
+- **Provider-aware lookup.** `lookup_provider(provider, model)` and `Provider::lookup(model)`
+  return only the row that provider sells, so a gateway does not price `openai/gpt-oss-120b`
+  on Groq with Together AI's or Fireworks' price. `provider` is a `Provider` or a name
+  (`"groq"`, `"together_ai"`, `"vertex_ai"`, ...).
+  - `Provider` enum (`#[non_exhaustive]`): Anthropic, OpenAi, Google, Vertex, Bedrock, Azure,
+    DeepSeek, Mistral, Groq, Together, Fireworks, Xai, Cohere, OpenRouter, with `as_str`,
+    `parse` (accepts LiteLLM, OpenRouter and SDK spellings such as `gemini`, `vertex_ai`,
+    `x-ai`), `FromStr`, `Display`, `AsRef<str>`, `ALL`, `rows()` and `fallback_providers()`.
+  - Vertex AI, Bedrock and Azure have no rows of their own; they fall back to the maker's
+    list price where the platform charges it on global endpoints (Vertex: Gemini and Claude;
+    Bedrock: Claude; Azure: OpenAI). OpenRouter falls back to every model maker. The returned
+    row's `provider` says whose price it is. Anything else returns `None`.
+  - `Price::provider_kind()` parses `Price::provider`.
+- **Dated snapshot and alias resolution in `lookup`.** OpenAI `-YYYY-MM-DD` snapshot ids
+  resolve to their base row (`gpt-4o-2024-08-06` finds `gpt-4o`) unless the table prices
+  the snapshot on its own row (`gpt-4o-2024-05-13`). `-latest` ids resolve to the model's
+  row (`claude-3-5-haiku-latest`, `grok-4.7-latest`). Dated and undated forms now work for
+  every provider, not only Anthropic. Ids are matched ignoring ASCII case.
+- `lookup` honors a leading provider in the id (`groq/...`, `together_ai/...`,
+  `fireworks_ai/...`, `accounts/fireworks/models/...`) and accepts the prefixes `mistral/`,
+  `mistralai/`, `xai/`, `x-ai/`, `cohere/`, `groq/`, `together/`, `together_ai/`,
+  `fireworks/`, `fireworks_ai/` and `accounts/fireworks/models/`.
+- **Exact prices.** `Rate` enum and `Price::rate`, `Price::rate_str`,
+  `Price::long_context_rate_str` and `LongContext::rate`. `rate_str` returns the price
+  exactly as `prices.json` writes it (`"0.075"`), for billing code that never uses `f64`.
+- **`rust_decimal` feature.** `Price::cost_usage_decimal(&Usage) -> Option<DecimalCostBreakdown>`,
+  `Price::cost_decimal` and `Price::rate_decimal`, in `rust_decimal::Decimal`. Same rules and
+  the same `None` cases as `cost_usage`, with no rounding (the batch discount on cache tokens
+  is exact on every current row).
+- **`serde` feature.** `Serialize` for `Price`, `LongContext` (cache writes as a map, the
+  shape of `prices.json`), `CostBreakdown` and `DecimalCostBreakdown`; `Serialize` and
+  `Deserialize` for `Usage` (missing fields default to zero) and `Provider` (as its name).
+- `iter()`: an iterator over every row, next to the existing `all()`.
+- **New rows**, each read on 2026-11-14 from the provider's official pricing page, with that
+  page as `source_url`:
+  - Mistral (11, https://docs.mistral.ai/inference/pricing, aliases such as
+    `mistral-large-latest` from each model's docs page),
+  - xAI (8, https://docs.x.ai/developers/pricing, with the 200k-token long-context tier and
+    the 20% Batch API discount),
+  - Cohere (1, https://cohere.com/pricing; the page prices only legacy models),
+  - Groq (6, https://console.groq.com/docs/models),
+  - Together AI (22, https://docs.together.ai/docs/serverless/models),
+  - Fireworks AI (14, https://docs.fireworks.ai/serverless/pricing, with Priority and Fast
+    tiers in `other_tiers`).
+
+  These rows are checked by hand: the daily refresh keeps them as they are and does not
+  re-read those pages. `scripts/build.mjs` regenerates the derived files after editing one.
+
+### Changed
+
+- `lookup("gpt-4o-2024-08-06")` and other dated OpenAI ids now return the base row instead
+  of `None` (the 1.1 "Known behavior" note).
+- Model ids are unique per provider, not across the table: `openai/gpt-oss-120b` is a Groq
+  row and a Together AI row. Plain `lookup` returns the first in table order (Groq); use
+  `lookup_provider` to pick.
+- The GitHub Action's drift check still uses only the Anthropic, OpenAI, Gemini and DeepSeek
+  rows unless `providers` names others, and skips ids two named providers both sell.
+
+### Notes
+
+- MSRV stays 1.70 with default features. The optional features need whatever `rust_decimal`
+  and `serde` require (currently Rust 1.71 for `serde_derive`).
+- Bedrock, Vertex AI and Azure rows were not added. The Bedrock and Azure pricing pages fill
+  their prices in the browser from regional price feeds (the page itself holds placeholders),
+  and the Vertex AI page lists display names, global and regional prices and promotions
+  without API ids, so no row could be read from the page as published.
+
 ## [1.1.1] - 2026-11-14
 
 ### Fixed

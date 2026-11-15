@@ -46,12 +46,15 @@ jobs:
       - name: crate data matches prices.json
         run: cmp prices.json ../prices.json
       - run: cargo test
+      - name: tests with the optional features (rust_decimal, serde)
+        run: cargo test --all-features
       - name: clippy on a pinned toolchain (new lints in later stables do not break CI)
         run: |
           rustup toolchain install 1.99.0 --profile minimal --component clippy
           cargo +1.99.0 clippy --all-targets -- -D warnings
+          cargo +1.99.0 clippy --all-targets --all-features -- -D warnings
       - name: docs build without warnings (every public item documented)
-        run: cargo doc --no-deps
+        run: cargo doc --no-deps --all-features
         env:
           RUSTDOCFLAGS: -Dwarnings
       - name: MSRV (rust-version in Cargo.toml)

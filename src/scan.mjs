@@ -5,15 +5,29 @@ const PREFIX = /^(?:(?:models|anthropic|openai|google|gemini|vertex_ai|vertex|be
 const BEDROCK = /^(?:(?:us|eu|apac|au|jp|global)\.)?anthropic\./;
 const DATE8 = /-(20\d{6})$/;
 
+// Providers whose rows the daily refresh re-reads. The other rows in prices.json were checked
+// by hand, so they are only used when named in --providers.
+export const DEFAULT_PROVIDERS = ['anthropic', 'openai', 'google', 'deepseek'];
+
 /** Builds a lookup from every id form a user might write to its prices.json row. */
 export function buildIndex(prices, providers) {
-  const want = providers && providers.length ? new Set(providers) : null;
+  const want = new Set(providers && providers.length ? providers : DEFAULT_PROVIDERS);
   const exact = new Map();
   const undated = new Map();
+  // Ids that two chosen providers both sell (openai/gpt-oss-120b on Groq and Together) say
+  // nothing about which price is meant, so they are left out.
+  const ambiguous = new Set();
   for (const row of prices.models) {
-    if (want && !want.has(row.provider)) continue;
+    if (!want.has(row.provider)) continue;
     for (const id of [row.model, ...(row.aliases || [])]) {
-      exact.set(id.toLowerCase(), row);
+      const key = id.toLowerCase();
+      const prev = exact.get(key);
+      if (ambiguous.has(key) || (prev && prev.provider !== row.provider)) {
+        ambiguous.add(key);
+        exact.delete(key);
+        continue;
+      }
+      exact.set(key, row);
       // Anthropic publishes dated ids for older models; people often write the undated form.
       if (row.provider === 'anthropic' && DATE8.test(id)) undated.set(id.toLowerCase().replace(DATE8, ''), row);
     }

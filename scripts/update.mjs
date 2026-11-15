@@ -12,7 +12,7 @@
 import { readFileSync, writeFileSync, existsSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { SOURCES } from './meta.mjs';
+import { SOURCES, MANUAL_SOURCES } from './meta.mjs';
 import { parseAnthropic } from './parse/anthropic.mjs';
 import { parseOpenAI } from './parse/openai.mjs';
 import { parseGemini } from './parse/gemini.mjs';
@@ -90,6 +90,9 @@ async function main() {
     if (failed.has(provider)) merged.push(...old.models.filter((m) => m.provider === provider));
     else merged.push(...fresh.filter((m) => m.provider === provider));
   }
+  // Rows for providers without a parser were checked by hand; keep them unchanged.
+  const parsed = new Set(PROVIDERS.map(([p]) => p));
+  merged.push(...old.models.filter((m) => !parsed.has(m.provider)));
 
   const changes = [];
   const newBy = new Map(merged.map((m) => [`${m.provider}/${m.model}`, m]));
@@ -114,7 +117,7 @@ async function main() {
     schema: 'https://github.com/Mattbusel/llm-prices#schema',
     unit: 'USD per 1M tokens',
     generated: changes.length || force || !old.generated ? today : old.generated,
-    sources: Object.fromEntries(Object.entries(SOURCES).map(([k, v]) => [k, v.page])),
+    sources: { ...Object.fromEntries(Object.entries(SOURCES).map(([k, v]) => [k, v.page])), ...MANUAL_SOURCES },
     models: merged,
   };
 

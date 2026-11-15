@@ -20,6 +20,18 @@ export const SOURCES = {
   },
 };
 
+// Providers with no parser. Their rows in prices.json were read by hand from these pages
+// (each row's checked date says when); scripts/update.mjs keeps them as they are, and the drift
+// check only uses them when they are named in --providers.
+export const MANUAL_SOURCES = {
+  mistral: 'https://docs.mistral.ai/inference/pricing',
+  xai: 'https://docs.x.ai/developers/pricing',
+  cohere: 'https://cohere.com/pricing',
+  groq: 'https://console.groq.com/docs/models',
+  together: 'https://docs.together.ai/docs/serverless/models',
+  fireworks: 'https://docs.fireworks.ai/serverless/pricing',
+};
+
 // Anthropic's pricing page lists display names, not API ids. Ids come from
 // platform.claude.com/docs/en/about-claude/models/overview, the per-model overview pages,
 // and the model-deprecations page (for retired dated ids).

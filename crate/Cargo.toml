@@ -1,9 +1,9 @@
 [package]
 name = "llm-prices"
-version = "1.1.1"
+version = "1.2.0"
 edition = "2021"
 rust-version = "1.70"
-description = "Dated, source-cited LLM API prices (Anthropic, OpenAI, Gemini, DeepSeek) per 1M tokens, with model-id lookup. No dependencies."
+description = "Dated, source-cited LLM API prices (Anthropic, OpenAI, Gemini, DeepSeek, Mistral, xAI, Groq, Together, Fireworks, Cohere) per 1M tokens, with provider-aware model-id lookup and exact decimal costs. No required dependencies."
 license = "MIT"
 repository = "https://github.com/Mattbusel/llm-prices"
 homepage = "https://github.com/Mattbusel/llm-prices"
@@ -14,3 +14,17 @@ categories = ["api-bindings", "data-structures"]
 include = ["src/**", "examples/**", "tests/**", "prices.json", "README.md", "CHANGELOG.md", "LICENSE"]
 
 [dependencies]
+# Exact decimal costs: Price::cost_usage_decimal and friends.
+rust_decimal = { version = "1.33", optional = true, default-features = false }
+# Serialize / Deserialize impls.
+serde = { version = "1.0.180", optional = true, default-features = false, features = ["std", "derive"] }
+
+[features]
+rust_decimal = ["dep:rust_decimal"]
+serde = ["dep:serde", "rust_decimal?/serde"]
+
+[dev-dependencies]
+serde_json = "1"
+
+[package.metadata.docs.rs]
+all-features = true

@@ -9,6 +9,8 @@ import { parseGemini } from '../scripts/parse/gemini.mjs';
 import { parseDeepSeek } from '../scripts/parse/deepseek.mjs';
 import { ParseError } from '../scripts/parse/common.mjs';
 import { toToml } from '../scripts/toml.mjs';
+import { toRust } from '../scripts/rust.mjs';
+import { SOURCES, MANUAL_SOURCES } from '../scripts/meta.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = join(here, '..');
@@ -18,10 +20,12 @@ const get = (id) => prices.models.find((m) => m.model === id);
 
 test('every row has a source URL, an ISO date, a unit, and numbers or null', () => {
   assert.ok(prices.models.length >= 70);
+  // Hosts sell the same open-weight id (openai/gpt-oss-120b), so ids are unique per provider.
   const ids = new Set();
   for (const m of prices.models) {
-    assert.ok(!ids.has(m.model), `duplicate ${m.model}`);
-    ids.add(m.model);
+    const key = `${m.provider}/${m.model}`;
+    assert.ok(!ids.has(key), `duplicate ${key}`);
+    ids.add(key);
     assert.match(m.source_url, /^https:\/\//);
     assert.match(m.checked, /^\d{4}-\d{2}-\d{2}$/);
     assert.equal(m.unit, 'USD per 1M tokens');
@@ -124,6 +128,34 @@ test('committed prices.json equals what the parsers produce from the saved pages
     ...parseGemini(page('gemini.md'), 'X').rows,
     ...parseDeepSeek(page('deepseek.html'), 'X').rows,
   ].map(({ checked, ...r }) => r);
-  const committed = prices.models.map(({ checked, ...r }) => r);
+  const committed = prices.models.filter((m) => m.provider in SOURCES).map(({ checked, ...r }) => r);
   assert.deepEqual(committed, fresh);
+});
+
+test('hand-checked rows cite their provider page, come after the parsed rows and say so', () => {
+  const manual = prices.models.filter((m) => !(m.provider in SOURCES));
+  assert.ok(manual.length >= 50);
+  const firstManual = prices.models.findIndex((m) => !(m.provider in SOURCES));
+  assert.ok(prices.models.slice(firstManual).every((m) => !(m.provider in SOURCES)), 'parsed rows come first');
+  for (const m of manual) {
+    assert.equal(m.source_url, MANUAL_SOURCES[m.provider], `${m.model} cites ${m.source_url}`);
+    assert.match(m.note, /checked by hand/, m.model);
+  }
+  assert.deepEqual(prices.sources, { ...Object.fromEntries(Object.entries(SOURCES).map(([k, v]) => [k, v.page])), ...MANUAL_SOURCES });
+  // Spot checks against the pages (2026-11-14).
+  const at = (provider, model) => prices.models.find((m) => m.provider === provider && m.model === model);
+  assert.deepEqual([at('xai', 'grok-4.7').input, at('xai', 'grok-4.7').cache_read, at('xai', 'grok-4.7').output], [2, 0.5, 6]);
+  assert.equal(at('xai', 'grok-4.7').long_context.threshold_tokens, 199999);
+  assert.deepEqual([at('mistral', 'mistral-large-4').input, at('mistral', 'mistral-large-4').output], [0.7, 2.1]);
+  assert.deepEqual(at('mistral', 'mistral-large-4').aliases, ['mistral-large-4-0', 'mistral-large-latest']);
+  assert.deepEqual([at('groq', 'openai/gpt-oss-120b').input, at('groq', 'openai/gpt-oss-120b').output], [0.15, 0.6]);
+  assert.equal(at('together', 'openai/gpt-oss-120b').cache_read, null);
+  assert.equal(at('fireworks', 'accounts/fireworks/models/gpt-oss-120b').cache_read, 0.015);
+  assert.deepEqual(at('fireworks', 'accounts/fireworks/models/kimi-k3').other_tiers.priority, { input: 3.75, output: 18.75, cache_read: 0.375 });
+  assert.deepEqual([at('cohere', 'command-r-plus-08-2024').input, at('cohere', 'command-r-plus-08-2024').output], [2.5, 10]);
+});
+
+test('crate data.rs, crate/prices.json and prices.toml are regenerated from prices.json', () => {
+  assert.equal(readFileSync(join(root, 'crate', 'src', 'data.rs'), 'utf8'), toRust(prices));
+  assert.equal(readFileSync(join(root, 'crate', 'prices.json'), 'utf8'), readFileSync(join(root, 'prices.json'), 'utf8'));
 });

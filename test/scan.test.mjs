@@ -217,3 +217,13 @@ test('a match arm or case label for several models checks each model', () => {
   const g = scanFixture('group_case.go');
   for (const m of ['gpt-5', 'gpt-5.1', 'gpt-5-mini']) assert.ok(g.priced.has(m), m);
 });
+
+test('hand-checked providers are only scanned when named, and ids two of them sell are skipped', () => {
+  assert.equal(resolveModel(index, 'mistral-large-4'), null, 'not in the default providers');
+  const mistral = buildIndex(prices, ['mistral']);
+  assert.equal(resolveModel(mistral, 'mistral-large-4').provider, 'mistral');
+  assert.equal(resolveModel(buildIndex(prices, ['groq']), 'openai/gpt-oss-120b').provider, 'groq');
+  const hosts = buildIndex(prices, ['groq', 'together']);
+  assert.equal(resolveModel(hosts, 'openai/gpt-oss-120b'), null, 'sold by both, so no single price applies');
+  assert.equal(resolveModel(hosts, 'qwen/qwen3.8-27b').provider, 'groq');
+});
