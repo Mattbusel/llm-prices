@@ -596,17 +596,17 @@ const PROVIDER_NAMES: ReadonlyMap<string, Provider> = new Map(
     [
       ['anthropic', ['anthropic', 'claude']],
       ['openai', ['openai', 'open-ai']],
-      ['google', ['google', 'gemini', 'google-ai-studio', 'google-gemini', 'ai-studio']],
-      ['vertex', ['vertex', 'vertex-ai', 'vertexai', 'google-vertex', 'google-vertex-ai', 'vertex-ai-beta']],
-      ['bedrock', ['bedrock', 'aws', 'aws-bedrock', 'amazon-bedrock', 'bedrock-converse']],
-      ['azure', ['azure', 'azure-openai', 'azure-ai', 'azure-foundry', 'microsoft-foundry']],
+      ['google', ['google', 'gemini', 'google-ai-studio', 'google-gemini', 'ai-studio', 'google-genai', 'google-generativeai', 'genai', 'google-ai', 'googleai']],
+      ['vertex', ['vertex', 'vertex-ai', 'vertexai', 'google-vertex', 'google-vertex-ai', 'vertex-ai-beta', 'google-vertexai']],
+      ['bedrock', ['bedrock', 'aws', 'aws-bedrock', 'amazon-bedrock', 'bedrock-converse', 'bedrock-runtime', 'amazon']],
+      ['azure', ['azure', 'azure-openai', 'azure-ai', 'azure-foundry', 'microsoft-foundry', 'azure-ai-foundry']],
       ['deepseek', ['deepseek']],
       ['mistral', ['mistral', 'mistralai', 'mistral-ai']],
-      ['groq', ['groq']],
+      ['groq', ['groq', 'groqcloud', 'groq-cloud']],
       ['together', ['together', 'together-ai', 'togetherai']],
       ['fireworks', ['fireworks', 'fireworks-ai', 'fireworksai']],
       ['xai', ['xai', 'x-ai', 'grok']],
-      ['cohere', ['cohere', 'cohere-chat']],
+      ['cohere', ['cohere', 'cohere-chat', 'cohere-ai']],
       ['openrouter', ['openrouter', 'open-router']],
     ] as const
   ).flatMap(([p, names]) => names.map((n) => [n, p] as const)),
@@ -633,8 +633,9 @@ function utf8Length(s: string): number {
 
 /**
  * Parses a provider name, ignoring ASCII case and treating `_`, `-` and spaces alike. Accepts
- * the canonical names and the spellings LiteLLM, OpenRouter and the provider SDKs use
- * (`gemini`, `vertex_ai`, `together_ai`, `x-ai`, ...). `null` for anything else.
+ * the canonical names and the spellings LiteLLM, LangChain, OpenRouter and the provider SDKs
+ * use (`gemini`, `google_genai`, `vertex_ai`, `google_vertexai`, `bedrock_converse`,
+ * `together_ai`, `x-ai`, ...). `null` for anything else.
  */
 export function parseProvider(name: string): Provider | null {
   const trimmed = String(name).trim();

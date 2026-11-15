@@ -234,6 +234,8 @@ function divUnit(div) {
 /** Classifies a key name to a price field, or null when it is not a price. */
 export function classifyKey(rawKey) {
   const k = rawKey.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+  // Ratios, not prices: cacheWriteMultiplier: 1.25, batch_discount: 0.5, input_markup_pct: 10.
+  if (/multiplier|mult(_|$)|ratio|factor|discount|markup|uplift|surcharge|percent|pct|fraction/.test(k)) return null;
   const hasMoney = /cost|price|rate|usd|dollar|per_|_per|mtok|fee/.test(k);
   if (/context|window|max|limit|rpm|tpm|rpd|size|length|version|temperature|top_p|top_k|dimension|seconds|timeout|retries|count|budget|threshold|weight|score|quantity/.test(k) && !hasMoney) return null;
   if (/tokens?(_|$)|(^|_)tok(_|$)/.test(k) && !hasMoney) return null;
@@ -332,6 +334,86 @@ export function judge(row, field, value, unit, tol, soft = null) {
   return { ok: false, perM: best.perM, unit: best.unit, expected };
 }
 
+// Keys that start a price tier above a prompt size: { threshold: 200000, prompt: 2.5 }.
+export function isThresholdKey(rawKey) {
+  const k = rawKey.toLowerCase().replace(/[^a-z0-9]+/g, '_');
+  if (/cost|price|rate|usd|dollar/.test(k)) return false;
+  return /threshold|(^|_)(above|over|gt|gte)(_|$)|min_?(prompt_|input_|context_)?tokens|tokens_?(above|over)/.test(k);
+}
+
+const THRESHOLD = /["']?([A-Za-z_][A-Za-z0-9_]*)["']?\s*(?::|=>|=(?!=))\s*\d/g;
+
+/** `line` with the contents of its string literals blanked, keeping every column in place. */
+function blankStrings(line) {
+  return line.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`[^`]*`/g, (q) => q[0] + ' '.repeat(q.length - 2) + q[q.length - 1]);
+}
+
+/**
+ * The records that hold a threshold key, as [[line, col], [line, col]] spans: from the innermost
+ * bracket that opens around the key to the bracket that closes it. In YAML, a "- " item with
+ * a threshold key spans the lines indented under it. Prices inside a span are tier prices.
+ */
+export function tierSpans(lines, lo, hi, ext, blanked = () => lines.map(blankStrings)) {
+  const spans = [];
+  if (!lines.slice(lo, hi + 1).some((l) => /threshold|above|over|gt|tokens/i.test(l))) return spans;
+  const clean = blanked();
+  const isOpen = (c) => c === '{' || c === '[' || c === '(';
+  const isClose = (c) => c === '}' || c === ']' || c === ')';
+  const closeOf = (y0, x0) => {
+    let depth = 0;
+    for (let y = y0; y < lines.length && y <= hi + MAX_BLOCK; y++) {
+      const t = clean[y];
+      for (let x = y === y0 ? x0 : 0; x < t.length; x++) {
+        if (isOpen(t[x])) depth++;
+        else if (isClose(t[x]) && --depth === 0) return [y, x];
+      }
+    }
+    return [Math.min(lines.length - 1, hi + MAX_BLOCK), Infinity];
+  };
+  for (let j = lo; j <= hi; j++) {
+    THRESHOLD.lastIndex = 0;
+    let m;
+    while ((m = THRESHOLD.exec(lines[j]))) {
+      if (!isThresholdKey(m[1])) continue;
+      let open = null;
+      let depth = 0;
+      for (let y = j; y >= Math.max(0, lo - MAX_BLOCK) && !open; y--) {
+        const t = clean[y];
+        for (let x = (y === j ? m.index : t.length) - 1; x >= 0; x--) {
+          if (isClose(t[x])) depth++;
+          else if (isOpen(t[x])) {
+            if (depth === 0) {
+              open = [y, x];
+              break;
+            }
+            depth--;
+          }
+        }
+      }
+      if (open) {
+        spans.push([open, closeOf(open[0], open[1])]);
+      } else if ((ext === 'yaml' || ext === 'yml') && /^\s*-\s/.test(lines[j])) {
+        let b = j;
+        while (b + 1 < lines.length && b - j < MAX_BLOCK && lines[b + 1].trim() !== '' && indent(lines[b + 1]) > indent(lines[j])) b++;
+        spans.push([[j, 0], [b, Infinity]]);
+      } else {
+        spans.push([[j, 0], [j, Infinity]]);
+      }
+    }
+  }
+  return spans;
+}
+
+function inSpan(spans, line, col) {
+  const le = (a, b) => a[0] < b[0] || (a[0] === b[0] && a[1] <= b[1]);
+  return spans.some(([a, b]) => le(a, [line, col]) && le([line, col], b));
+}
+
+/** The prices that apply above the row's long-context threshold, shaped as a row, or null. */
+function tierRow(row) {
+  return row.long_context ? { provider: row.provider, model: row.model, ...row.long_context } : null;
+}
+
 /** Lines inside Rust #[cfg(test)] items. */
 export function testMask(lines, ext) {
   if (ext !== 'rs') return null;
@@ -396,6 +478,7 @@ export function scanText(file, text, index, opts = {}) {
   const seen = new Map();
   const priced = new Set();
   const skip = opts.includeTests ? null : testMask(lines, ext);
+  let blanked = null;
   const fileHint = unitHint(lines.slice(0, 40).filter((l) => /\/\/|#|\/\*|\*|"""|'''/.test(l)).join('\n'));
   for (let i = 0; i < lines.length; i++) {
     const line = lines[i];
@@ -431,6 +514,7 @@ export function scanText(file, text, index, opts = {}) {
     const context = lines.slice(Math.max(0, start - 3), end + 1).join('\n');
     const blockHint = unitHint(context.replace(/"[^"\n]*"/g, (s) => (/(per|1k|1m|mtok|million|thousand)/i.test(s) ? s : '""')));
     const found = [];
+    const spans = tierSpans(lines, start, end, ext, () => (blanked ??= lines.map(blankStrings)));
     for (let j = start; j <= end; j++) {
       // Drop the model token itself so ids like gpt-4.1 never look like numbers.
       let L = lines[j];
@@ -443,7 +527,7 @@ export function scanText(file, text, index, opts = {}) {
         if (!field) continue;
         keyed++;
         const unit = divUnit(m[3]) || unitHint(m[1]);
-        found.push({ line: j + 1, field, raw: m[2], value: parseNum(m[2]), unit, soft: blockHint || fileHint });
+        found.push({ line: j + 1, field, raw: m[2], value: parseNum(m[2]), unit, soft: blockHint || fileHint, tier: inSpan(spans, j, m.index) });
       }
       // Positional tuple on the model's own line: (input, output).
       KV.lastIndex = 0;
@@ -451,12 +535,16 @@ export function scanText(file, text, index, opts = {}) {
       KV.lastIndex = 0;
       const pm = j === i && !anyKey ? L.slice(hit.col + hit.token.length).match(POS) : null;
       if (pm) {
+        const tier = inSpan(spans, j, hit.col + hit.token.length);
         const nums = [
-          { raw: pm[1], value: parseNum(pm[1]), unit: divUnit(pm[2]), soft: blockHint || fileHint },
-          { raw: pm[3], value: parseNum(pm[3]), unit: divUnit(pm[4]), soft: blockHint || fileHint },
+          { raw: pm[1], value: parseNum(pm[1]), unit: divUnit(pm[2]), soft: blockHint || fileHint, tier },
+          { raw: pm[3], value: parseNum(pm[3]), unit: divUnit(pm[4]), soft: blockHint || fileHint, tier },
         ];
         {
-          const plausible = targets.some((t) => judge(t, 'input', nums[0].value, nums[0].unit, tol, nums[0].soft) && judge(t, 'output', nums[1].value, nums[1].unit, tol, nums[1].soft));
+          const plausible = targets.some((t) => {
+            const r = tier ? tierRow(t) : t;
+            return r && judge(r, 'input', nums[0].value, nums[0].unit, tol, nums[0].soft) && judge(r, 'output', nums[1].value, nums[1].unit, tol, nums[1].soft);
+          });
           if (plausible) {
             found.push({ line: j + 1, field: 'input', ...nums[0] });
             found.push({ line: j + 1, field: 'output', ...nums[1] });
@@ -465,7 +553,11 @@ export function scanText(file, text, index, opts = {}) {
       }
     }
     for (const f of found) for (const row of targets) {
-      const v = judge(row, f.field, f.value, f.unit, tol, f.soft);
+      // A price in a threshold tier is compared with the long-context prices; a model the
+      // table prices without a long-context tier has nothing to compare it with.
+      const against = f.tier ? tierRow(row) : row;
+      if (!against) continue;
+      const v = judge(against, f.field, f.value, f.unit, tol, f.soft);
       if (!v) continue;
       priced.add(row.model);
       const key = `${f.line}:${f.field}:${f.raw}`;

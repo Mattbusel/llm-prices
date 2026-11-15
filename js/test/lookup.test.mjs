@@ -261,11 +261,30 @@ test('provider aliases', () => {
     ['fireworks_ai', 'fireworks'],
     ['x-ai', 'xai'],
     ['open_router', 'openrouter'],
+    ['google_genai', 'google'],
+    ['google-generativeai', 'google'],
+    ['google_vertexai', 'vertex'],
+    ['bedrock_converse', 'bedrock'],
+    ['azure_ai_foundry', 'azure'],
+    ['GroqCloud', 'groq'],
+    ['cohere_ai', 'cohere'],
   ]) {
     assert.equal(parseProvider(name), want, name);
   }
-  for (const bad of ['', 'deepseek-ai', 'meta-llama', 'qwen', 'a-very-long-provider-name-that-is-not-real']) {
+  for (const bad of ['', 'deepseek-ai', 'meta-llama', 'qwen', 'ollama', 'huggingface', 'a-very-long-provider-name-that-is-not-real']) {
     assert.equal(parseProvider(bad), null, bad);
     assert.equal(lookupProvider(bad, 'gpt-4o'), null, bad);
+  }
+});
+
+test('legacy DeepSeek names and delisted rows still price', () => {
+  for (const id of ['deepseek-chat', 'deepseek-reasoner']) {
+    assert.equal(lookupProvider('deepseek', id).model, 'deepseek-flash', id);
+  }
+  assert.equal(lookupProvider('google_genai', 'gemini-2.5-flash').model, 'gemini-2.5-flash');
+  for (const id of ['gpt-3.5-turbo', 'o1', 'claude-3-5-haiku-20241022']) {
+    const p = lookup(id);
+    assert.ok(p, id);
+    assert.equal(p.status, 'retired', id);
   }
 });

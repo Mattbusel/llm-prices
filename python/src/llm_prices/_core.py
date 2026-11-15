@@ -321,6 +321,31 @@ class Price:
         """
         return _dec(self.rate(rate, ttl))
 
+    @property
+    def input_per_token(self) -> Optional[float]:
+        """:attr:`input` in USD per token (the price per 1M tokens divided by 1,000,000), for
+        code that keeps per-token prices. ``None`` when the page lists no price.
+
+        >>> lookup_provider("deepseek", "deepseek-chat").input_per_token
+        3e-07
+        """
+        return None if self.input is None else self.input / _M
+
+    @property
+    def output_per_token(self) -> Optional[float]:
+        """:attr:`output` in USD per token. ``None`` when the page lists no price (embedding
+        models)."""
+        return None if self.output is None else self.output / _M
+
+    def per_token(self, rate: RateName = "input", ttl: Optional[str] = None) -> Optional[float]:
+        """Any price column in USD per token: :meth:`rate` divided by 1,000,000.
+
+        >>> lookup("claude-sonnet-4-6").per_token("cache_read")
+        3e-07
+        """
+        value = self.rate(rate, ttl)
+        return None if value is None else value / _M
+
     def provider_kind(self) -> Optional["Provider"]:
         """:attr:`provider` as a :class:`Provider`. ``None`` only for a hand-built ``Price``
         with a provider name the package does not know."""
@@ -615,11 +640,20 @@ class Provider(str, Enum):
     @classmethod
     def parse(cls, name: Union[str, "Provider"]) -> Optional["Provider"]:
         """Parses a provider name, ignoring ASCII case and treating ``_``, ``-`` and spaces
-        alike. Accepts the canonical names and the spellings LiteLLM, OpenRouter and the
-        provider SDKs use (``gemini``, ``vertex_ai``, ``together_ai``, ``x-ai``, ...).
-        ``None`` for anything else."""
+        alike. Accepts the canonical names and the spellings LiteLLM, LangChain, OpenRouter
+        and the provider SDKs use (``gemini``, ``google_genai``, ``vertex_ai``,
+        ``google_vertexai``, ``bedrock_converse``, ``azure_openai``, ``together_ai``,
+        ``x-ai``, ...). ``None`` for anything else, including a value that is not a string.
+
+        >>> Provider.parse("google_genai") is Provider.GOOGLE
+        True
+        >>> Provider.parse("ollama") is None
+        True
+        """
         if isinstance(name, Provider):
             return name
+        if not isinstance(name, str):
+            return None
         name = name.strip()
         if len(name.encode("utf-8")) > 24:
             return None
@@ -663,17 +697,17 @@ _PROVIDER_NAMES: Dict[str, Provider] = {}
 for _p, _names in (
     (Provider.ANTHROPIC, ("anthropic", "claude")),
     (Provider.OPENAI, ("openai", "open-ai")),
-    (Provider.GOOGLE, ("google", "gemini", "google-ai-studio", "google-gemini", "ai-studio")),
-    (Provider.VERTEX, ("vertex", "vertex-ai", "vertexai", "google-vertex", "google-vertex-ai", "vertex-ai-beta")),
-    (Provider.BEDROCK, ("bedrock", "aws", "aws-bedrock", "amazon-bedrock", "bedrock-converse")),
-    (Provider.AZURE, ("azure", "azure-openai", "azure-ai", "azure-foundry", "microsoft-foundry")),
+    (Provider.GOOGLE, ("google", "gemini", "google-ai-studio", "google-gemini", "ai-studio", "google-genai", "google-generativeai", "genai", "google-ai", "googleai")),
+    (Provider.VERTEX, ("vertex", "vertex-ai", "vertexai", "google-vertex", "google-vertex-ai", "vertex-ai-beta", "google-vertexai")),
+    (Provider.BEDROCK, ("bedrock", "aws", "aws-bedrock", "amazon-bedrock", "bedrock-converse", "bedrock-runtime", "amazon")),
+    (Provider.AZURE, ("azure", "azure-openai", "azure-ai", "azure-foundry", "microsoft-foundry", "azure-ai-foundry")),
     (Provider.DEEPSEEK, ("deepseek",)),
     (Provider.MISTRAL, ("mistral", "mistralai", "mistral-ai")),
-    (Provider.GROQ, ("groq",)),
+    (Provider.GROQ, ("groq", "groqcloud", "groq-cloud")),
     (Provider.TOGETHER, ("together", "together-ai", "togetherai")),
     (Provider.FIREWORKS, ("fireworks", "fireworks-ai", "fireworksai")),
     (Provider.XAI, ("xai", "x-ai", "grok")),
-    (Provider.COHERE, ("cohere", "cohere-chat")),
+    (Provider.COHERE, ("cohere", "cohere-chat", "cohere-ai")),
     (Provider.OPENROUTER, ("openrouter", "open-router")),
 ):
     for _n in _names:
@@ -857,14 +891,40 @@ def lookup(model: str) -> Optional[Price]:
 
 
 def lookup_provider(provider: Union[str, Provider], model: str) -> Optional[Price]:
-    """Finds ``model`` as sold by ``provider``: :meth:`Provider.lookup` for a
-    :class:`Provider` or a provider name such as ``"groq"``, ``"together_ai"`` or
-    ``"vertex_ai"``. ``None`` when the name is not a known provider or the table has no price
-    for the model there.
+    """Finds ``model`` as sold by ``provider``, or ``None``.
+
+    This is the call to make when you know which provider served a request (a gateway, a
+    LangChain or LiteLLM provider name, a cost callback):
+
+    - ``provider`` is a :class:`Provider` or any spelling :meth:`Provider.parse` accepts:
+      ``"openai"``, ``"anthropic"``, ``"google_genai"``, ``"gemini"``, ``"vertex_ai"``,
+      ``"google_vertexai"``, ``"bedrock"``, ``"bedrock_converse"``, ``"azure_openai"``,
+      ``"deepseek"``, ``"mistralai"``, ``"groq"``, ``"xai"``, ``"together"``,
+      ``"together_ai"``, ``"fireworks"``, ``"cohere"``, ``"openrouter"``, in any ASCII case.
+    - ``model`` gets the same id handling as :func:`lookup`: aliases (``deepseek-chat``,
+      ``mistral-large-latest``), dated snapshots, ``-latest`` ids, Bedrock ids
+      (``us.anthropic.claude-...-v1:0``), Vertex ``@date`` ids and provider prefixes.
+    - Only rows that provider sells are searched. Vertex AI, Bedrock and Azure, which have no
+      rows of their own, fall back to the list price of the model maker they resell (see
+      :meth:`Provider.fallback_providers`); the returned row's :attr:`Price.provider` says
+      whose price it is. A host is never priced with another host's row.
+    - ``None`` when the provider name is unknown (``"ollama"``, ``"huggingface"``) or the
+      table has no price for the model there, so the caller can fall back to its own default.
+
+    The returned :class:`Price` holds USD per 1M tokens (``price.input``, ``price.output``);
+    ``price.input_per_token`` and ``price.output_per_token`` give USD per token, and
+    ``price.cost(input_tokens, output_tokens)`` the cost of one request.
 
     >>> lookup_provider("groq", "openai/gpt-oss-120b").provider
     'groq'
     >>> lookup_provider("openai", "gpt-oss-120b") is None
+    True
+    >>> p = lookup_provider("google_genai", "gemini-2.5-flash")
+    >>> p.input, p.output
+    (0.3, 2.5)
+    >>> lookup_provider("bedrock", "us.anthropic.claude-sonnet-4-20250514-v1:0").model
+    'claude-sonnet-4-20250514'
+    >>> lookup_provider("ollama", "llama3") is None
     True
     """
     p = Provider.parse(provider)

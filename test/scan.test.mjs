@@ -227,3 +227,59 @@ test('hand-checked providers are only scanned when named, and ids two of them se
   assert.equal(resolveModel(hosts, 'openai/gpt-oss-120b'), null, 'sold by both, so no single price applies');
   assert.equal(resolveModel(hosts, 'qwen/qwen3.8-27b').provider, 'groq');
 });
+
+test('ratio keys (multipliers, discounts) are not prices', () => {
+  for (const k of ['cacheWriteMultiplier', 'cache_read_multiplier', 'inputCostMultiplier', 'batch_discount', 'outputPriceRatio', 'regional_uplift_pct']) {
+    assert.equal(classifyKey(k), null, k);
+  }
+  const ts = [
+    'export const pricing = {',
+    "  'claude-sonnet-4-6': { input: 3, output: 15, cacheWriteMultiplier: 1.25, cacheReadMultiplier: 0.1 },",
+    '};',
+  ].join('\n');
+  const { findings } = scanText('pricing.ts', ts, index);
+  assert.deepEqual(findings.map((f) => `${f.field}:${f.written}:${f.ok}`).sort(), ['input:3:true', 'output:15:true']);
+});
+
+test('prices in a threshold tier are compared with the long-context prices', () => {
+  const ts = [
+    'export const tieredPricing = {',
+    "  'gpt-5.4': { threshold: 272000, prompt: 5, completion: 22.5 },",
+    "  'claude-haiku-5-5': { threshold: 100000, prompt: 0.5, completion: 2.5 },",
+    "  'gpt-4o': { threshold: 128000, prompt: 5, completion: 15 },",
+    "  'gpt-6-sol': { threshold: 272000, prompt: 4, completion: 10 },",
+    '};',
+    'export const multi = {',
+    "  'gemini-2.5-pro': {",
+    '    prompt: 1.25,',
+    '    completion: 10,',
+    '    tiers: [',
+    '      { threshold: 200000, prompt: 2.5, completion: 10 },',
+    '    ],',
+    '  },',
+    '};',
+  ].join('\n');
+  const { findings } = scanText('tx.ts', ts, index);
+  const got = findings.map((f) => `${f.line}:${f.model}:${f.field}:${f.written}:${f.ok ? 'ok' : `drift(${f.expected})`}`).sort();
+  assert.deepEqual(got, [
+    // 10 is the standard output price, not the price above 200k tokens.
+    '12:gemini-2.5-pro:input:2.5:ok',
+    '12:gemini-2.5-pro:output:10:drift(15)',
+    '2:gpt-5.4:input:5:ok',
+    '2:gpt-5.4:output:22.5:ok',
+    '3:claude-haiku-5-5:input:0.5:ok',
+    '3:claude-haiku-5-5:output:2.5:ok',
+    // gpt-4o has no long-context tier in the table, so its tier prices are not judged.
+    '5:gpt-6-sol:input:4:ok',
+    '5:gpt-6-sol:output:10:drift(15)',
+    '9:gemini-2.5-pro:input:1.25:ok',
+    '10:gemini-2.5-pro:output:10:ok',
+  ].sort());
+});
+
+test('a YAML list item with a threshold key is a tier', () => {
+  const yaml = ['models:', '  gemini-2.5-pro:', '    input: 1.25', '    output: 10', '    tiers:', '      - threshold: 200000', '        input: 2.5', '        output: 15'].join('\n');
+  const { findings } = scanText('prices.yaml', yaml, index);
+  assert.ok(findings.length >= 2);
+  assert.ok(findings.every((f) => f.ok), JSON.stringify(findings.filter((f) => !f.ok)));
+});

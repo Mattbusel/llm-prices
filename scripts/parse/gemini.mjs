@@ -54,7 +54,53 @@ function tierTable(section, tierName) {
   return res;
 }
 
+// The page source moved to Markdoc ({% tabs %}, {% tab title="Standard" %}, {% table %} with
+// "* cell" lines and "---" row separators). This turns that into the markdown shape the parser
+// reads: "### <tab title>" headings and "| a | b | c |" rows. Markdown input passes through.
+export function fromMarkdoc(md) {
+  if (!/\{%\s*tab\s+title=/.test(md)) return md;
+  const out = [];
+  let table = null;
+  let rowCells = null;
+  const flushRow = () => {
+    if (rowCells && rowCells.length) table.push(`| ${rowCells.map((c) => c.replace(/\|/g, '/').trim()).join(' | ')} |`);
+    rowCells = null;
+  };
+  for (const raw of md.split(/\r?\n/)) {
+    const line = raw.trim();
+    if (table) {
+      if (/^\{%\s*\/table\s*%\}$/.test(line)) {
+        flushRow();
+        const [header, ...rows] = table;
+        if (header) out.push(header, `|${' --- |'.repeat(header.split(' | ').length)}`, ...rows);
+        out.push('');
+        table = null;
+      } else if (line === '---') {
+        flushRow();
+      } else if (line.startsWith('* ')) {
+        (rowCells ??= []).push(line.slice(2));
+      } else if (line && rowCells && rowCells.length) {
+        rowCells[rowCells.length - 1] += ` ${line}`;
+      }
+      continue;
+    }
+    const tab = line.match(/^\{%\s*tab\s+title="([^"]+)"/);
+    if (tab) {
+      out.push('', `### ${tab[1]}`, '');
+      continue;
+    }
+    if (/^\{%\s*table\s*%\}$/.test(line)) {
+      table = [];
+      continue;
+    }
+    // "## Gemini 4 Argon  {% id="gemini-4-argon" %}" -> "## Gemini 4 Argon"
+    out.push(raw.replace(/\s*\{%[^%]*%\}\s*$/, ''));
+  }
+  return out.join('\n');
+}
+
 export function parseGemini(md, checked) {
+  md = fromMarkdoc(md);
   const src = SOURCES.google.page;
   const sections = md.split(/\n## /).slice(1);
   const found = new Map();
@@ -66,9 +112,13 @@ export function parseGemini(md, checked) {
     for (const id of ids) if (GEMINI_TEXT_MODELS.includes(id)) found.set(id, s);
   }
   const rows = [];
+  // A model that left the page keeps its last row (scripts/update.mjs marks it retired), but
+  // most of the list missing means the page shape changed, not the models.
+  const gone = GEMINI_TEXT_MODELS.filter((id) => !found.has(id));
+  if (gone.length * 2 > GEMINI_TEXT_MODELS.length) throw new ParseError(`google: ${gone.join(', ')} not found on the pricing page`);
   for (const id of GEMINI_TEXT_MODELS) {
     const s = found.get(id);
-    if (!s) throw new ParseError(`google: ${id} is no longer on the pricing page`);
+    if (!s) continue;
     const std = tierTable(s, 'Standard');
     if (!std || !std.input || !std.output) throw new ParseError(`google: ${id} standard table unreadable`);
     const bat = tierTable(s, 'Batch');

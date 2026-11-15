@@ -3,7 +3,7 @@
 
 import { toToml } from './toml.mjs';
 import { toRust } from './rust.mjs';
-import { toPython, toTs } from './packages.mjs';
+import { toMjs, toMjsTypes, toPython, toTs } from './packages.mjs';
 
 // `text` is prices.json itself, copied byte for byte into the crate.
 export function generatedFiles(doc, text) {
@@ -13,5 +13,7 @@ export function generatedFiles(doc, text) {
     'crate/src/data.rs': toRust(doc),
     'python/src/llm_prices/_data.py': toPython(doc),
     'js/src/data.ts': toTs(doc),
+    'data.mjs': toMjs(doc),
+    'data.d.mts': toMjsTypes(),
   };
 }

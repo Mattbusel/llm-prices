@@ -35,8 +35,11 @@ export const MANUAL_SOURCES = {
 // Anthropic's pricing page lists display names, not API ids. Ids come from
 // platform.claude.com/docs/en/about-claude/models/overview, the per-model overview pages,
 // and the model-deprecations page (for retired dated ids).
-// Names that have no public API id (Claude Mythos 5.1, Claude Mythos 5) are left out on purpose.
+// Claude Mythos models are limited-availability (verified organizations only) and are left out
+// on purpose. Claude Haiku 3.5 left the pricing page on 2026-11-06; scripts/update.mjs keeps
+// its last listed row, marked retired.
 export const ANTHROPIC_IDS = {
+  'Claude Fable 5.2': { model: 'claude-fable-5-2' },
   'Claude Fable 5.1': { model: 'claude-fable-5-1' },
   'Claude Fable 5': { model: 'claude-fable-5' },
   'Claude Opus 5.5': { model: 'claude-opus-5-5' },
@@ -54,15 +57,16 @@ export const ANTHROPIC_IDS = {
   'Claude Sonnet 4': { model: 'claude-sonnet-4-20250514' },
   'Claude Haiku 5.5': { model: 'claude-haiku-5-5' },
   'Claude Haiku 4.5': { model: 'claude-haiku-4-5', aliases: ['claude-haiku-4-5-20251001'] },
-  'Claude Haiku 3.5': { model: 'claude-3-5-haiku-20241022' },
 };
 
-export const ANTHROPIC_SKIP = ['Claude Mythos 5.1', 'Claude Mythos 5'];
+export const ANTHROPIC_SKIP = ['Claude Mythos 5.2', 'Claude Mythos 5.1', 'Claude Mythos 5'];
 
 // Gemini sections whose prices are per text token and comparable with other LLM rows.
 // Image, audio, TTS, live, music and embedding sections are skipped.
 export const GEMINI_TEXT_MODELS = [
+  'gemini-4-carbon',
   'gemini-4-argon',
+  'gemini-4-hydrogen',
   'gemini-3.8-flash',
   'gemini-3.6-flash',
   'gemini-3.5-flash-lite',
@@ -73,3 +77,11 @@ export const GEMINI_TEXT_MODELS = [
   'gemini-2.5-flash',
   'gemini-2.5-flash-lite',
 ];
+
+// Legacy DeepSeek model names that the pricing page no longer lists. DeepSeek's change log
+// (https://api-docs.deepseek.com/updates, 2026-04-24) says deepseek-chat and deepseek-reasoner
+// point to the non-thinking and thinking modes of deepseek-v4-flash, and the pricing page says
+// deepseek-v4-flash is served and billed as deepseek-flash. They become aliases of that row so a
+// lookup of either name gets the Flash price.
+export const DEEPSEEK_LEGACY_ALIASES = ['deepseek-chat', 'deepseek-reasoner'];
+export const DEEPSEEK_LEGACY_SOURCE = 'https://api-docs.deepseek.com/updates';

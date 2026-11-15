@@ -16,8 +16,21 @@ export function excerpt(provider, text, date) {
     return note('https://platform.claude.com/docs/en/about-claude/pricing', date) + between(text, '## Model pricing', '## Cloud platform pricing') + between(text, '### Fast mode pricing', '### Tool use pricing');
   }
   if (provider === 'openai') {
-    const at = (label) => text.search(new RegExp(`^\\s*${label}\\s*$`, 'm'));
-    return note('https://developers.openai.com/api/docs/pricing', date) + text.slice(at('Flagship models'), at('Life sciences models')) + '\nLife sciences models\n\n' + text.slice(at('Specialized models'), at('Finetuning')) + '\nFinetuning\n';
+    // The Flagship and Specialized sections, each up to the next top-level label.
+    const LABELS = ['Flagship models', 'Multimodal models', 'Cyber models', 'Life sciences models', 'Specialized models', 'Images', 'Audio', 'GPT-Live', 'Transcription', 'Tools', 'Cloud platforms', 'Finetuning', 'Fine-tuning'];
+    const at = (label, from = 0) => {
+      const re = new RegExp(`^\\s*${label}\\s*$`, 'gm');
+      re.lastIndex = from;
+      const m = re.exec(text);
+      return m ? m.index : -1;
+    };
+    const section = (label) => {
+      const a = at(label);
+      if (a < 0) throw new Error(`excerpt: "${label}" not found`);
+      const ends = LABELS.filter((l) => l !== label).map((l) => at(l, a + label.length)).filter((i) => i > a);
+      return text.slice(a, ends.length ? Math.min(...ends) : text.length);
+    };
+    return note('https://developers.openai.com/api/docs/pricing', date) + section('Flagship models') + '\nMultimodal models\n\n' + section('Specialized models') + '\nTools\n';
   }
   if (provider === 'google') {
     const kept = text

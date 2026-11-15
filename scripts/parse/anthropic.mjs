@@ -109,8 +109,9 @@ export function parseAnthropic(md, checked) {
       }),
     );
   }
-  for (const name of Object.keys(ANTHROPIC_IDS)) {
-    if (!byName.has(name)) throw new ParseError(`anthropic: ${name} is no longer on the pricing page`);
-  }
+  // A model that left the page keeps its last row (scripts/update.mjs marks it retired), but
+  // most of the list missing means the page shape changed, not the models.
+  const gone = Object.keys(ANTHROPIC_IDS).filter((name) => !byName.has(name));
+  if (gone.length * 2 > Object.keys(ANTHROPIC_IDS).length) throw new ParseError(`anthropic: ${gone.join(', ')} not found on the pricing page`);
   return { rows, unknown };
 }

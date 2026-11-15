@@ -290,13 +290,86 @@ def test_every_table_provider_parses():
         ("fireworks_ai", Provider.FIREWORKS),
         ("x-ai", Provider.XAI),
         ("open_router", Provider.OPENROUTER),
+        # LangChain init_chat_model provider names.
+        ("google_genai", Provider.GOOGLE),
+        ("google_vertexai", Provider.VERTEX),
+        ("bedrock_converse", Provider.BEDROCK),
+        ("google-generativeai", Provider.GOOGLE),
+        ("azure_ai_foundry", Provider.AZURE),
+        ("GroqCloud", Provider.GROQ),
+        ("cohere_ai", Provider.COHERE),
     ],
 )
 def test_provider_aliases(name, want):
     assert Provider.parse(name) is want
 
 
-@pytest.mark.parametrize("bad", ["", "deepseek-ai", "meta-llama", "qwen", "a-very-long-provider-name-that-is-not-real"])
+@pytest.mark.parametrize("bad", ["", "deepseek-ai", "meta-llama", "qwen", "ollama", "huggingface", "a-very-long-provider-name-that-is-not-real"])
 def test_unknown_provider_names(bad):
     assert Provider.parse(bad) is None
     assert lookup_provider(bad, "gpt-4o") is None
+
+
+def test_provider_names_that_are_not_strings():
+    assert Provider.parse(None) is None  # type: ignore[arg-type]
+    assert lookup_provider(None, "gpt-4o") is None  # type: ignore[arg-type]
+
+
+# What a cost callback sees: a provider name from its framework and the model id it sent.
+@pytest.mark.parametrize(
+    "provider,model,want_provider,want_model,per_m",
+    [
+        ("openai", "gpt-4o", "openai", "gpt-4o", (2.5, 10.0)),
+        ("openai", "gpt-4o-2024-05-13", "openai", "gpt-4o-2024-05-13", (5.0, 15.0)),
+        ("anthropic", "claude-sonnet-4-5", "anthropic", "claude-sonnet-4-5-20250929", (3.0, 15.0)),
+        ("google_genai", "gemini-2.5-flash", "google", "gemini-2.5-flash", (0.3, 2.5)),
+        ("google_vertexai", "gemini-2.5-pro", "google", "gemini-2.5-pro", (1.25, 10.0)),
+        ("deepseek", "deepseek-chat", "deepseek", "deepseek-flash", (0.3, 1.2)),
+        ("deepseek", "deepseek-reasoner", "deepseek", "deepseek-flash", (0.3, 1.2)),
+        ("mistralai", "mistral-large-latest", "mistral", "mistral-large-4", (0.7, 2.1)),
+        ("xai", "grok-4.7", "xai", "grok-4.7", (2.0, 6.0)),
+        ("groq", "openai/gpt-oss-120b", "groq", "openai/gpt-oss-120b", (0.15, 0.6)),
+        ("together", "openai/gpt-oss-120b", "together", "openai/gpt-oss-120b", (0.15, 0.6)),
+        ("fireworks", "accounts/fireworks/models/gpt-oss-120b", "fireworks", "accounts/fireworks/models/gpt-oss-120b", (0.15, 0.6)),
+        ("cohere", "command-r-plus-08-2024", "cohere", "command-r-plus-08-2024", (2.5, 10.0)),
+        ("bedrock", "anthropic.claude-haiku-4-5-20251001-v1:0", "anthropic", "claude-haiku-4-5", (1.0, 5.0)),
+        ("bedrock_converse", "us.anthropic.claude-sonnet-4-20250514-v1:0", "anthropic", "claude-sonnet-4-20250514", (3.0, 15.0)),
+        ("azure_openai", "gpt-4o-mini", "openai", "gpt-4o-mini", (0.15, 0.6)),
+    ],
+)
+def test_lookup_provider_for_cost_callbacks(provider, model, want_provider, want_model, per_m):
+    p = lookup_provider(provider, model)
+    assert p is not None, (provider, model)
+    assert (p.provider, p.model) == (want_provider, want_model)
+    assert (p.input, p.output) == per_m
+    assert p.input_per_token == pytest.approx(per_m[0] / 1e6, rel=1e-12)
+    assert p.output_per_token == pytest.approx(per_m[1] / 1e6, rel=1e-12)
+    assert p.per_token("output") == p.output_per_token
+
+
+@pytest.mark.parametrize(
+    "provider,model",
+    [
+        ("groq", "llama-3.3-70b-versatile"),  # not in the table
+        ("bedrock", "mistral.mistral-large-2407-v1:0"),  # Bedrock only falls back to Claude
+        ("deepseek", "gpt-4o"),  # another provider's model
+        ("ollama", "llama3"),  # not a priced provider
+        ("huggingface", "deepseek-ai/DeepSeek-V4-Pro"),
+    ],
+)
+def test_lookup_provider_returns_none_when_it_cannot_price(provider, model):
+    assert lookup_provider(provider, model) is None
+
+
+def test_per_token_is_none_without_a_price():
+    emb = lookup_provider("openai", "text-embedding-3-small")
+    assert emb is not None
+    assert emb.output is None and emb.output_per_token is None
+    assert emb.input_per_token == pytest.approx(0.02 / 1e6)
+
+
+def test_delisted_rows_still_price():
+    for model in ("gpt-3.5-turbo", "o1", "claude-3-5-haiku-20241022"):
+        p = lookup(model)
+        assert p is not None and p.status == "retired", model
+        assert "no longer on the pricing page" in (p.note or "")

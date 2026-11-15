@@ -241,3 +241,15 @@ fn unknown_ids_do_not_resolve() {
         assert!(lookup(id).is_none(), "{id:?}");
     }
 }
+
+#[test]
+fn legacy_deepseek_names_and_delisted_rows_still_price() {
+    for id in ["deepseek-chat", "deepseek-reasoner"] {
+        assert_eq!(lookup_provider("deepseek", id).map(|p| p.model), Some("deepseek-flash"), "{id}");
+    }
+    assert_eq!(lookup_provider("google_genai", "gemini-2.5-flash").map(|p| p.model), Some("gemini-2.5-flash"));
+    for id in ["gpt-3.5-turbo", "o1", "claude-3-5-haiku-20241022"] {
+        let p = lookup(id).unwrap_or_else(|| panic!("{id}"));
+        assert_eq!(p.status, "retired", "{id}");
+    }
+}

@@ -95,8 +95,9 @@ impl Provider {
     }
 
     /// Parses a provider name, ignoring ASCII case and treating `_`, `-` and spaces alike.
-    /// Accepts the canonical names and the spellings LiteLLM, OpenRouter and the provider SDKs
-    /// use. `None` for anything else.
+    /// Accepts the canonical names and the spellings LiteLLM, LangChain, OpenRouter and the
+    /// provider SDKs use (`gemini`, `google_genai`, `vertex_ai`, `google_vertexai`,
+    /// `bedrock_converse`, `azure_openai`, `together_ai`, `x-ai`, ...). `None` for anything else.
     pub fn parse(name: &str) -> Option<Provider> {
         let mut buf = [0u8; 24];
         let name = name.trim();
@@ -113,17 +114,20 @@ impl Provider {
         Some(match key {
             "anthropic" | "claude" => Provider::Anthropic,
             "openai" | "open-ai" => Provider::OpenAi,
-            "google" | "gemini" | "google-ai-studio" | "google-gemini" | "ai-studio" => Provider::Google,
-            "vertex" | "vertex-ai" | "vertexai" | "google-vertex" | "google-vertex-ai" | "vertex-ai-beta" => Provider::Vertex,
-            "bedrock" | "aws" | "aws-bedrock" | "amazon-bedrock" | "bedrock-converse" => Provider::Bedrock,
-            "azure" | "azure-openai" | "azure-ai" | "azure-foundry" | "microsoft-foundry" => Provider::Azure,
+            "google" | "gemini" | "google-ai-studio" | "google-gemini" | "ai-studio" | "google-genai" | "google-generativeai" | "genai"
+            | "google-ai" | "googleai" => Provider::Google,
+            "vertex" | "vertex-ai" | "vertexai" | "google-vertex" | "google-vertex-ai" | "vertex-ai-beta" | "google-vertexai" => {
+                Provider::Vertex
+            }
+            "bedrock" | "aws" | "aws-bedrock" | "amazon-bedrock" | "bedrock-converse" | "bedrock-runtime" | "amazon" => Provider::Bedrock,
+            "azure" | "azure-openai" | "azure-ai" | "azure-foundry" | "microsoft-foundry" | "azure-ai-foundry" => Provider::Azure,
             "deepseek" => Provider::DeepSeek,
             "mistral" | "mistralai" | "mistral-ai" => Provider::Mistral,
-            "groq" => Provider::Groq,
+            "groq" | "groqcloud" | "groq-cloud" => Provider::Groq,
             "together" | "together-ai" | "togetherai" => Provider::Together,
             "fireworks" | "fireworks-ai" | "fireworksai" => Provider::Fireworks,
             "xai" | "x-ai" | "grok" => Provider::Xai,
-            "cohere" | "cohere-chat" => Provider::Cohere,
+            "cohere" | "cohere-chat" | "cohere-ai" => Provider::Cohere,
             "openrouter" | "open-router" => Provider::OpenRouter,
             _ => return None,
         })
@@ -291,10 +295,17 @@ mod tests {
             ("fireworks_ai", Provider::Fireworks),
             ("x-ai", Provider::Xai),
             ("open_router", Provider::OpenRouter),
+            ("google_genai", Provider::Google),
+            ("google-generativeai", Provider::Google),
+            ("google_vertexai", Provider::Vertex),
+            ("bedrock_converse", Provider::Bedrock),
+            ("azure_ai_foundry", Provider::Azure),
+            ("GroqCloud", Provider::Groq),
+            ("cohere_ai", Provider::Cohere),
         ] {
             assert_eq!(Provider::parse(name), Some(want), "{name}");
         }
-        for bad in ["", "deepseek-ai", "meta-llama", "qwen", "a-very-long-provider-name-that-is-not-real"] {
+        for bad in ["", "deepseek-ai", "meta-llama", "qwen", "ollama", "huggingface", "a-very-long-provider-name-that-is-not-real"] {
             assert_eq!(Provider::parse(bad), None, "{bad}");
             assert_eq!(bad.parse::<Provider>(), Err(UnknownProvider));
         }

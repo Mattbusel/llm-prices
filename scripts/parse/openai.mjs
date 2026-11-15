@@ -14,7 +14,8 @@ function cleanId(cell) {
 }
 
 // Reads one table into { id: prices } for a tier. Handles the 10-column short/long table,
-// the 4-column Input/Output/Cached table and the 5-column Category table.
+// the 4-column Input/Output/Cached table and the Category table (with or without the 30m and
+// 12h cache write columns, and with "(short context)" / "(long context)" rows).
 function readTable(t, tier, out) {
   const h = t.header.map((x) => x.toLowerCase());
   const mi = h.indexOf('model');
@@ -41,10 +42,19 @@ function readTable(t, tier, out) {
     } else if (h[mi + 1] === 'input' && h[mi + 2] === 'output' && h[mi + 3] === 'cached input') {
       if (/free/i.test(r[mi + 1])) continue;
       p = { input: money(r[mi + 1], where), output: money(r[mi + 2], where), cache_read: money(r[mi + 3], where) };
+      const w30 = h.indexOf('30m write');
+      const w12 = h.indexOf('12h write');
+      if (w30 > mi) p.cache_write_30m = money(r[w30], where);
+      if (w12 > mi) p.cache_write_12h = money(r[w12], where);
     } else {
       continue;
     }
     const bucket = (out[id] ??= {});
+    if (/\(long context\)/i.test(r[mi])) {
+      // The long-context row of a Category table: the long tier of the row above it.
+      if (bucket[tier] && !bucket[tier].long) bucket[tier].long = p;
+      continue;
+    }
     if (!bucket[tier]) bucket[tier] = p;
   }
 }
@@ -64,10 +74,30 @@ export function parseOpenAI(md, checked) {
     const i = md.search(new RegExp(`^\\s*${label}\\s*$`, 'm'));
     return i;
   };
+  // Sections that hold per-token text model prices. The page has had "Flagship models",
+  // "Cyber models", "Life sciences models" and "Specialized models"; Cyber and Life sciences
+  // are now rows of the Specialized table, so only Flagship and Specialized are required.
   const regions = [
-    ['Flagship models', 'Cyber models'],
-    ['Cyber models', 'Life sciences models'],
-    ['Specialized models', 'Finetuning'],
+    ['Flagship models', true],
+    ['Cyber models', false],
+    ['Life sciences models', false],
+    ['Specialized models', true],
+  ];
+  // Every top-level section label seen on the page; a region ends at the next one.
+  const LABELS = [
+    'Flagship models',
+    'Multimodal models',
+    'Cyber models',
+    'Life sciences models',
+    'Specialized models',
+    'Images',
+    'Audio',
+    'GPT-Live',
+    'Transcription',
+    'Tools',
+    'Cloud platforms',
+    'Finetuning',
+    'Fine-tuning',
   ];
   const thr = md.match(/Short context:\s*≤\s*([0-9]+)K input tokens/);
   if (!thr) throw new ParseError('openai: short/long context threshold sentence not found');
@@ -75,10 +105,21 @@ export function parseOpenAI(md, checked) {
 
   const models = {};
   let order = [];
-  for (const [from, to] of regions) {
+  for (const [from, required] of regions) {
     const a = cut(from);
-    const b = cut(to);
-    if (a < 0 || b < 0 || b < a) throw new ParseError(`openai: section "${from}" not found`);
+    if (a < 0) {
+      if (required) throw new ParseError(`openai: section "${from}" not found`);
+      continue;
+    }
+    const ends = LABELS.filter((l) => l !== from)
+      .map((l) => {
+        const re = new RegExp(`^\\s*${l}\\s*$`, 'gm');
+        re.lastIndex = a + from.length;
+        const m = re.exec(md);
+        return m ? m.index : -1;
+      })
+      .filter((i) => i > a);
+    const b = ends.length ? Math.min(...ends) : md.length;
     const region = md.slice(a, b);
     // Split region by tier headings; "Grouped Pricing Table data" sections in Specialized
     // are Standard first, then Fast.

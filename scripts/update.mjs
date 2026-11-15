@@ -20,6 +20,7 @@ import { parseGemini } from './parse/gemini.mjs';
 import { parseDeepSeek } from './parse/deepseek.mjs';
 import { generatedFiles } from './outputs.mjs';
 import { excerpt } from './excerpt.mjs';
+import { mergeParsed } from './merge.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const args = process.argv.slice(2);
@@ -83,13 +84,10 @@ async function main() {
   const old = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : { models: [] };
   const oldBy = new Map(old.models.map((m) => [`${m.provider}/${m.model}`, m]));
 
-  // Keep previous rows for providers whose page failed, so one broken page never deletes data.
+  // Previous rows for a provider whose page failed; previous rows a page no longer lists,
+  // marked retired (see merge.mjs).
   const failed = new Set(failures.map((f) => f.provider));
-  const merged = [];
-  for (const [provider] of PROVIDERS) {
-    if (failed.has(provider)) merged.push(...old.models.filter((m) => m.provider === provider));
-    else merged.push(...fresh.filter((m) => m.provider === provider));
-  }
+  const { merged, delisted } = mergeParsed(PROVIDERS.map(([p]) => p), old.models, fresh, failed, today);
   // Rows for providers without a parser were checked by hand; keep them unchanged.
   const parsed = new Set(PROVIDERS.map(([p]) => p));
   merged.push(...old.models.filter((m) => !parsed.has(m.provider)));
@@ -103,15 +101,19 @@ async function main() {
       continue;
     }
     if (priceKey(o) === priceKey(m)) {
-      m.checked = failed.has(m.provider) ? o.checked : today;
+      // Rows kept from an earlier run (failed page, or a model no longer listed) were not
+      // re-read today, so their date stays.
+      m.checked = failed.has(m.provider) || m === o ? o.checked : today;
       continue;
     }
+    if (delisted.includes(k)) continue;
     for (const f of Object.keys(m)) {
       if (f === 'checked') continue;
       if (JSON.stringify(o[f]) !== JSON.stringify(m[f])) changes.push(`- \`${k}\` ${f}: ${fmt(o[f])} -> ${fmt(m[f])} (${m.source_url})`);
     }
   }
   for (const k of oldBy.keys()) if (!newBy.has(k)) changes.push(`- removed \`${k}\` (no longer on ${oldBy.get(k).source_url})`);
+  for (const k of delisted) changes.push(`- \`${k}\` is no longer on ${oldBy.get(k).source_url}: kept with its last listed prices, status retired`);
 
   const doc = {
     schema: 'https://github.com/Mattbusel/llm-prices#schema',

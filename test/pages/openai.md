@@ -1,4 +1,4 @@
-<!-- Excerpt of https://developers.openai.com/api/docs/pricing fetched 2026-10-23, kept only for parser tests. -->
+<!-- Excerpt of https://developers.openai.com/api/docs/pricing fetched 2026-11-15, kept only for parser tests. -->
 
 
   
@@ -7,9 +7,6 @@
 
 Flagship models
 
-
-    
-Our latest models
 
   
 
@@ -32,6 +29,7 @@ Standard
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | gpt-6-astra | $10.00 | $50.00 | $1.00 | $12.50 | $25.00 | $20.00 | $75.00 | $2.00 | $25.00 | $50.00 |
 | gpt-6.1-sol | $2.00 | $10.00 | $0.10 | $2.50 | $5.00 | $4.00 | $15.00 | $0.20 | $5.00 | $10.00 |
+| gpt-6.1-terra | $1.00 | $5.00 | $0.05 | $1.25 | $2.50 | $2.00 | $7.50 | $0.10 | $2.50 | $5.00 |
 | gpt-6-luna | $0.10 | $0.50 | $0.01 | $0.125 | $0.25 | $0.20 | $0.75 | $0.02 | $0.25 | $0.50 |
 | gpt-6-sol | $2.00 | $10.00 | $0.20 | $2.50 | $5.00 | $4.00 | $15.00 | $0.40 | $5.00 | $10.00 |
 | gpt-5.6-sol | $4.00 | $20.00 | $0.40 | $5.00 | $10.00 | $8.00 | $30.00 | $0.80 | $10.00 | $20.00 |
@@ -55,20 +53,10 @@ Standard
 | gpt-5-pro | $15.00 | $120.00 | - |
 | gpt-4.1 | $2.00 | $8.00 | $0.50 |
 | gpt-4.1-mini | $0.40 | $1.60 | $0.10 |
-| gpt-4.1-nano | $0.10 | $0.40 | $0.025 |
 | gpt-4o | $2.50 | $10.00 | $1.25 |
-| gpt-4o-2024-05-13 | $5.00 | $15.00 | - |
 | gpt-4o-mini | $0.15 | $0.60 | $0.075 |
-| o1 | $15.00 | $60.00 | $7.50 |
-| o1-pro | $150.00 | $600.00 | - |
 | o3-pro | $20.00 | $80.00 | - |
 | o3 | $2.00 | $8.00 | $0.50 |
-| o4-mini | $1.10 | $4.40 | $0.275 |
-| o3-mini | $1.10 | $4.40 | $0.55 |
-| gpt-4-turbo-2024-04-09 | $10.00 | $30.00 | - |
-| gpt-4-0613 | $30.00 | $60.00 | - |
-| gpt-3.5-turbo | $0.50 | $1.50 | - |
-| gpt-3.5-turbo-0125 | $0.50 | $1.50 | - |
 
     
 
@@ -87,6 +75,7 @@ Batch
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | gpt-6-astra | $5.00 | $25.00 | $0.50 | $6.25 | $12.50 | $10.00 | $37.50 | $1.00 | $12.50 | $25.00 |
 | gpt-6.1-sol | $1.00 | $5.00 | $0.05 | $1.25 | $2.50 | $2.00 | $7.50 | $0.10 | $2.50 | $5.00 |
+| gpt-6.1-terra | $0.50 | $2.50 | $0.025 | $0.625 | $1.25 | $1.00 | $3.75 | $0.05 | $1.25 | $2.50 |
 | gpt-6-luna | $0.05 | $0.25 | $0.005 | $0.0625 | $0.125 | $0.10 | $0.375 | $0.01 | $0.125 | $0.25 |
 | gpt-6-sol | $1.00 | $5.00 | $0.10 | $1.25 | $2.50 | $2.00 | $7.50 | $0.20 | $2.50 | $5.00 |
 | gpt-5.6-sol | $2.00 | $10.00 | $0.20 | $2.50 | $5.00 | $4.00 | $15.00 | $0.40 | $5.00 | $10.00 |
@@ -110,19 +99,10 @@ Batch
 | gpt-5-pro | $7.50 | $60.00 | - |
 | gpt-4.1 | $1.00 | $4.00 | - |
 | gpt-4.1-mini | $0.20 | $0.80 | - |
-| gpt-4.1-nano | $0.05 | $0.20 | - |
 | gpt-4o | $1.25 | $5.00 | - |
-| gpt-4o-2024-05-13 | $2.50 | $7.50 | - |
 | gpt-4o-mini | $0.075 | $0.30 | - |
-| o1 | $7.50 | $30.00 | - |
-| o1-pro | $75.00 | $300.00 | - |
 | o3-pro | $10.00 | $40.00 | - |
 | o3 | $1.00 | $4.00 | - |
-| o4-mini | $0.55 | $2.20 | - |
-| o3-mini | $0.55 | $2.20 | - |
-| gpt-4-turbo-2024-04-09 | $5.00 | $15.00 | - |
-| gpt-4-0613 | $15.00 | $30.00 | - |
-| gpt-3.5-turbo-0125 | $0.25 | $0.75 | - |
 
 #### Flex
 
@@ -130,6 +110,7 @@ Batch
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | gpt-6-astra | $5.00 | $25.00 | $0.50 | $6.25 | $12.50 | $10.00 | $37.50 | $1.00 | $12.50 | $25.00 |
 | gpt-6.1-sol | $1.00 | $5.00 | $0.05 | $1.25 | $2.50 | $2.00 | $7.50 | $0.10 | $2.50 | $5.00 |
+| gpt-6.1-terra | $0.50 | $2.50 | $0.025 | $0.625 | $1.25 | $1.00 | $3.75 | $0.05 | $1.25 | $2.50 |
 | gpt-6-luna | $0.05 | $0.25 | $0.005 | $0.0625 | $0.125 | $0.10 | $0.375 | $0.01 | $0.125 | $0.25 |
 | gpt-6-sol | $1.00 | $5.00 | $0.10 | $1.25 | $2.50 | $2.00 | $7.50 | $0.20 | $2.50 | $5.00 |
 | gpt-5.6-sol | $2.00 | $10.00 | $0.20 | $2.50 | $5.00 | $4.00 | $15.00 | $0.40 | $5.00 | $10.00 |
@@ -150,7 +131,6 @@ Batch
 | gpt-5-mini | $0.125 | $1.00 | $0.0125 |
 | gpt-5-nano | $0.025 | $0.20 | $0.0025 |
 | o3 | $1.00 | $4.00 | $0.25 |
-| o4-mini | $0.55 | $2.20 | $0.138 |
 
     
 
@@ -167,6 +147,7 @@ Fast
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | gpt-6-astra | $20.00 | $100.00 | $2.00 | $25.00 | $50.00 | $40.00 | $150.00 | $4.00 | $50.00 | $100.00 |
 | gpt-6.1-sol | $4.00 | $20.00 | $0.20 | $5.00 | $10.00 | $8.00 | $30.00 | $0.40 | $10.00 | $20.00 |
+| gpt-6.1-terra | $2.00 | $10.00 | $0.10 | $2.50 | $5.00 | $4.00 | $15.00 | $0.20 | $5.00 | $10.00 |
 | gpt-6-luna | $0.20 | $1.00 | $0.02 | $0.25 | $0.50 | $0.40 | $1.50 | $0.04 | $0.50 | $1.00 |
 | gpt-6-sol | $4.00 | $20.00 | $0.40 | $5.00 | $10.00 | $8.00 | $30.00 | $0.80 | $10.00 | $20.00 |
 | gpt-5.6-sol | $8.00 | $40.00 | $0.80 | $10.00 | $20.00 | $16.00 | $60.00 | $1.60 | $20.00 | $40.00 |
@@ -184,12 +165,9 @@ Fast
 | gpt-5-mini | $0.45 | $3.60 | $0.045 |
 | gpt-4.1 | $3.50 | $14.00 | $0.875 |
 | gpt-4.1-mini | $0.70 | $2.80 | $0.175 |
-| gpt-4.1-nano | $0.20 | $0.80 | $0.05 |
 | gpt-4o | $4.25 | $17.00 | $2.125 |
-| gpt-4o-2024-05-13 | $8.75 | $26.25 | - |
 | gpt-4o-mini | $0.25 | $1.00 | $0.125 |
 | o3 | $3.50 | $14.00 | $0.875 |
-| o4-mini | $2.00 | $8.00 | $0.50 |
 
     
 
@@ -212,39 +190,10 @@ Short context: ≤272K input tokens. Long context: >272K input tokens.
   
 
 
-Regional processing (data residency) endpoints are charged a 10% uplift for models released on or after March 5, 2026. FedRAMP endpoints are also charged a 10% uplift. Priority processing was renamed Fast mode on July 30, 2026. GPT-5.6 Sol’s promotional pricing is available at least through November 21, 2026.
+Regional processing (data residency) endpoints are charged a 10% uplift for models released on or after March 5, 2026. FedRAMP endpoints are also charged a 10% uplift. Priority processing was renamed Fast mode on July 30, 2026. GPT-5.6 Sol’s promotional pricing is available until November 30, 2026.
 
-  
+Multimodal models
 
-
-
-
-
-
-  
-
-Cyber models
-
-
-  
-Our latest Daybreak models.
-
-
-
-
-
-  Prices per 1M tokens.
-
-
-### Standard pricing data
-
-| Model | Short context input | Short context output | Short context cached input | Short context 30m write | Short context 12h write | Long context input | Long context output | Long context cached input | Long context 30m write | Long context 12h write |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| gpt-5.6-sol | $4.00 | $20.00 | $0.40 | $5.00 | $10.00 | $8.00 | $30.00 | $0.80 | $10.00 | $20.00 |
-| gpt-5.6-cyber | $12.50 | $75.00 | $1.25 | $15.625 | $31.25 | - | - | - | - | - |
-| gpt-5.5-cyber | $12.50 | $75.00 | $1.25 | - | - | - | - | - | - | - |
-
-Life sciences models
 
 
 
@@ -255,10 +204,14 @@ Life sciences models
 Specialized models
 
 
-    
-Prices per 1M tokens.
+  
 
   
+Speed
+
+  
+
+    Prices per 1M tokens.
 
 
   
@@ -269,17 +222,30 @@ Standard
       
 ### Grouped Pricing Table data
 
-| Category | Model | Input | Output | Cached input |
-| --- | --- | --- | --- | --- |
-| ChatGPT | chat-latest | $5.00 | $30.00 | $0.50 |
-| Codex | gpt-5.3-codex | $1.75 | $14.00 | $0.175 |
-| Search | gpt-5-search-api | $1.25 | $10.00 | $0.125 |
-| Embedding | text-embedding-3-small | $0.02 | - | - |
-| Embedding | text-embedding-3-large | $0.13 | - | - |
-| Embedding | text-embedding-ada-002 | $0.10 | - | - |
-| Moderation | omni-moderation-latest | Free | - | - |
+| Category | Model | Input | Output | Cached input | 30m write | 12h write |
+| --- | --- | --- | --- | --- | --- | --- |
+| <a id="cyber-models"></a>Cyber — Trusted Access: [Daybreak](https://openai.com/daybreak/) | gpt-6-cyber (short context) | $20.00 | $100.00 | $2.00 | $25.00 | $50.00 |
+| Cyber — Trusted Access: [Daybreak](https://openai.com/daybreak/) | gpt-6-cyber (long context) | $40.00 | $150.00 | $4.00 | - | - |
+| Cyber — Trusted Access: [Daybreak](https://openai.com/daybreak/) | gpt-5.6-cyber (short context) | $12.50 | $75.00 | $1.25 | $15.625 | $31.25 |
+| Cyber — Trusted Access: [Daybreak](https://openai.com/daybreak/) | gpt-5.6-cyber (long context) | - | - | - | - | - |
+| Cyber — Trusted Access: [Daybreak](https://openai.com/daybreak/) | gpt-5.5-cyber-preview (short context) | $12.50 | $75.00 | $1.25 | - | - |
+| Cyber — Trusted Access: [Daybreak](https://openai.com/daybreak/) | gpt-5.5-cyber-preview (long context) | - | - | - | - | - |
+| <a id="life-sciences-models"></a>Life Sciences — Trusted Access: [Rosalind](https://help.openai.com/en/articles/20001193-gpt-rosalind-for-life-sciences-research) | gpt-6-rosalind (short context) | $15.00 | $75.00 | $1.50 | $18.75 | $37.50 |
+| Life Sciences — Trusted Access: [Rosalind](https://help.openai.com/en/articles/20001193-gpt-rosalind-for-life-sciences-research) | gpt-6-rosalind (long context) | $30.00 | $112.50 | $3.00 | $37.50 | $75.00 |
+| Life Sciences — Trusted Access: [Rosalind](https://help.openai.com/en/articles/20001193-gpt-rosalind-for-life-sciences-research) | gpt-rosalind-research (short context) | $5.00 | $25.00 | $0.50 | - | - |
+| Life Sciences — Trusted Access: [Rosalind](https://help.openai.com/en/articles/20001193-gpt-rosalind-for-life-sciences-research) | gpt-rosalind-research (long context) | - | - | - | - | - |
+| Life Sciences — Trusted Access: [Rosalind](https://help.openai.com/en/articles/20001193-gpt-rosalind-for-life-sciences-research) | gpt-rosalind-discovery (short context) | $5.00 | $25.00 | $0.50 | - | - |
+| Life Sciences — Trusted Access: [Rosalind](https://help.openai.com/en/articles/20001193-gpt-rosalind-for-life-sciences-research) | gpt-rosalind-discovery (long context) | - | - | - | - | - |
+| <a id="legal-model-configurations"></a>Legal | gpt-6-astra-law | $10.00 | $50.00 | $1.00 | - | - |
+| ChatGPT | chat-latest | $5.00 | $30.00 | $0.50 | - | - |
+| Codex | gpt-5.3-codex | $1.75 | $14.00 | $0.175 | - | - |
+| Search | gpt-5-search-api | $1.25 | $10.00 | $0.125 | - | - |
+| Embedding | text-embedding-3-small | $0.02 | - | - | - | - |
+| Embedding | text-embedding-3-large | $0.13 | - | - | - | - |
+| Embedding | text-embedding-ada-002 | $0.10 | - | - | - | - |
+| Moderation | omni-moderation-latest | Free | - | - | - | - |
 
-Regional processing (data residency) endpoints are charged a 10% uplift for models released on or after March 5, 2026, that are eligible for data residency. See our [Your data](https://developers.openai.com/api/docs/guides/your-data) guide for supported regions and processing details.
+GPT-6 Astra for Law promotional pricing is available at least through December 31, 2026. Regional processing (data residency) endpoints are charged a 10% uplift for models released on or after March 5, 2026.
 
     
 
@@ -296,6 +262,6 @@ Fast
 | --- | --- | --- | --- | --- |
 | Codex | gpt-5.3-codex | $3.50 | $28.00 | $0.35 |
 
-Regional processing (data residency) endpoints are charged a 10% uplift for models released on or after March 5, 2026, that are eligible for data residency. See our [Your data](https://developers.openai.com/api/docs/guides/your-data) guide for supported regions and processing details.
+Regional processing (data residency) endpoints are charged a 10% uplift for models released on or after March 5, 2026.
 
-Finetuning
+Tools

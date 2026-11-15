@@ -1,4 +1,4 @@
-import { SOURCES } from '../meta.mjs';
+import { DEEPSEEK_LEGACY_ALIASES, DEEPSEEK_LEGACY_SOURCE, SOURCES } from '../meta.mjs';
 import { ParseError, row } from './common.mjs';
 
 export function htmlToText(html) {
@@ -31,7 +31,7 @@ export function parseDeepSeek(html, checked) {
     row({
       provider: 'deepseek',
       model: id,
-      aliases: i === 0 && legacy ? [legacy[1], legacy[2]] : [],
+      aliases: i === 0 ? [...(legacy ? [legacy[1], legacy[2]] : []), ...DEEPSEEK_LEGACY_ALIASES] : [],
       input: miss.peak[i],
       output: out.peak[i],
       cache_write: null,
@@ -42,7 +42,10 @@ export function parseDeepSeek(html, checked) {
       note:
         `input/output/cache_read are peak-hour prices; other_tiers.offpeak is the off-peak price` +
         (peakHours ? ` (peak hours: ${peakHours[1].trim()})` : '') +
-        (i === 0 && legacy ? `; ${legacy[1]} and ${legacy[2]} are retired names now billed at the flash price` : ''),
+        (i === 0 && legacy ? `; ${legacy[1]} and ${legacy[2]} are retired names now billed at the flash price` : '') +
+        (i === 0
+          ? `; ${DEEPSEEK_LEGACY_ALIASES.join(' and ')} are older legacy names; the change log (${DEEPSEEK_LEGACY_SOURCE}, 2026-04-24) points them to deepseek-v4-flash, billed at the flash price`
+          : ''),
     }),
   );
   return { rows, unknown: [] };

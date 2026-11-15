@@ -17,8 +17,8 @@ jobs:
       - uses: actions/setup-node@v5
         with:
           node-version: ${{ matrix.node }}
-      - run: node --test test/scan.test.mjs test/data.test.mjs test/cli.test.mjs
-      - name: Rust, Python and npm data are in sync with prices.json
+      - run: node --test test/scan.test.mjs test/data.test.mjs test/cli.test.mjs test/root.test.mjs
+      - name: Rust, Python, npm and root module data are in sync with prices.json
         run: node scripts/build.mjs --check
 
   action:
@@ -42,7 +42,7 @@ jobs:
     strategy:
       matrix:
         include:
-          - { os: ubuntu-latest, python: '3.9' }
+          - { os: ubuntu-24.04, python: '3.9' }  # ubuntu-latest (26.04) has no 3.9 build
           - { os: ubuntu-latest, python: '3.11' }
           - { os: ubuntu-latest, python: '3.13' }
           - { os: windows-latest, python: '3.12' }
@@ -91,6 +91,8 @@ jobs:
         run: npm test
       - name: the tarball holds the builds
         run: npm pack --dry-run
+      - name: the root module (index.mjs, index.d.ts) matches this build
+        run: node ../scripts/rootjs.mjs --check
 
   crate:
     runs-on: ubuntu-latest
