@@ -196,6 +196,14 @@ test('Rust #[cfg(test)] modules are skipped unless include-tests is on', () => {
   assert.deepEqual(on.map((f) => `${f.line}:${f.model}:${f.field}`).sort(), ['15:gpt-4o:input', '15:gpt-4o:output', '16:claude-sonnet-5-5:input', '16:claude-sonnet-5-5:output']);
 });
 
+test('Rust raw strings inside #[cfg(test)] do not break the test mask', () => {
+  const r = scanFixture('rust_raw_string_tests.rs');
+  assert.deepEqual(r.findings.filter((f) => !f.ok), []);
+  assert.ok(r.priced.has('claude-sonnet-5-5'));
+  const on = scanFixture('rust_raw_string_tests.rs', { includeTests: true });
+  assert.ok(on.findings.some((f) => !f.ok), 'test-module prices are scanned when include-tests is on');
+});
+
 test('test files are recognised', () => {
   for (const f of ['tests/a.rs', 'src/__tests__/p.ts', 'pkg/price_test.go', 'test_costs.py', 'web/cost.spec.ts', 'benches/b.rs', 'a/conftest.py']) assert.ok(isTestFile(f), f);
   for (const f of ['src/pricing.rs', 'lib/latest.py', 'src/contest.ts']) assert.ok(!isTestFile(f), f);

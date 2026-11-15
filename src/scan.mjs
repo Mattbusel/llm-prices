@@ -62,6 +62,51 @@ function stripStrings(line) {
   return line.replace(/"(?:[^"\\]|\\.)*"|'(?:[^'\\]|\\.)*'|`[^`]*`/g, '""');
 }
 
+/**
+ * `lines` with the contents of Rust raw strings (r"…", r#"…"#, r##"…"##, …)
+ * blanked to spaces. Raw strings may span lines, and within one line their
+ * quotes and braces are often unbalanced, so brace counting must not see them.
+ */
+function blankRustRawStrings(lines) {
+  const out = new Array(lines.length);
+  let closer = null;
+  for (let i = 0; i < lines.length; i++) {
+    let line = lines[i];
+    if (closer) {
+      const end = line.indexOf(closer);
+      if (end === -1) {
+        out[i] = ' '.repeat(line.length);
+        continue;
+      }
+      line = ' '.repeat(end + closer.length) + line.slice(end + closer.length);
+      closer = null;
+    }
+    let res = '';
+    let rest = line;
+    for (;;) {
+      const m = rest.match(/\bb?r(#*)"/);
+      if (!m) {
+        res += rest;
+        break;
+      }
+      const open = m[0];
+      const close = `"${m[1]}`;
+      res += rest.slice(0, m.index) + open;
+      const after = rest.slice(m.index + open.length);
+      const end = after.indexOf(close);
+      if (end === -1) {
+        closer = close;
+        res += ' '.repeat(after.length);
+        break;
+      }
+      res += ' '.repeat(end + close.length);
+      rest = after.slice(end + close.length);
+    }
+    out[i] = res;
+  }
+  return out;
+}
+
 function depthDelta(line) {
   const s = stripStrings(line);
   let d = 0;
@@ -277,6 +322,7 @@ export function judge(row, field, value, unit, tol, soft = null) {
 export function testMask(lines, ext) {
   if (ext !== 'rs') return null;
   const mask = new Array(lines.length).fill(false);
+  const clean = blankRustRawStrings(lines);
   for (let i = 0; i < lines.length; i++) {
     if (!/^\s*#\[cfg\(test\)\]/.test(lines[i])) continue;
     let depth = 0;
@@ -284,14 +330,14 @@ export function testMask(lines, ext) {
     let j = i;
     for (; j < lines.length; j++) {
       mask[j] = true;
-      for (const ch of stripStrings(lines[j])) {
+      for (const ch of stripStrings(clean[j])) {
         if (ch === '{') {
           depth++;
           opened = true;
         } else if (ch === '}') depth--;
       }
       if (opened && depth <= 0) break;
-      if (!opened && j > i && /;\s*$/.test(lines[j])) break;
+      if (!opened && j > i && /;\s*$/.test(clean[j])) break;
     }
     i = j;
   }
