@@ -37,7 +37,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git checkout -B "$branch"
-          git add prices.json prices.toml crate/prices.json crate/src/data.rs python/src/llm_prices/_data.py js/src/data.ts data.mjs data.d.mts test/pages
+          git add prices.json prices.toml crate/prices.json go/prices.json crate/src/data.rs python/src/llm_prices/_data.py js/src/data.ts data.mjs data.d.mts test/pages
           git commit -m "Update prices from provider pages ($(date -u +%F))"
           git push --force origin "$branch"
           {

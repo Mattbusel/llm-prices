@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 // Regenerates every file built from prices.json without fetching anything: prices.toml, the
-// Rust crate's data (crate/prices.json, crate/src/data.rs), the Python package's data
+// Rust crate's data (crate/prices.json, crate/src/data.rs), the Go module's embedded copy
+// (go/prices.json), the Python package's data
 // (python/src/llm_prices/_data.py) and the npm package's data (js/src/data.ts). Run it after
 // editing a hand-checked row (see MANUAL_SOURCES in meta.mjs).
 //

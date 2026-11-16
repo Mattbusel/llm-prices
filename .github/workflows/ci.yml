@@ -18,7 +18,7 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
       - run: node --test test/scan.test.mjs test/data.test.mjs test/cli.test.mjs test/root.test.mjs
-      - name: Rust, Python, npm and root module data are in sync with prices.json
+      - name: Rust, Go, Python, npm and root module data are in sync with prices.json
         run: node scripts/build.mjs --check
 
   action:
@@ -119,3 +119,26 @@ jobs:
         run: |
           rustup toolchain install 1.70 --profile minimal
           cargo +1.70 check --lib
+
+  go:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        go: ['1.21', stable]
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: go
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: ${{ matrix.go }}
+      - name: embedded table matches prices.json
+        shell: bash
+        run: cmp prices.json ../prices.json
+      - run: go vet ./...
+      - run: go test ./...
+      - name: gofmt
+        if: matrix.os == 'ubuntu-latest'
+        run: test -z "$(gofmt -l .)"

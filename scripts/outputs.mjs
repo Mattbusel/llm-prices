@@ -5,11 +5,13 @@ import { toToml } from './toml.mjs';
 import { toRust } from './rust.mjs';
 import { toMjs, toMjsTypes, toPython, toTs } from './packages.mjs';
 
-// `text` is prices.json itself, copied byte for byte into the crate.
+// `text` is prices.json itself, copied byte for byte into the crate and the Go module (go:embed
+// cannot read files outside the module directory).
 export function generatedFiles(doc, text) {
   return {
     'prices.toml': toToml(doc),
     'crate/prices.json': text,
+    'go/prices.json': text,
     'crate/src/data.rs': toRust(doc),
     'python/src/llm_prices/_data.py': toPython(doc),
     'js/src/data.ts': toTs(doc),
