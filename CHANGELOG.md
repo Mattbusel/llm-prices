@@ -6,6 +6,46 @@ repository as a whole. The packages have their own changelogs:
 The Go module is tagged `go/vX.Y.Z` and listed here.
 The `v1` tag moves to every 1.x release.
 
+## [1.7.0] - 2026-11-17
+
+### Added
+
+**GenAI cost in OpenTelemetry** ([docs/otel.md](docs/otel.md)). Two components put the cost of
+every LLM call on its span, with no change to the application, as the attributes proposed in
+open-telemetry/semantic-conventions-genai#443 (`gen_ai.usage.cost.amount`, `.currency`,
+`.source`) and #624 (`gen_ai.usage.cost.pricing.id`, `.pricing.version`):
+
+- `otel/genaicostprocessor` (Go module, tag `otel/genaicostprocessor/v0.1.0`): an OpenTelemetry
+  Collector processor, `genaicost`, buildable with ocb (example manifest and configuration in
+  `otel/genaicostprocessor/example`). Hot reload of prices.json from the latest release with an
+  Ed25519 signature check, a LiteLLM price source, internal metrics, and the
+  `gen_ai.client.operation.cost` histogram through the `signal_to_metrics` connector.
+- `llm-prices-otel` (PyPI, `otel/python`): a `SpanProcessor` and a span exporter wrapper with the
+  same rules, plus the cost histogram, and LiteLLM and genai-prices sources.
+- Both read OpenLLMetry, OpenInference, Logfire, rig and GenAI semantic-convention token counts
+  (cache reads and writes, reasoning, batch, service tiers, long context) and flag a span they
+  cannot price with `llm_prices.unpriced` instead of writing a zero. 30 shared conformance cases,
+  a golden corpus of real spans from the four suites ([results](docs/otel-golden.md)), a
+  reference check of the LiteLLM source against LiteLLM 1.109.1 (2,084 cases agree), fuzz and
+  property tests, a collector built with ocb in CI, and a Weaver live check against the #443
+  registry.
+
+`PRICES_VERSION` in the crate, the Python and npm packages and the root module, and
+`PricesVersion` in the Go module. Every release now names the exact table it ships. `PRICES_VERSION` is `"sha256:"` and the
+SHA-256 of `prices.json` (UTF-8, LF line endings), the same value in every package; it is
+generated with the data and CI checks it against the file. Record it as
+`gen_ai.usage.cost.pricing.version` next to a cost computed from the table (the attribute
+proposed in open-telemetry/semantic-conventions-genai#624). This release's table:
+`sha256:e8eed72ddf88c237f1ed8b7ed791495a375620c8166f36b8c554db4e5b616f87`. No price changed.
+
+Releases publish `prices.json`, `prices.json.sha256` and `prices.json.sig` (Ed25519, public key
+`JMWqWwM3DNtY9/KgjA/DLph5IJSsEf5Mf6QB2E0q+LM=`) and state the prices version in their notes
+(workflow `release-assets.yml`).
+
+Go module `go/v0.3.0`: `Table` and `ParseTable` (read another prices.json with the same lookups),
+`Default`, `Version`, `PricesVersion`, `Price.Tier` and `Price.Tiers` (service tiers, as in the
+Python package), and a fuzz test for `ParseTable`.
+
 ## [1.6.2] - 2026-11-17
 
 ### Fixed (the GitHub Action only; the packages stay at 1.6.1)

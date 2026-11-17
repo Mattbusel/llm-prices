@@ -6,7 +6,8 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { GENERATED, all, lookup, lookupProvider } from '../index.mjs';
+import { createHash } from 'node:crypto';
+import { GENERATED, PRICES_VERSION, all, lookup, lookupProvider } from '../index.mjs';
 
 const root = join(dirname(fileURLToPath(import.meta.url)), '..');
 const prices = JSON.parse(readFileSync(join(root, 'prices.json'), 'utf8'));
@@ -14,6 +15,8 @@ const pkg = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
 
 test('the root module serves the whole table', () => {
   assert.equal(GENERATED, prices.generated);
+  const text = readFileSync(join(root, 'prices.json'), 'utf8').replace(/\r\n/g, '\n');
+  assert.equal(PRICES_VERSION, `sha256:${createHash('sha256').update(text, 'utf8').digest('hex')}`);
   assert.equal(all().length, prices.models.length);
   assert.equal(lookup('claude-sonnet-4-6').input, 3);
   assert.equal(lookupProvider('deepseek', 'deepseek-chat').model, 'deepseek-flash');

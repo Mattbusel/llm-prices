@@ -13,6 +13,7 @@ import { ParseError } from '../scripts/parse/common.mjs';
 import { toToml } from '../scripts/toml.mjs';
 import { toRust } from '../scripts/rust.mjs';
 import { generatedFiles } from '../scripts/outputs.mjs';
+import { pricesVersion } from '../scripts/version.mjs';
 import { packageRows, toPython, toTs } from '../scripts/packages.mjs';
 import { SOURCES, MANUAL_SOURCES } from '../scripts/meta.mjs';
 import { mergeParsed, isDelisted } from '../scripts/merge.mjs';
@@ -251,7 +252,9 @@ test('hand-checked rows cite their provider page, come after the parsed rows and
 });
 
 test('crate data.rs, crate/prices.json and prices.toml are regenerated from prices.json', () => {
-  assert.equal(readFileSync(join(root, 'crate', 'src', 'data.rs'), 'utf8'), toRust(prices));
+  const version = pricesVersion(readFileSync(join(root, 'prices.json'), 'utf8'));
+  assert.match(version, /^sha256:[0-9a-f]{64}$/);
+  assert.equal(readFileSync(join(root, 'crate', 'src', 'data.rs'), 'utf8'), toRust(prices, version));
   assert.equal(readFileSync(join(root, 'crate', 'prices.json'), 'utf8'), readFileSync(join(root, 'prices.json'), 'utf8'));
 });
 
@@ -264,7 +267,8 @@ test('the Python and npm package data are regenerated from prices.json', () => {
   const rows = packageRows(prices);
   assert.equal(rows.length, prices.models.length);
   assert.equal(rows.find((r) => r.model === 'gpt-4o-mini').cache_read, '0.075');
-  assert.match(toPython(prices), /^ROWS: Tuple\[Dict\[str, Any\], \.\.\.\] = \($/m);
-  assert.match(toTs(prices), /^export const ROWS: readonly RawRow\[\] = \[$/m);
+  assert.throws(() => toPython(prices), /needs the prices version/);
+  assert.match(toPython(prices, 'sha256:0'), /^ROWS: Tuple\[Dict\[str, Any\], \.\.\.\] = \($/m);
+  assert.match(toTs(prices, 'sha256:0'), /^export const ROWS: readonly RawRow\[\] = \[$/m);
   assert.throws(() => packageRows({ models: [{ ...prices.models[0], input: 1e-7 }] }), /not a plain decimal/);
 });

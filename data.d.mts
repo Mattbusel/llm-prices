@@ -26,4 +26,7 @@ export interface RawRow extends RawTier {
 /** Date the table was generated (ISO 8601). */
 export declare const GENERATED: string;
 
+/** SHA-256 of the prices.json this table was generated from (UTF-8, LF line endings). */
+export declare const PRICES_VERSION: string;
+
 export declare const ROWS: readonly RawRow[];

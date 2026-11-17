@@ -45,7 +45,7 @@ jobs:
             echo
             cat "$RUNNER_TEMP/summary.md"
             echo
-            echo "Before merging: open each source URL and confirm the new number, update the pinned values in test/data.test.mjs if one of them changed, and bump the patch version of crate/Cargo.toml, python/pyproject.toml (with python/src/llm_prices/__init__.py) and js/package.json. This PR was opened by a workflow and is never merged automatically."
+            echo "Before merging: open each source URL and confirm the new number, update the pinned values in test/data.test.mjs and the expected costs in otel/conformance (cases.json, golden/expected.json) if one of them changed, and bump the patch version of crate/Cargo.toml, python/pyproject.toml (with python/src/llm_prices/__init__.py) and js/package.json. This PR was opened by a workflow and is never merged automatically."
           } > "$RUNNER_TEMP/body.md"
           existing=$(gh pr list --head "$branch" --state open --json number --jq '.[0].number')
           if [ -n "$existing" ]; then

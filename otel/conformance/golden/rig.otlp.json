@@ -1,0 +1,1306 @@
+{
+  "resourceSpans": [
+    {
+      "resource": {
+        "attributes": [],
+        "droppedAttributesCount": 0,
+        "entityRefs": []
+      },
+      "scopeSpans": [
+        {
+          "scope": {
+            "name": "rig-golden-spans",
+            "version": "",
+            "attributes": [],
+            "droppedAttributesCount": 0
+          },
+          "spans": [
+            {
+              "traceId": "8e824600a02947eb8cd88d0f7a88e2f2",
+              "spanId": "31ca005c71019fdb",
+              "traceState": "",
+              "parentSpanId": "",
+              "flags": 257,
+              "name": "chat",
+              "kind": 1,
+              "startTimeUnixNano": "1794938101683708248",
+              "endTimeUnixNano": "1794938101684674835",
+              "attributes": [
+                {
+                  "key": "code.file.path",
+                  "value": {
+                    "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rig-core-0.46.0/src/telemetry/mod.rs"
+                  }
+                },
+                {
+                  "key": "code.module.name",
+                  "value": {
+                    "stringValue": "rig_core::telemetry"
+                  }
+                },
+                {
+                  "key": "code.line.number",
+                  "value": {
+                    "intValue": "405"
+                  }
+                },
+                {
+                  "key": "thread.id",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "thread.name",
+                  "value": {
+                    "stringValue": "main"
+                  }
+                },
+                {
+                  "key": "target",
+                  "value": {
+                    "stringValue": "rig::completions"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "chat"
+                  }
+                },
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "gpt-4o-mini"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.stream",
+                  "value": {
+                    "boolValue": false
+                  }
+                },
+                {
+                  "key": "gen_ai.response.id",
+                  "value": {
+                    "stringValue": "chatcmpl-mock"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.model",
+                  "value": {
+                    "stringValue": "gpt-4o-mini-2024-07-18"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "stringValue": "1200"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "stringValue": "300"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.cache_read.input_tokens",
+                  "value": {
+                    "stringValue": "1000"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.reasoning_tokens",
+                  "value": {
+                    "stringValue": "0"
+                  }
+                },
+                {
+                  "key": "busy_ns",
+                  "value": {
+                    "intValue": "395455"
+                  }
+                },
+                {
+                  "key": "idle_ns",
+                  "value": {
+                    "intValue": "572714"
+                  }
+                }
+              ],
+              "droppedAttributesCount": 0,
+              "events": [
+                {
+                  "timeUnixNano": "1794938101683822854",
+                  "name": "checkout waiting for idle connection: (\"http\", 127.0.0.1:8765)",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/pool.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "685"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101683836407",
+                  "name": "Http::connect; scheme=Some(\"http\"), host=Some(\"127.0.0.1\"), port=Some(Port(8765))",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/connect/http.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "500"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101683839373",
+                  "name": "connecting to 127.0.0.1:8765",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "DEBUG"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/connect/http.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "786"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684050052",
+                  "name": "connected to 127.0.0.1:8765",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "DEBUG"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/connect/http.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "789"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684070146",
+                  "name": "http1 handshake complete, spawning background dispatcher task",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/client.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "574"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684083497",
+                  "name": "waiting for connection to be ready",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/client.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "599"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684161055",
+                  "name": "connection is ready",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/client.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "609"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684165893",
+                  "name": "checkout dropped for (\"http\", 127.0.0.1:8765)",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/pool.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "727"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                }
+              ],
+              "droppedEventsCount": 0,
+              "links": [],
+              "droppedLinksCount": 0,
+              "status": {
+                "message": "",
+                "code": 0
+              }
+            },
+            {
+              "traceId": "750a48e2f9fbe163b8854fd53ffd1c6f",
+              "spanId": "d67622f83ca668e1",
+              "traceState": "",
+              "parentSpanId": "",
+              "flags": 257,
+              "name": "chat",
+              "kind": 1,
+              "startTimeUnixNano": "1794938101684754576",
+              "endTimeUnixNano": "1794938101685230196",
+              "attributes": [
+                {
+                  "key": "code.file.path",
+                  "value": {
+                    "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rig-core-0.46.0/src/telemetry/mod.rs"
+                  }
+                },
+                {
+                  "key": "code.module.name",
+                  "value": {
+                    "stringValue": "rig_core::telemetry"
+                  }
+                },
+                {
+                  "key": "code.line.number",
+                  "value": {
+                    "intValue": "405"
+                  }
+                },
+                {
+                  "key": "thread.id",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "thread.name",
+                  "value": {
+                    "stringValue": "main"
+                  }
+                },
+                {
+                  "key": "target",
+                  "value": {
+                    "stringValue": "rig::completions"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "chat"
+                  }
+                },
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "openai"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "o3"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.stream",
+                  "value": {
+                    "boolValue": false
+                  }
+                },
+                {
+                  "key": "gen_ai.response.id",
+                  "value": {
+                    "stringValue": "chatcmpl-mock"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.model",
+                  "value": {
+                    "stringValue": "o3-2025-04-16"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "stringValue": "10000"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "stringValue": "2000"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.cache_read.input_tokens",
+                  "value": {
+                    "stringValue": "0"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.reasoning_tokens",
+                  "value": {
+                    "stringValue": "1500"
+                  }
+                },
+                {
+                  "key": "busy_ns",
+                  "value": {
+                    "intValue": "150525"
+                  }
+                },
+                {
+                  "key": "idle_ns",
+                  "value": {
+                    "intValue": "325366"
+                  }
+                }
+              ],
+              "droppedAttributesCount": 0,
+              "events": [
+                {
+                  "timeUnixNano": "1794938101684789880",
+                  "name": "checkout waiting for idle connection: (\"http\", 127.0.0.1:8765)",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/pool.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "685"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684795170",
+                  "name": "Http::connect; scheme=Some(\"http\"), host=Some(\"127.0.0.1\"), port=Some(Port(8765))",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/connect/http.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "500"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684796737",
+                  "name": "connecting to 127.0.0.1:8765",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "DEBUG"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/connect/http.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "786"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684885819",
+                  "name": "connected to 127.0.0.1:8765",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "DEBUG"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/connect/http.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "789"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684897069",
+                  "name": "http1 handshake complete, spawning background dispatcher task",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/client.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "574"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684910085",
+                  "name": "waiting for connection to be ready",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/client.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "599"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684967364",
+                  "name": "connection is ready",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/client.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "609"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101684969625",
+                  "name": "checkout dropped for (\"http\", 127.0.0.1:8765)",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/pool.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "727"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                }
+              ],
+              "droppedEventsCount": 0,
+              "links": [],
+              "droppedLinksCount": 0,
+              "status": {
+                "message": "",
+                "code": 0
+              }
+            },
+            {
+              "traceId": "8734e51d357063c5b917a8cc1cf9c0ae",
+              "spanId": "425f239cc4c79829",
+              "traceState": "",
+              "parentSpanId": "",
+              "flags": 257,
+              "name": "chat",
+              "kind": 1,
+              "startTimeUnixNano": "1794938101685288224",
+              "endTimeUnixNano": "1794938101685681620",
+              "attributes": [
+                {
+                  "key": "code.file.path",
+                  "value": {
+                    "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/rig-core-0.46.0/src/telemetry/mod.rs"
+                  }
+                },
+                {
+                  "key": "code.module.name",
+                  "value": {
+                    "stringValue": "rig_core::telemetry"
+                  }
+                },
+                {
+                  "key": "code.line.number",
+                  "value": {
+                    "intValue": "405"
+                  }
+                },
+                {
+                  "key": "thread.id",
+                  "value": {
+                    "intValue": "1"
+                  }
+                },
+                {
+                  "key": "thread.name",
+                  "value": {
+                    "stringValue": "main"
+                  }
+                },
+                {
+                  "key": "target",
+                  "value": {
+                    "stringValue": "rig::completions"
+                  }
+                },
+                {
+                  "key": "gen_ai.operation.name",
+                  "value": {
+                    "stringValue": "chat"
+                  }
+                },
+                {
+                  "key": "gen_ai.provider.name",
+                  "value": {
+                    "stringValue": "anthropic"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.model",
+                  "value": {
+                    "stringValue": "claude-sonnet-4-6"
+                  }
+                },
+                {
+                  "key": "gen_ai.request.stream",
+                  "value": {
+                    "boolValue": false
+                  }
+                },
+                {
+                  "key": "gen_ai.response.id",
+                  "value": {
+                    "stringValue": "msg_mock"
+                  }
+                },
+                {
+                  "key": "gen_ai.response.model",
+                  "value": {
+                    "stringValue": "claude-sonnet-4-6"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.input_tokens",
+                  "value": {
+                    "stringValue": "50548"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.output_tokens",
+                  "value": {
+                    "stringValue": "1024"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.cache_read.input_tokens",
+                  "value": {
+                    "stringValue": "45000"
+                  }
+                },
+                {
+                  "key": "gen_ai.usage.cache_creation.input_tokens",
+                  "value": {
+                    "stringValue": "3500"
+                  }
+                },
+                {
+                  "key": "busy_ns",
+                  "value": {
+                    "intValue": "136367"
+                  }
+                },
+                {
+                  "key": "idle_ns",
+                  "value": {
+                    "intValue": "257205"
+                  }
+                }
+              ],
+              "droppedAttributesCount": 0,
+              "events": [
+                {
+                  "timeUnixNano": "1794938101685321093",
+                  "name": "checkout waiting for idle connection: (\"http\", 127.0.0.1:8765)",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/pool.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "685"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101685324311",
+                  "name": "Http::connect; scheme=Some(\"http\"), host=Some(\"127.0.0.1\"), port=Some(Port(8765))",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/connect/http.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "500"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101685325524",
+                  "name": "connecting to 127.0.0.1:8765",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "DEBUG"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/connect/http.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "786"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101685389064",
+                  "name": "connected to 127.0.0.1:8765",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "DEBUG"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/connect/http.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::connect::http"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "789"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101685395629",
+                  "name": "http1 handshake complete, spawning background dispatcher task",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/client.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "574"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101685405822",
+                  "name": "waiting for connection to be ready",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/client.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "599"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101685443684",
+                  "name": "connection is ready",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/client.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::client"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "609"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                },
+                {
+                  "timeUnixNano": "1794938101685446468",
+                  "name": "checkout dropped for (\"http\", 127.0.0.1:8765)",
+                  "attributes": [
+                    {
+                      "key": "level",
+                      "value": {
+                        "stringValue": "TRACE"
+                      }
+                    },
+                    {
+                      "key": "target",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.file.path",
+                      "value": {
+                        "stringValue": "/root/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/hyper-util-0.1.21/src/client/legacy/pool.rs"
+                      }
+                    },
+                    {
+                      "key": "code.module.name",
+                      "value": {
+                        "stringValue": "hyper_util::client::legacy::pool"
+                      }
+                    },
+                    {
+                      "key": "code.line.number",
+                      "value": {
+                        "intValue": "727"
+                      }
+                    }
+                  ],
+                  "droppedAttributesCount": 0
+                }
+              ],
+              "droppedEventsCount": 0,
+              "links": [],
+              "droppedLinksCount": 0,
+              "status": {
+                "message": "",
+                "code": 0
+              }
+            }
+          ],
+          "schemaUrl": ""
+        }
+      ],
+      "schemaUrl": ""
+    }
+  ]
+}

@@ -1,0 +1,69 @@
+name: release assets
+# When a v* release is published (gh release create v1.7.0 ...), attach the table it ships:
+# prices.json, prices.json.sha256 and prices.json.sig (an Ed25519 signature, base64, made with the
+# PRICES_SIGNING_KEY secret, whose public key is ReleasePublicKey in
+# otel/genaicostprocessor/config.go), and add the prices version (the SHA-256 of prices.json, the
+# PRICES_VERSION constant of every package) to the release notes. The genaicost Collector
+# processor loads https://github.com/Mattbusel/llm-prices/releases/latest/download/prices.json
+# and rejects it unless the signature verifies.
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: release tag to (re)attach the assets to
+        required: true
+permissions:
+  contents: write
+concurrency:
+  group: release-assets-${{ github.event.release.tag_name || inputs.tag }}
+jobs:
+  assets:
+    if: startsWith(github.event.release.tag_name || inputs.tag, 'v')
+    runs-on: ubuntu-latest
+    env:
+      TAG: ${{ github.event.release.tag_name || inputs.tag }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: ${{ env.TAG }}
+      - uses: actions/setup-node@v5
+        with:
+          node-version: 22
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: the packages carry this prices.json
+        run: node scripts/build.mjs --check
+      - name: sign prices.json
+        env:
+          PRICES_SIGNING_KEY: ${{ secrets.PRICES_SIGNING_KEY }}
+        run: |
+          python -m pip install --quiet "cryptography>=42"
+          mkdir assets
+          cp prices.json assets/prices.json
+          python - <<'PY'
+          import base64, hashlib, os
+          from cryptography.hazmat.primitives.asymmetric.ed25519 import Ed25519PrivateKey
+          body = open("assets/prices.json", "rb").read()
+          key = Ed25519PrivateKey.from_private_bytes(base64.b64decode(os.environ["PRICES_SIGNING_KEY"]))
+          sig = key.sign(body)
+          key.public_key().verify(sig, body)
+          open("assets/prices.json.sig", "w").write(base64.b64encode(sig).decode() + "\n")
+          digest = hashlib.sha256(body.replace(b"\r\n", b"\n")).hexdigest()
+          open("assets/prices.json.sha256", "w").write(f"{digest}  prices.json\n")
+          open("version.txt", "w").write(f"sha256:{digest}")
+          PY
+          echo "version: $(cat version.txt)"
+          grep -q "\"$(cat version.txt)\"" python/src/llm_prices/_data.py
+      - name: upload the assets and state the prices version in the notes
+        run: |
+          gh release upload "$TAG" assets/prices.json assets/prices.json.sig assets/prices.json.sha256 --clobber
+          version=$(cat version.txt)
+          notes=$(gh release view "$TAG" --json body --jq .body)
+          if ! grep -q "Prices version:" <<<"$notes"; then
+            printf '%s\n\nPrices version: `%s` (SHA-256 of prices.json; `PRICES_VERSION` in every package; signed: prices.json.sig).\n' "$notes" "$version" > notes.md
+            gh release edit "$TAG" --notes-file notes.md
+          fi

@@ -1,0 +1,598 @@
+{
+ "resourceSpans": [
+  {
+   "resource": {
+    "attributes": [
+     {
+      "key": "process.runtime.name",
+      "value": {
+       "stringValue": "cpython"
+      }
+     },
+     {
+      "key": "process.runtime.version",
+      "value": {
+       "stringValue": "3.12.10"
+      }
+     },
+     {
+      "key": "process.runtime.description",
+      "value": {
+       "stringValue": "3.12.10 (tags/v3.12.10:0cc8128, Apr  8 2025, 12:21:36) [MSC v.1943 64 bit (AMD64)]"
+      }
+     },
+     {
+      "key": "host.name",
+      "value": {
+       "stringValue": "Lilith"
+      }
+     },
+     {
+      "key": "host.arch",
+      "value": {
+       "stringValue": "AMD64"
+      }
+     },
+     {
+      "key": "host.id",
+      "value": {
+       "stringValue": "799dab9e-ca25-42b8-a0cf-b8740948481c"
+      }
+     },
+     {
+      "key": "os.type",
+      "value": {
+       "stringValue": "windows"
+      }
+     },
+     {
+      "key": "os.version",
+      "value": {
+       "stringValue": "10.0.26200"
+      }
+     },
+     {
+      "key": "service.instance.id",
+      "value": {
+       "stringValue": "4383252f-8aac-4cd4-b73c-db072e41672a"
+      }
+     },
+     {
+      "key": "service.version",
+      "value": {
+       "stringValue": "0597dba369f86668d6680d9ecb9b81157152af73"
+      }
+     },
+     {
+      "key": "telemetry.sdk.language",
+      "value": {
+       "stringValue": "python"
+      }
+     },
+     {
+      "key": "telemetry.sdk.name",
+      "value": {
+       "stringValue": "opentelemetry"
+      }
+     },
+     {
+      "key": "telemetry.sdk.version",
+      "value": {
+       "stringValue": "1.45.2"
+      }
+     },
+     {
+      "key": "service.name",
+      "value": {
+       "stringValue": "unknown_service:python.exe"
+      }
+     },
+     {
+      "key": "logfire.version",
+      "value": {
+       "stringValue": "5.6.0"
+      }
+     },
+     {
+      "key": "process.pid",
+      "value": {
+       "intValue": "35108"
+      }
+     }
+    ]
+   },
+   "scopeSpans": [
+    {
+     "scope": {
+      "name": "logfire.openai",
+      "version": "5.6.0"
+     },
+     "spans": [
+      {
+       "attributes": [
+        {
+         "key": "code.filepath",
+         "value": {
+          "stringValue": "generate.py"
+         }
+        },
+        {
+         "key": "code.function",
+         "value": {
+          "stringValue": "run"
+         }
+        },
+        {
+         "key": "code.lineno",
+         "value": {
+          "intValue": "128"
+         }
+        },
+        {
+         "key": "request_data",
+         "value": {
+          "stringValue": "{\"model\":\"gpt-4o-mini\"}"
+         }
+        },
+        {
+         "key": "gen_ai.system",
+         "value": {
+          "stringValue": "openai"
+         }
+        },
+        {
+         "key": "gen_ai.provider.name",
+         "value": {
+          "stringValue": "openai"
+         }
+        },
+        {
+         "key": "gen_ai.request.model",
+         "value": {
+          "stringValue": "gpt-4o-mini"
+         }
+        },
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "chat"
+         }
+        },
+        {
+         "key": "gen_ai.input.messages",
+         "value": {
+          "stringValue": "[{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"hi\"}]}]"
+         }
+        },
+        {
+         "key": "async",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "logfire.msg_template",
+         "value": {
+          "stringValue": "Chat Completion with {request_data[model]!r}"
+         }
+        },
+        {
+         "key": "logfire.msg",
+         "value": {
+          "stringValue": "Chat Completion with 'gpt-4o-mini'"
+         }
+        },
+        {
+         "key": "logfire.tags",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "LLM"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "key": "logfire.span_type",
+         "value": {
+          "stringValue": "span"
+         }
+        },
+        {
+         "key": "gen_ai.response.model",
+         "value": {
+          "stringValue": "gpt-4o-mini-2024-07-18"
+         }
+        },
+        {
+         "key": "gen_ai.response.id",
+         "value": {
+          "stringValue": "chatcmpl-mock"
+         }
+        },
+        {
+         "key": "gen_ai.usage.input_tokens",
+         "value": {
+          "intValue": "1200"
+         }
+        },
+        {
+         "key": "gen_ai.usage.output_tokens",
+         "value": {
+          "intValue": "300"
+         }
+        },
+        {
+         "key": "gen_ai.usage.cache_read.input_tokens",
+         "value": {
+          "intValue": "1000"
+         }
+        },
+        {
+         "key": "gen_ai.usage.raw",
+         "value": {
+          "stringValue": "{\"completion_tokens\":300,\"prompt_tokens\":1200,\"total_tokens\":1500,\"completion_tokens_details\":{\"audio_tokens\":0,\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"audio_tokens\":0,\"cached_tokens\":1000}}"
+         }
+        },
+        {
+         "key": "gen_ai.output.messages",
+         "value": {
+          "stringValue": "[{\"role\":\"assistant\",\"parts\":[{\"type\":\"text\",\"content\":\"ok\"}],\"finish_reason\":\"stop\"}]"
+         }
+        },
+        {
+         "key": "gen_ai.response.finish_reasons",
+         "value": {
+          "stringValue": "[\"stop\"]"
+         }
+        },
+        {
+         "key": "logfire.json_schema",
+         "value": {
+          "stringValue": "{\"type\":\"object\",\"properties\":{\"request_data\":{\"type\":\"object\"},\"gen_ai.system\":{},\"gen_ai.provider.name\":{},\"gen_ai.request.model\":{},\"gen_ai.operation.name\":{},\"gen_ai.input.messages\":{\"type\":\"array\"},\"async\":{},\"gen_ai.response.model\":{},\"gen_ai.response.id\":{},\"gen_ai.usage.input_tokens\":{},\"gen_ai.usage.output_tokens\":{},\"gen_ai.usage.cache_read.input_tokens\":{},\"gen_ai.usage.raw\":{\"type\":\"object\"},\"gen_ai.output.messages\":{\"type\":\"array\"},\"gen_ai.response.finish_reasons\":{\"type\":\"array\"}}}"
+         }
+        }
+       ],
+       "endTimeUnixNano": "1794937916312046400",
+       "flags": 256,
+       "kind": 3,
+       "name": "Chat Completion with {request_data[model]!r}",
+       "spanId": "b4038aa05e2de8c0",
+       "startTimeUnixNano": "1794937916280538000",
+       "status": {},
+       "traceId": "01a1eaa30b782863c3a96fed954c76af"
+      },
+      {
+       "attributes": [
+        {
+         "key": "code.filepath",
+         "value": {
+          "stringValue": "generate.py"
+         }
+        },
+        {
+         "key": "code.function",
+         "value": {
+          "stringValue": "run"
+         }
+        },
+        {
+         "key": "code.lineno",
+         "value": {
+          "intValue": "128"
+         }
+        },
+        {
+         "key": "request_data",
+         "value": {
+          "stringValue": "{\"model\":\"o3\"}"
+         }
+        },
+        {
+         "key": "gen_ai.system",
+         "value": {
+          "stringValue": "openai"
+         }
+        },
+        {
+         "key": "gen_ai.provider.name",
+         "value": {
+          "stringValue": "openai"
+         }
+        },
+        {
+         "key": "gen_ai.request.model",
+         "value": {
+          "stringValue": "o3"
+         }
+        },
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "chat"
+         }
+        },
+        {
+         "key": "gen_ai.input.messages",
+         "value": {
+          "stringValue": "[{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"hi\"}]}]"
+         }
+        },
+        {
+         "key": "async",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "logfire.msg_template",
+         "value": {
+          "stringValue": "Chat Completion with {request_data[model]!r}"
+         }
+        },
+        {
+         "key": "logfire.msg",
+         "value": {
+          "stringValue": "Chat Completion with 'o3'"
+         }
+        },
+        {
+         "key": "logfire.tags",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "LLM"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "key": "logfire.span_type",
+         "value": {
+          "stringValue": "span"
+         }
+        },
+        {
+         "key": "gen_ai.response.model",
+         "value": {
+          "stringValue": "o3-2025-04-16"
+         }
+        },
+        {
+         "key": "gen_ai.response.id",
+         "value": {
+          "stringValue": "chatcmpl-mock"
+         }
+        },
+        {
+         "key": "gen_ai.usage.input_tokens",
+         "value": {
+          "intValue": "10000"
+         }
+        },
+        {
+         "key": "gen_ai.usage.output_tokens",
+         "value": {
+          "intValue": "2000"
+         }
+        },
+        {
+         "key": "gen_ai.usage.raw",
+         "value": {
+          "stringValue": "{\"completion_tokens\":2000,\"prompt_tokens\":10000,\"total_tokens\":12000,\"completion_tokens_details\":{\"audio_tokens\":0,\"reasoning_tokens\":1500},\"prompt_tokens_details\":{\"audio_tokens\":0,\"cached_tokens\":0}}"
+         }
+        },
+        {
+         "key": "gen_ai.output.messages",
+         "value": {
+          "stringValue": "[{\"role\":\"assistant\",\"parts\":[{\"type\":\"text\",\"content\":\"ok\"}],\"finish_reason\":\"stop\"}]"
+         }
+        },
+        {
+         "key": "gen_ai.response.finish_reasons",
+         "value": {
+          "stringValue": "[\"stop\"]"
+         }
+        },
+        {
+         "key": "logfire.json_schema",
+         "value": {
+          "stringValue": "{\"type\":\"object\",\"properties\":{\"request_data\":{\"type\":\"object\"},\"gen_ai.system\":{},\"gen_ai.provider.name\":{},\"gen_ai.request.model\":{},\"gen_ai.operation.name\":{},\"gen_ai.input.messages\":{\"type\":\"array\"},\"async\":{},\"gen_ai.response.model\":{},\"gen_ai.response.id\":{},\"gen_ai.usage.input_tokens\":{},\"gen_ai.usage.output_tokens\":{},\"gen_ai.usage.raw\":{\"type\":\"object\"},\"gen_ai.output.messages\":{\"type\":\"array\"},\"gen_ai.response.finish_reasons\":{\"type\":\"array\"}}}"
+         }
+        }
+       ],
+       "endTimeUnixNano": "1794937916312046400",
+       "flags": 256,
+       "kind": 3,
+       "name": "Chat Completion with {request_data[model]!r}",
+       "spanId": "b1532d141c4aa524",
+       "startTimeUnixNano": "1794937916312046400",
+       "status": {},
+       "traceId": "01a1eaa30b98bb29a70d10e34dd1205d"
+      }
+     ]
+    },
+    {
+     "scope": {
+      "name": "logfire.anthropic",
+      "version": "5.6.0"
+     },
+     "spans": [
+      {
+       "attributes": [
+        {
+         "key": "code.filepath",
+         "value": {
+          "stringValue": "generate.py"
+         }
+        },
+        {
+         "key": "code.function",
+         "value": {
+          "stringValue": "run"
+         }
+        },
+        {
+         "key": "code.lineno",
+         "value": {
+          "intValue": "130"
+         }
+        },
+        {
+         "key": "request_data",
+         "value": {
+          "stringValue": "{\"model\":\"claude-sonnet-4-6\"}"
+         }
+        },
+        {
+         "key": "gen_ai.system",
+         "value": {
+          "stringValue": "anthropic"
+         }
+        },
+        {
+         "key": "gen_ai.provider.name",
+         "value": {
+          "stringValue": "anthropic"
+         }
+        },
+        {
+         "key": "gen_ai.request.model",
+         "value": {
+          "stringValue": "claude-sonnet-4-6"
+         }
+        },
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "chat"
+         }
+        },
+        {
+         "key": "gen_ai.request.max_tokens",
+         "value": {
+          "intValue": "16"
+         }
+        },
+        {
+         "key": "gen_ai.input.messages",
+         "value": {
+          "stringValue": "[{\"role\":\"user\",\"parts\":[{\"type\":\"text\",\"content\":\"hi\"}]}]"
+         }
+        },
+        {
+         "key": "async",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "logfire.msg_template",
+         "value": {
+          "stringValue": "Message with {request_data[model]!r}"
+         }
+        },
+        {
+         "key": "logfire.msg",
+         "value": {
+          "stringValue": "Message with 'claude-sonnet-4-6'"
+         }
+        },
+        {
+         "key": "logfire.tags",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "LLM"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "key": "logfire.span_type",
+         "value": {
+          "stringValue": "span"
+         }
+        },
+        {
+         "key": "gen_ai.output.messages",
+         "value": {
+          "stringValue": "[{\"role\":\"assistant\",\"parts\":[{\"type\":\"text\",\"content\":\"ok\"}],\"finish_reason\":\"end_turn\"}]"
+         }
+        },
+        {
+         "key": "gen_ai.response.model",
+         "value": {
+          "stringValue": "claude-sonnet-4-6"
+         }
+        },
+        {
+         "key": "gen_ai.response.id",
+         "value": {
+          "stringValue": "msg_mock"
+         }
+        },
+        {
+         "key": "gen_ai.usage.input_tokens",
+         "value": {
+          "intValue": "50548"
+         }
+        },
+        {
+         "key": "gen_ai.usage.output_tokens",
+         "value": {
+          "intValue": "1024"
+         }
+        },
+        {
+         "key": "gen_ai.usage.cache_read.input_tokens",
+         "value": {
+          "intValue": "45000"
+         }
+        },
+        {
+         "key": "gen_ai.usage.cache_creation.input_tokens",
+         "value": {
+          "intValue": "3500"
+         }
+        },
+        {
+         "key": "gen_ai.usage.raw",
+         "value": {
+          "stringValue": "{\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":3500},\"cache_creation_input_tokens\":3500,\"cache_read_input_tokens\":45000,\"input_tokens\":2048,\"output_tokens\":1024}"
+         }
+        },
+        {
+         "key": "gen_ai.response.finish_reasons",
+         "value": {
+          "stringValue": "[\"end_turn\"]"
+         }
+        },
+        {
+         "key": "logfire.json_schema",
+         "value": {
+          "stringValue": "{\"type\":\"object\",\"properties\":{\"request_data\":{\"type\":\"object\"},\"gen_ai.system\":{},\"gen_ai.provider.name\":{},\"gen_ai.request.model\":{},\"gen_ai.operation.name\":{},\"gen_ai.request.max_tokens\":{},\"gen_ai.input.messages\":{\"type\":\"array\"},\"async\":{},\"gen_ai.output.messages\":{\"type\":\"array\"},\"gen_ai.response.model\":{},\"gen_ai.response.id\":{},\"gen_ai.usage.input_tokens\":{},\"gen_ai.usage.output_tokens\":{},\"gen_ai.usage.cache_read.input_tokens\":{},\"gen_ai.usage.cache_creation.input_tokens\":{},\"gen_ai.usage.raw\":{\"type\":\"object\"},\"gen_ai.response.finish_reasons\":{\"type\":\"array\"}}}"
+         }
+        }
+       ],
+       "endTimeUnixNano": "1794937916328151300",
+       "flags": 256,
+       "kind": 3,
+       "name": "Message with {request_data[model]!r}",
+       "spanId": "efd003212b601a59",
+       "startTimeUnixNano": "1794937916312046400",
+       "status": {},
+       "traceId": "01a1eaa30b984418ac8f33497d7cd062"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

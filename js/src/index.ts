@@ -22,9 +22,14 @@
  * @packageDocumentation
  */
 
-import { GENERATED, ROWS, type RawTier } from './data.js';
+import { GENERATED, PRICES_VERSION, ROWS, type RawTier } from './data.js';
 
-export { GENERATED };
+/**
+ * The table's version: `"sha256:"` and the SHA-256 of the prices.json it was generated from
+ * (UTF-8, LF line endings). Every release states it in its notes; record it as
+ * `gen_ai.usage.cost.pricing.version` next to costs computed from this table.
+ */
+export { GENERATED, PRICES_VERSION };
 
 /** A price column, for {@link Price.rate}, {@link Price.rateStr} and {@link LongContext.rate}. */
 export type RateName = 'input' | 'output' | 'cache_read' | 'cache_write' | 'batch_input' | 'batch_output';

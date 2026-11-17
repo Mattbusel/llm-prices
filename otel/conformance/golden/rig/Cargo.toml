@@ -1,0 +1,19 @@
+[package]
+name = "rig-golden-spans"
+version = "0.1.0"
+edition = "2021"
+publish = false
+description = "Exports the OpenTelemetry spans rig-core records for calls to the golden-corpus mock (generate.py serve) as OTLP JSON."
+
+[dependencies]
+rig-core = { version = "=0.46.0", default-features = false, features = ["reqwest", "rustls"] }
+tokio = { version = "1", features = ["macros", "rt-multi-thread"] }
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["registry"] }
+tracing-opentelemetry = "=0.34.0"
+opentelemetry = "=0.33.1"
+opentelemetry_sdk = { version = "=0.33.1", features = ["testing", "trace"] }
+opentelemetry-proto = { version = "=0.33.1", features = ["gen-tonic-messages", "trace", "with-serde"] }
+serde_json = "1"
+
+[workspace]

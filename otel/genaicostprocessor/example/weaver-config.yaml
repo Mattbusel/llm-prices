@@ -1,0 +1,27 @@
+# CI: the golden corpus through the genaicost processor into Weaver's live check (OTLP gRPC),
+# which compares every attribute with the GenAI registry of semantic-conventions-genai#443.
+receivers:
+  otlp_json_file:
+    include: ["${env:GOLDEN_DIR}/*.otlp.json"]
+    start_at: beginning
+
+processors:
+  genaicost:
+    max_span_age: 0s
+
+exporters:
+  otlp:
+    endpoint: ${env:WEAVER_OTLP:-localhost:4317}
+    compression: none
+    tls:
+      insecure: true
+
+service:
+  telemetry:
+    metrics:
+      level: none
+  pipelines:
+    traces:
+      receivers: [otlp_json_file]
+      processors: [genaicost]
+      exporters: [otlp]

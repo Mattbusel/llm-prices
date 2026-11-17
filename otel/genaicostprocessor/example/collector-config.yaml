@@ -1,0 +1,55 @@
+# A collector that prices GenAI spans and derives the gen_ai.client.operation.cost histogram
+# from the priced spans. Apps send OTLP to it as usual.
+receivers:
+  otlp:
+    protocols:
+      http:
+        endpoint: localhost:4318
+      grpc:
+        endpoint: localhost:4317
+
+processors:
+  genaicost:
+    # The llm-prices table built into the processor, refreshed from the latest signed release.
+    prices_url: release
+    reload_interval: 6h
+  batch:
+
+connectors:
+  # Span-derived metric: one histogram point per priced span, buckets from the cost proposal.
+  signal_to_metrics:
+    spans:
+      - name: gen_ai.client.operation.cost
+        description: Monetary cost of a single GenAI client operation.
+        unit: "{cost}"
+        conditions:
+          - span.attributes["gen_ai.usage.cost.amount"] != nil
+        attributes:
+          - key: gen_ai.usage.cost.currency
+          - key: gen_ai.usage.cost.source
+          - key: gen_ai.operation.name
+            optional: true
+          - key: gen_ai.provider.name
+            optional: true
+          - key: gen_ai.request.model
+            optional: true
+          - key: gen_ai.response.model
+            optional: true
+        histogram:
+          buckets: [0.001, 0.004, 0.016, 0.064, 0.256, 1.024, 4.096, 16.384, 65.536]
+          value: Double(span.attributes["gen_ai.usage.cost.amount"])
+
+exporters:
+  otlphttp:
+    endpoint: ${env:OTLP_BACKEND:-http://localhost:14318}
+  debug:
+
+service:
+  pipelines:
+    traces:
+      receivers: [otlp]
+      processors: [genaicost, batch]
+      exporters: [otlphttp, signal_to_metrics]
+    metrics/cost:
+      receivers: [signal_to_metrics]
+      exporters: [otlphttp]

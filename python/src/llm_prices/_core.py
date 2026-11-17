@@ -16,6 +16,7 @@ from . import _data
 
 __all__ = [
     "GENERATED",
+    "PRICES_VERSION",
     "CostBreakdown",
     "DecimalCostBreakdown",
     "LongContext",
@@ -30,6 +31,11 @@ __all__ = [
 
 #: Date the table was generated (ISO 8601).
 GENERATED: str = _data.GENERATED
+
+#: The table's version: ``"sha256:"`` and the SHA-256 of the prices.json it was generated
+#: from (UTF-8, LF line endings). Every release states it in its notes; record it as
+#: ``gen_ai.usage.cost.pricing.version`` next to costs computed from this table.
+PRICES_VERSION: str = _data.PRICES_VERSION
 
 #: A price column, for :meth:`Price.rate`, :meth:`Price.rate_str` and
 #: :meth:`LongContext.rate`. ``"cache_write"`` also takes a cache lifetime (``"5m"``, ``"1h"``,

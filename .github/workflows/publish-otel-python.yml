@@ -1,0 +1,47 @@
+name: publish otel python
+# Publishes otel/python to PyPI as `llm-prices-otel` when a tag otel-py-v<version> is pushed, for
+# example otel-py-v0.1.0. The tag must match otel/python/pyproject.toml and __version__.
+#
+# Uses PyPI trusted publishing (no API token): on pypi.org, a (pending) trusted publisher for
+# project llm-prices-otel, this repository, workflow publish-otel-python.yml, environment pypi.
+on:
+  push:
+    tags: ['otel-py-v*']
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: the tag matches otel/python/pyproject.toml and __version__
+        run: |
+          version=$(python -c "import tomllib; print(tomllib.load(open('otel/python/pyproject.toml', 'rb'))['project']['version'])")
+          test "otel-py-v$version" = "$GITHUB_REF_NAME" || { echo "tag $GITHUB_REF_NAME does not match pyproject version $version"; exit 1; }
+          grep -qx "__version__ = \"$version\"" otel/python/src/llm_prices_otel/__init__.py || { echo "__version__ is not $version"; exit 1; }
+      - run: python -m pip install build pytest hypothesis ./python
+      - run: python -m pytest
+        working-directory: otel/python
+      - run: python -m build otel/python --outdir dist
+      - uses: actions/upload-artifact@v4
+        with:
+          name: otel-python-dist
+          path: dist/
+
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: pypi
+      url: https://pypi.org/project/llm-prices-otel/
+    permissions:
+      id-token: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: otel-python-dist
+          path: dist/
+      - uses: pypa/gh-action-pypi-publish@release/v1

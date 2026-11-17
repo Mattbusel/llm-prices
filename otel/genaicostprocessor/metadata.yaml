@@ -1,0 +1,49 @@
+type: genaicost
+display_name: GenAI cost processor
+description: Prices GenAI inference spans from their token counts and writes gen_ai.usage.cost.* with the price table's id and version.
+
+status:
+  class: processor
+  stability:
+    alpha: [traces]
+  distributions: []
+  codeowners:
+    active: [Mattbusel]
+
+tests:
+  config:
+
+telemetry:
+  metrics:
+    processor_genaicost_price_reload_failures:
+      enabled: true
+      stability: alpha
+      description: Price table reloads that failed (download, signature or parse); the previous table stays in use.
+      unit: "{reload}"
+      sum:
+        value_type: int
+        monotonic: true
+    processor_genaicost_price_reloads:
+      enabled: true
+      stability: alpha
+      description: Price table reloads that replaced the table in use.
+      unit: "{reload}"
+      sum:
+        value_type: int
+        monotonic: true
+    processor_genaicost_spans_priced:
+      enabled: true
+      stability: alpha
+      description: Spans the processor wrote a cost on.
+      unit: "{span}"
+      sum:
+        value_type: int
+        monotonic: true
+    processor_genaicost_spans_unpriced:
+      enabled: true
+      stability: alpha
+      description: GenAI spans with token counts that the processor could not price, flagged instead of given a cost.
+      unit: "{span}"
+      sum:
+        value_type: int
+        monotonic: true

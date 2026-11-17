@@ -1,0 +1,496 @@
+{
+ "resourceSpans": [
+  {
+   "resource": {
+    "attributes": [
+     {
+      "key": "telemetry.sdk.language",
+      "value": {
+       "stringValue": "python"
+      }
+     },
+     {
+      "key": "telemetry.sdk.name",
+      "value": {
+       "stringValue": "opentelemetry"
+      }
+     },
+     {
+      "key": "telemetry.sdk.version",
+      "value": {
+       "stringValue": "1.45.2"
+      }
+     },
+     {
+      "key": "service.instance.id",
+      "value": {
+       "stringValue": "4a2a7a9c-e160-4796-a034-03d434639308"
+      }
+     },
+     {
+      "key": "service.name",
+      "value": {
+       "stringValue": "unknown_service:python.exe"
+      }
+     }
+    ]
+   },
+   "scopeSpans": [
+    {
+     "scope": {
+      "name": "openinference.instrumentation.openai",
+      "version": "0.1.74"
+     },
+     "spans": [
+      {
+       "attributes": [
+        {
+         "key": "server.address",
+         "value": {
+          "stringValue": "127.0.0.1"
+         }
+        },
+        {
+         "key": "server.port",
+         "value": {
+          "intValue": "54453"
+         }
+        },
+        {
+         "key": "llm.system",
+         "value": {
+          "stringValue": "openai"
+         }
+        },
+        {
+         "key": "input.value",
+         "value": {
+          "stringValue": "{\"model\": \"gpt-4o-mini\", \"messages\": [{\"role\": \"user\", \"content\": \"hi\"}]}"
+         }
+        },
+        {
+         "key": "input.mime_type",
+         "value": {
+          "stringValue": "application/json"
+         }
+        },
+        {
+         "key": "output.value",
+         "value": {
+          "stringValue": "{\"id\":\"chatcmpl-mock\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"ok\",\"role\":\"assistant\"}}],\"created\":1763380000,\"model\":\"gpt-4o-mini-2024-07-18\",\"object\":\"chat.completion\",\"service_tier\":\"default\",\"system_fingerprint\":\"fp_mock\",\"usage\":{\"completion_tokens\":300,\"prompt_tokens\":1200,\"total_tokens\":1500,\"completion_tokens_details\":{\"audio_tokens\":0,\"reasoning_tokens\":0},\"prompt_tokens_details\":{\"audio_tokens\":0,\"cached_tokens\":1000}}}"
+         }
+        },
+        {
+         "key": "output.mime_type",
+         "value": {
+          "stringValue": "application/json"
+         }
+        },
+        {
+         "key": "llm.invocation_parameters",
+         "value": {
+          "stringValue": "{\"model\": \"gpt-4o-mini\"}"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.role",
+         "value": {
+          "stringValue": "user"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.content",
+         "value": {
+          "stringValue": "hi"
+         }
+        },
+        {
+         "key": "llm.model_name",
+         "value": {
+          "stringValue": "gpt-4o-mini-2024-07-18"
+         }
+        },
+        {
+         "key": "llm.token_count.total",
+         "value": {
+          "intValue": "1500"
+         }
+        },
+        {
+         "key": "llm.token_count.prompt",
+         "value": {
+          "intValue": "1200"
+         }
+        },
+        {
+         "key": "llm.token_count.completion",
+         "value": {
+          "intValue": "300"
+         }
+        },
+        {
+         "key": "llm.token_count.prompt_details.cache_read",
+         "value": {
+          "intValue": "1000"
+         }
+        },
+        {
+         "key": "llm.token_count.prompt_details.audio",
+         "value": {
+          "intValue": "0"
+         }
+        },
+        {
+         "key": "llm.token_count.completion_details.reasoning",
+         "value": {
+          "intValue": "0"
+         }
+        },
+        {
+         "key": "llm.token_count.completion_details.audio",
+         "value": {
+          "intValue": "0"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.role",
+         "value": {
+          "stringValue": "assistant"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.content",
+         "value": {
+          "stringValue": "ok"
+         }
+        },
+        {
+         "key": "llm.finish_reason",
+         "value": {
+          "stringValue": "stop"
+         }
+        },
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "LLM"
+         }
+        }
+       ],
+       "endTimeUnixNano": "1794937913897114500",
+       "flags": 256,
+       "kind": 1,
+       "name": "ChatCompletion",
+       "spanId": "98bc70c9900e5680",
+       "startTimeUnixNano": "1794937913885468000",
+       "status": {
+        "code": 1
+       },
+       "traceId": "357c42d77e92810b202dd05c98383083"
+      },
+      {
+       "attributes": [
+        {
+         "key": "server.address",
+         "value": {
+          "stringValue": "127.0.0.1"
+         }
+        },
+        {
+         "key": "server.port",
+         "value": {
+          "intValue": "54453"
+         }
+        },
+        {
+         "key": "llm.system",
+         "value": {
+          "stringValue": "openai"
+         }
+        },
+        {
+         "key": "input.value",
+         "value": {
+          "stringValue": "{\"model\": \"o3\", \"messages\": [{\"role\": \"user\", \"content\": \"hi\"}]}"
+         }
+        },
+        {
+         "key": "input.mime_type",
+         "value": {
+          "stringValue": "application/json"
+         }
+        },
+        {
+         "key": "output.value",
+         "value": {
+          "stringValue": "{\"id\":\"chatcmpl-mock\",\"choices\":[{\"finish_reason\":\"stop\",\"index\":0,\"message\":{\"content\":\"ok\",\"role\":\"assistant\"}}],\"created\":1763380000,\"model\":\"o3-2025-04-16\",\"object\":\"chat.completion\",\"service_tier\":\"default\",\"system_fingerprint\":\"fp_mock\",\"usage\":{\"completion_tokens\":2000,\"prompt_tokens\":10000,\"total_tokens\":12000,\"completion_tokens_details\":{\"audio_tokens\":0,\"reasoning_tokens\":1500},\"prompt_tokens_details\":{\"audio_tokens\":0,\"cached_tokens\":0}}}"
+         }
+        },
+        {
+         "key": "output.mime_type",
+         "value": {
+          "stringValue": "application/json"
+         }
+        },
+        {
+         "key": "llm.invocation_parameters",
+         "value": {
+          "stringValue": "{\"model\": \"o3\"}"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.role",
+         "value": {
+          "stringValue": "user"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.content",
+         "value": {
+          "stringValue": "hi"
+         }
+        },
+        {
+         "key": "llm.model_name",
+         "value": {
+          "stringValue": "o3-2025-04-16"
+         }
+        },
+        {
+         "key": "llm.token_count.total",
+         "value": {
+          "intValue": "12000"
+         }
+        },
+        {
+         "key": "llm.token_count.prompt",
+         "value": {
+          "intValue": "10000"
+         }
+        },
+        {
+         "key": "llm.token_count.completion",
+         "value": {
+          "intValue": "2000"
+         }
+        },
+        {
+         "key": "llm.token_count.prompt_details.cache_read",
+         "value": {
+          "intValue": "0"
+         }
+        },
+        {
+         "key": "llm.token_count.prompt_details.audio",
+         "value": {
+          "intValue": "0"
+         }
+        },
+        {
+         "key": "llm.token_count.completion_details.reasoning",
+         "value": {
+          "intValue": "1500"
+         }
+        },
+        {
+         "key": "llm.token_count.completion_details.audio",
+         "value": {
+          "intValue": "0"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.role",
+         "value": {
+          "stringValue": "assistant"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.content",
+         "value": {
+          "stringValue": "ok"
+         }
+        },
+        {
+         "key": "llm.finish_reason",
+         "value": {
+          "stringValue": "stop"
+         }
+        },
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "LLM"
+         }
+        }
+       ],
+       "endTimeUnixNano": "1794937913897114500",
+       "flags": 256,
+       "kind": 1,
+       "name": "ChatCompletion",
+       "spanId": "e8ccdc8b8317d69f",
+       "startTimeUnixNano": "1794937913897114500",
+       "status": {
+        "code": 1
+       },
+       "traceId": "853cf4db866ea0fd9619e50a7c520e1b"
+      }
+     ]
+    },
+    {
+     "scope": {
+      "name": "openinference.instrumentation.anthropic",
+      "version": "3.3.6"
+     },
+     "spans": [
+      {
+       "attributes": [
+        {
+         "key": "llm.provider",
+         "value": {
+          "stringValue": "anthropic"
+         }
+        },
+        {
+         "key": "llm.system",
+         "value": {
+          "stringValue": "anthropic"
+         }
+        },
+        {
+         "key": "input.value",
+         "value": {
+          "stringValue": "{\"model\": \"claude-sonnet-4-6\", \"max_tokens\": 16, \"messages\": [{\"role\": \"user\", \"content\": \"hi\"}]}"
+         }
+        },
+        {
+         "key": "input.mime_type",
+         "value": {
+          "stringValue": "application/json"
+         }
+        },
+        {
+         "key": "llm.request.model_name",
+         "value": {
+          "stringValue": "claude-sonnet-4-6"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.role",
+         "value": {
+          "stringValue": "user"
+         }
+        },
+        {
+         "key": "llm.input_messages.0.message.content",
+         "value": {
+          "stringValue": "hi"
+         }
+        },
+        {
+         "key": "llm.invocation_parameters",
+         "value": {
+          "stringValue": "{\"max_tokens\": 16}"
+         }
+        },
+        {
+         "key": "llm.model_name",
+         "value": {
+          "stringValue": "claude-sonnet-4-6"
+         }
+        },
+        {
+         "key": "llm.response.model_name",
+         "value": {
+          "stringValue": "claude-sonnet-4-6"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.role",
+         "value": {
+          "stringValue": "assistant"
+         }
+        },
+        {
+         "key": "llm.finish_reason",
+         "value": {
+          "stringValue": "end_turn"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.contents.0.message_content.type",
+         "value": {
+          "stringValue": "text"
+         }
+        },
+        {
+         "key": "llm.output_messages.0.message.contents.0.message_content.text",
+         "value": {
+          "stringValue": "ok"
+         }
+        },
+        {
+         "key": "llm.token_count.prompt",
+         "value": {
+          "intValue": "50548"
+         }
+        },
+        {
+         "key": "llm.token_count.completion",
+         "value": {
+          "intValue": "1024"
+         }
+        },
+        {
+         "key": "llm.token_count.prompt_details.cache_read",
+         "value": {
+          "intValue": "45000"
+         }
+        },
+        {
+         "key": "llm.token_count.prompt_details.cache_write",
+         "value": {
+          "intValue": "3500"
+         }
+        },
+        {
+         "key": "llm.token_count.total",
+         "value": {
+          "intValue": "51572"
+         }
+        },
+        {
+         "key": "output.value",
+         "value": {
+          "stringValue": "{\"id\":\"msg_mock\",\"container\":null,\"content\":[{\"citations\":null,\"text\":\"ok\",\"type\":\"text\"}],\"diagnostics\":null,\"model\":\"claude-sonnet-4-6\",\"role\":\"assistant\",\"stop_details\":null,\"stop_reason\":\"end_turn\",\"stop_sequence\":null,\"type\":\"message\",\"usage\":{\"cache_creation\":{\"ephemeral_1h_input_tokens\":0,\"ephemeral_5m_input_tokens\":3500},\"cache_creation_input_tokens\":3500,\"cache_read_input_tokens\":45000,\"inference_geo\":null,\"input_tokens\":2048,\"output_tokens\":1024,\"output_tokens_details\":null,\"server_tool_use\":null,\"service_tier\":null,\"speed\":null}}"
+         }
+        },
+        {
+         "key": "output.mime_type",
+         "value": {
+          "stringValue": "application/json"
+         }
+        },
+        {
+         "key": "openinference.span.kind",
+         "value": {
+          "stringValue": "LLM"
+         }
+        }
+       ],
+       "endTimeUnixNano": "1794937913917360400",
+       "flags": 256,
+       "kind": 1,
+       "name": "messages.create",
+       "spanId": "9d73053b3f43ce47",
+       "startTimeUnixNano": "1794937913897114500",
+       "status": {
+        "code": 1
+       },
+       "traceId": "d4514e78dcc33b7fa2be8c20778ae622"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

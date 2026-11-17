@@ -199,3 +199,136 @@ jobs:
         run: |
           python -m pip install litellm
           python test/litellm_check.py litellm.json
+
+  otel-go:
+    # The genaicost Collector processor (otel/genaicostprocessor) against the go/ module in this
+    # checkout, through a Go workspace.
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - name: workspace with the go/ module of this checkout
+        run: |
+          go work init ./otel/genaicostprocessor
+          go work edit -replace github.com/Mattbusel/llm-prices/go=./go
+      - name: vet and test
+        working-directory: otel/genaicostprocessor
+        run: |
+          go vet ./...
+          go test ./...
+      - name: race detector, gofmt and fuzzing (30s per target)
+        if: matrix.os == 'ubuntu-latest'
+        working-directory: otel/genaicostprocessor
+        run: |
+          go test -race ./...
+          test -z "$(gofmt -l .)"
+          go test -run '^$' -fuzz '^FuzzPriceSpan$' -fuzztime 30s .
+          go test -run '^$' -fuzz '^FuzzParseLiteLLM$' -fuzztime 30s .
+          cd ../../go && GOWORK=off go test -run '^$' -fuzz '^FuzzParseTable$' -fuzztime 30s .
+
+  otel-collector-e2e:
+    # Builds a collector with ocb (the example builder-config.yaml, pointed at this checkout),
+    # runs the golden corpus through it into files and into Weaver's live check against the
+    # GenAI registry of semantic-conventions-genai#443, and checks both.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: ocb 0.165.0 and weaver 0.28.0
+        run: |
+          curl -sSfL -o ocb "https://github.com/open-telemetry/opentelemetry-collector-releases/releases/download/cmd%2Fbuilder%2Fv0.165.0/ocb_0.165.0_linux_amd64"
+          chmod +x ocb
+          curl -sSfL "https://github.com/open-telemetry/weaver/releases/download/v0.28.0/weaver-x86_64-unknown-linux-gnu.tar.xz" | tar -xJ
+          find . -maxdepth 3 -name weaver -type f -exec mv {} ./weaver-bin \;
+          ./weaver-bin --version
+      - name: build the collector
+        run: |
+          sed 's#output_path: ./otelcol-genaicost#output_path: ./dist#' otel/genaicostprocessor/example/builder-config.yaml > builder.yaml
+          printf '\nreplaces:\n  - github.com/Mattbusel/llm-prices/otel/genaicostprocessor => %s/otel/genaicostprocessor\n  - github.com/Mattbusel/llm-prices/go => %s/go\n' "$PWD" "$PWD" >> builder.yaml
+          ./ocb --config builder.yaml
+          ./dist/otelcol-genaicost validate --config otel/genaicostprocessor/example/collector-config.yaml
+      - name: golden corpus as JSON lines (the otlp_json_file receiver reads one request per line)
+        run: |
+          mkdir -p in out weaver-out
+          for f in otel/conformance/golden/*.otlp.json; do python -c "import json,sys;print(json.dumps(json.load(open(sys.argv[1])),separators=(',',':')))" "$f" > "in/$(basename "$f")"; done
+      - name: priced spans and the cost histogram
+        env:
+          GOLDEN_DIR: ${{ github.workspace }}/in
+          OUT_DIR: ${{ github.workspace }}/out
+        run: |
+          ./dist/otelcol-genaicost --config otel/genaicostprocessor/example/e2e-config.yaml > collector.log 2>&1 &
+          collector=$!
+          for i in $(seq 1 60); do [ -s out/traces.json ] && [ -s out/metrics.json ] && break; sleep 1; done
+          sleep 3; kill $collector || true
+          python otel/genaicostprocessor/example/check_e2e.py out otel/conformance/golden prices.json
+      - name: Weaver live check against the semantic-conventions-genai#443 registry
+        env:
+          GOLDEN_DIR: ${{ github.workspace }}/in
+          WEAVER_OTLP: 127.0.0.1:4317
+        run: |
+          ./weaver-bin registry live-check \
+            -r "https://github.com/elang2/semantic-conventions-genai.git@feat/operation-cost-conventions[model]" \
+            --otlp-grpc-port 4317 --admin-port 4320 --inactivity-timeout 15 \
+            --format json -o weaver-out --fail-on none > weaver.log 2>&1 &
+          weaver=$!
+          for i in $(seq 1 120); do curl -sf http://127.0.0.1:4320/health >/dev/null && break; sleep 1; done
+          ./dist/otelcol-genaicost --config otel/genaicostprocessor/example/weaver-config.yaml > collector-weaver.log 2>&1 &
+          collector=$!
+          wait $weaver
+          kill $collector || true
+          python otel/genaicostprocessor/example/check_weaver.py weaver-out/live_check.json 12
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: collector-e2e
+          path: |
+            out/
+            weaver-out/
+            *.log
+
+  otel-python:
+    # llm-prices-otel against the python/ package of this checkout.
+    strategy:
+      matrix:
+        include:
+          - { os: ubuntu-24.04, python: '3.9', otel: 'opentelemetry-sdk==1.24.0 opentelemetry-api==1.24.0' }
+          - { os: ubuntu-latest, python: '3.13', otel: 'opentelemetry-sdk' }
+          - { os: windows-latest, python: '3.12', otel: 'opentelemetry-sdk' }
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        working-directory: otel/python
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python }}
+      - run: python -m pip install ../../python ${{ matrix.otel }} pytest hypothesis build
+      - name: tests, doctests and property tests
+        run: python -m pytest
+      - name: genai-prices source against genai-prices itself
+        if: matrix.python == '3.13'
+        run: |
+          python -m pip install genai-prices
+          python -m pytest tests/test_genai_prices.py
+      - name: wheel builds and passes the tests when installed
+        shell: bash
+        run: |
+          python -m build --outdir dist
+          python -m pip install dist/*.whl
+          cd tests && python -m pytest -p no:cacheprovider -o pythonpath= -o addopts= --rootdir . .
+      - name: mypy --strict
+        if: matrix.python == '3.13'
+        run: |
+          python -m pip install mypy
+          python -m mypy --strict src/llm_prices_otel

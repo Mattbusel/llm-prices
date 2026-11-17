@@ -1,0 +1,89 @@
+{
+ "description": "Expected cost of every span in the golden corpus, in file order. The mock (generate.py) returns the same usage to every suite, so every suite's spans for one call must get the same cost. Both the Go processor and the Python package check these.",
+ "suites": {
+  "openllmetry": {
+   "file": "openllmetry.otlp.json",
+   "spans": [
+    {
+     "row": "openai/gpt-4o-mini",
+     "amount": 0.000285,
+     "why": "gpt-4o-mini: 200 uncached x $0.15 + 1000 cache reads x $0.075 + 300 output x $0.60 per 1M"
+    },
+    {
+     "row": "openai/o3",
+     "amount": 0.036,
+     "why": "o3: 10000 input x $2 + 2000 output (1500 of them reasoning) x $8 per 1M"
+    },
+    {
+     "row": "anthropic/claude-sonnet-4-6",
+     "amount": 0.048129,
+     "why": "claude-sonnet-4-6: 2048 uncached x $3 + 45000 cache reads x $0.30 + 3500 5-minute cache writes x $3.75 + 1024 output x $15 per 1M"
+    }
+   ],
+   "instrumentation": "opentelemetry-instrumentation-openai 0.63.1, opentelemetry-instrumentation-anthropic 0.63.1, opentelemetry-sdk 1.45.2, openai 3.52.0, anthropic 2.9.0"
+  },
+  "openinference": {
+   "file": "openinference.otlp.json",
+   "spans": [
+    {
+     "row": "openai/gpt-4o-mini",
+     "amount": 0.000285,
+     "why": "gpt-4o-mini: 200 uncached x $0.15 + 1000 cache reads x $0.075 + 300 output x $0.60 per 1M"
+    },
+    {
+     "row": "openai/o3",
+     "amount": 0.036,
+     "why": "o3: 10000 input x $2 + 2000 output (1500 of them reasoning) x $8 per 1M"
+    },
+    {
+     "row": "anthropic/claude-sonnet-4-6",
+     "amount": 0.048129,
+     "why": "claude-sonnet-4-6: 2048 uncached x $3 + 45000 cache reads x $0.30 + 3500 5-minute cache writes x $3.75 + 1024 output x $15 per 1M"
+    }
+   ],
+   "instrumentation": "openinference-instrumentation-openai 0.1.74, openinference-instrumentation-anthropic 3.3.6, opentelemetry-sdk 1.45.2, openai 3.52.0, anthropic 2.9.0"
+  },
+  "logfire": {
+   "file": "logfire.otlp.json",
+   "spans": [
+    {
+     "row": "openai/gpt-4o-mini",
+     "amount": 0.000285,
+     "why": "gpt-4o-mini: 200 uncached x $0.15 + 1000 cache reads x $0.075 + 300 output x $0.60 per 1M"
+    },
+    {
+     "row": "openai/o3",
+     "amount": 0.036,
+     "why": "o3: 10000 input x $2 + 2000 output (1500 of them reasoning) x $8 per 1M"
+    },
+    {
+     "row": "anthropic/claude-sonnet-4-6",
+     "amount": 0.048129,
+     "why": "claude-sonnet-4-6: 2048 uncached x $3 + 45000 cache reads x $0.30 + 3500 5-minute cache writes x $3.75 + 1024 output x $15 per 1M"
+    }
+   ],
+   "instrumentation": "logfire 5.6.0 (instrument_openai, instrument_anthropic), opentelemetry-sdk 1.45.2, openai 3.52.0, anthropic 2.9.0"
+  },
+  "rig": {
+   "file": "rig.otlp.json",
+   "spans": [
+    {
+     "row": "openai/gpt-4o-mini",
+     "amount": 0.000285,
+     "why": "gpt-4o-mini: 200 uncached x $0.15 + 1000 cache reads x $0.075 + 300 output x $0.60 per 1M"
+    },
+    {
+     "row": "openai/o3",
+     "amount": 0.036,
+     "why": "o3: 10000 input x $2 + 2000 output (1500 of them reasoning) x $8 per 1M"
+    },
+    {
+     "row": "anthropic/claude-sonnet-4-6",
+     "amount": 0.048129,
+     "why": "claude-sonnet-4-6: 2048 uncached x $3 + 45000 cache reads x $0.30 + 3500 5-minute cache writes x $3.75 + 1024 output x $15 per 1M"
+    }
+   ],
+   "instrumentation": "rig-core 0.46.0 through tracing-opentelemetry 0.34.0 and opentelemetry_sdk 0.33.1 (token counts arrive as strings)"
+  }
+ }
+}

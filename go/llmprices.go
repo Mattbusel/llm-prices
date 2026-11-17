@@ -21,10 +21,16 @@
 package llmprices
 
 import (
+	"bytes"
+	"crypto/sha256"
 	_ "embed"
+	"encoding/hex"
 	"encoding/json"
+	"errors"
 	"fmt"
+	"math"
 	"strconv"
+	"strings"
 )
 
 //go:embed prices.json
@@ -32,6 +38,12 @@ var pricesJSON []byte
 
 // Generated is the date the table was generated (ISO 8601).
 var Generated string
+
+// PricesVersion is the version of the embedded table: "sha256:" and the SHA-256 of its
+// prices.json (UTF-8, LF line endings) in lowercase hex. Every release states it in its notes,
+// and the Rust, Python and JavaScript packages carry the same value as PRICES_VERSION. Record
+// it as gen_ai.usage.cost.pricing.version next to costs computed from this table.
+var PricesVersion string
 
 // LongContext holds the prices that apply when a request is over a provider's long-context
 // threshold. Nil fields mean the page lists no price.
@@ -83,6 +95,9 @@ type Price struct {
 	BatchOutput *float64
 	// LongContext holds prices for requests over a long-context threshold, or nil.
 	LongContext *LongContext
+	// Tiers holds the prices of other service tiers ("flex", "priority", "fast", ...) by
+	// name; see Price.Tier. Empty when the page lists none. A tier's own Tiers is empty.
+	Tiers map[string]Price
 	// SourceURL is the provider's official pricing page this row was read from.
 	SourceURL string
 	// Checked is the ISO date the row was checked against SourceURL.
@@ -135,6 +150,23 @@ type CostBreakdown struct {
 }
 
 const perM = 1_000_000.0
+
+// Tier returns the prices of one service tier as a Price (same provider and model), or p
+// itself for "" and "standard". ok is false when the page lists no such tier for the model.
+//
+// Tier prices follow the same cost rules as the row: a tier that lists no cache-read price
+// bills cache reads as its input, and tiers have no batch prices (the Python package's
+// Price.tier rule).
+func (p Price) Tier(name string) (Price, bool) {
+	if name == "" || name == "standard" {
+		return p, true
+	}
+	t, ok := p.Tiers[name]
+	if !ok {
+		return Price{}, false
+	}
+	return t.clone(), true
+}
 
 // InputPerToken is Input in USD per token. ok is false when the page lists no price.
 func (p Price) InputPerToken() (usd float64, ok bool) {
@@ -255,11 +287,7 @@ type tier struct {
 // DeepSeek first, then Mistral, xAI, Cohere, Groq, Together AI and Fireworks AI. The slice
 // and its rows are copies; changing them does not change the table.
 func All() []Price {
-	out := make([]Price, len(table))
-	for i := range table {
-		out[i] = table[i].clone()
-	}
-	return out
+	return defaultTable.All()
 }
 
 // Lookup finds a model by id across every provider in the table. See the package doc for
@@ -275,11 +303,7 @@ func All() []Price {
 // the hosts that resell open-weight models. Use LookupProvider whenever you know which
 // provider served the request.
 func Lookup(model string) (Price, bool) {
-	i := lookupIndex(model)
-	if i < 0 {
-		return Price{}, false
-	}
-	return table[i].clone(), true
+	return defaultTable.Lookup(model)
 }
 
 // LookupProvider finds model as sold by provider. provider is any name ParseProvider
@@ -322,6 +346,12 @@ func (p Price) clone() Price {
 	q.Input, q.Output, q.CacheRead = clonef(p.Input), clonef(p.Output), clonef(p.CacheRead)
 	q.BatchInput, q.BatchOutput = clonef(p.BatchInput), clonef(p.BatchOutput)
 	q.CacheWrite = clonem(p.CacheWrite)
+	if p.Tiers != nil {
+		q.Tiers = make(map[string]Price, len(p.Tiers))
+		for k, t := range p.Tiers {
+			q.Tiers[k] = t.clone()
+		}
+	}
 	if p.LongContext != nil {
 		l := *p.LongContext
 		l.Input, l.Output, l.CacheRead = clonef(l.Input), clonef(l.Output), clonef(l.CacheRead)
@@ -359,35 +389,83 @@ type rawTier struct {
 	BatchOutput *json.Number           `json:"batch_output"`
 }
 
-type rawRow struct {
+type rawLongContext struct {
 	rawTier
-	Provider    string   `json:"provider"`
-	Model       string   `json:"model"`
-	Name        *string  `json:"name"`
-	Aliases     []string `json:"aliases"`
-	Status      string   `json:"status"`
-	SourceURL   string   `json:"source_url"`
-	Checked     string   `json:"checked"`
-	Note        *string  `json:"note"`
-	LongContext *struct {
-		rawTier
-		ThresholdTokens int64 `json:"threshold_tokens"`
-	} `json:"long_context"`
+	ThresholdTokens int64 `json:"threshold_tokens"`
 }
 
-var table = mustLoad(pricesJSON)
+type rawRow struct {
+	rawTier
+	Provider    string          `json:"provider"`
+	Model       string          `json:"model"`
+	Name        *string         `json:"name"`
+	Aliases     []string        `json:"aliases"`
+	Status      string          `json:"status"`
+	SourceURL   string          `json:"source_url"`
+	Checked     string          `json:"checked"`
+	Note        *string         `json:"note"`
+	LongContext *rawLongContext `json:"long_context"`
+	OtherTiers  map[string]struct {
+		rawTier
+		LongContext *rawLongContext `json:"long_context"`
+	} `json:"other_tiers"`
+}
 
-func mustLoad(b []byte) []Price {
+var defaultTable = mustLoad(pricesJSON)
+
+func mustLoad(b []byte) *Table {
+	t, err := ParseTable(b)
+	if err != nil {
+		panic("llmprices: embedded " + err.Error())
+	}
+	Generated = t.generated
+	PricesVersion = t.version
+	return t
+}
+
+// Table is a price table read from a prices.json document. The package-level functions use
+// the table embedded at build time (Default); ParseTable reads another copy, for example a
+// newer prices.json downloaded from a release, with the same lookup and cost rules. A Table
+// is never changed after ParseTable returns, so it is safe for concurrent use.
+type Table struct {
+	rows      []Price
+	generated string
+	version   string
+}
+
+// Default returns the table embedded at build time.
+func Default() *Table { return defaultTable }
+
+// ParseTable reads a prices.json document (the schema at
+// https://github.com/Mattbusel/llm-prices#schema). It returns an error when the document is
+// not valid JSON, has no rows, has a row without a provider or model, or holds a price that is
+// not a finite non-negative number.
+func ParseTable(b []byte) (t *Table, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			t, err = nil, fmt.Errorf("prices.json: %v", r)
+		}
+	}()
 	var doc struct {
 		Generated string   `json:"generated"`
 		Models    []rawRow `json:"models"`
 	}
 	if err := json.Unmarshal(b, &doc); err != nil {
-		panic("llmprices: embedded prices.json: " + err.Error())
+		return nil, fmt.Errorf("prices.json: %w", err)
 	}
-	Generated = doc.Generated
+	if len(doc.Models) == 0 {
+		return nil, errors.New("prices.json: no models")
+	}
 	rows := make([]Price, 0, len(doc.Models))
 	for _, r := range doc.Models {
+		if r.Provider == "" || !cleanID(r.Model) {
+			return nil, fmt.Errorf("prices.json: row %q/%q has no provider or no usable model id", r.Provider, r.Model)
+		}
+		for _, a := range r.Aliases {
+			if !cleanID(a) {
+				return nil, fmt.Errorf("prices.json: %s/%s has an empty or space-padded alias %q", r.Provider, r.Model, a)
+			}
+		}
 		p := Price{
 			Provider:  r.Provider,
 			Model:     r.Model,
@@ -409,20 +487,118 @@ func mustLoad(b []byte) []Price {
 		p.Input, p.Output, p.CacheRead = num(r.Input, where), num(r.Output, where), num(r.CacheRead, where)
 		p.CacheWrite = nums(r.CacheWrite, where)
 		p.BatchInput, p.BatchOutput = num(r.BatchInput, where), num(r.BatchOutput, where)
-		if l := r.LongContext; l != nil {
-			p.LongContext = &LongContext{
-				ThresholdTokens: l.ThresholdTokens,
-				Input:           num(l.Input, where),
-				Output:          num(l.Output, where),
-				CacheRead:       num(l.CacheRead, where),
-				CacheWrite:      nums(l.CacheWrite, where),
-				BatchInput:      num(l.BatchInput, where),
-				BatchOutput:     num(l.BatchOutput, where),
+		p.LongContext = longContext(r.LongContext, where, true)
+		p.Tiers = make(map[string]Price, len(r.OtherTiers))
+		for name, t := range r.OtherTiers {
+			q := Price{
+				Provider:  p.Provider,
+				Model:     p.Model,
+				Name:      p.Name,
+				Aliases:   append([]string{}, p.Aliases...),
+				Status:    p.Status,
+				SourceURL: p.SourceURL,
+				Checked:   p.Checked,
+				Note:      name + " tier",
+				Input:     num(t.Input, where),
+				Output:    num(t.Output, where),
+				CacheRead: num(t.CacheRead, where),
+				Tiers:     map[string]Price{},
 			}
+			q.CacheWrite = nums(t.CacheWrite, where)
+			// Tiers have no batch prices (the Python package's rule).
+			q.LongContext = longContext(t.LongContext, where, false)
+			p.Tiers[name] = q
 		}
 		rows = append(rows, p)
 	}
-	return rows
+	return &Table{rows: rows, generated: doc.Generated, version: Version(b)}, nil
+}
+
+// cleanID reports whether id is a usable model id: not empty and not padded with spaces
+// (lookups trim the id they are given, so a padded row id could never match).
+func cleanID(id string) bool {
+	return id != "" && strings.TrimSpace(id) == id
+}
+
+func longContext(l *rawLongContext, where string, batch bool) *LongContext {
+	if l == nil {
+		return nil
+	}
+	out := &LongContext{
+		ThresholdTokens: l.ThresholdTokens,
+		Input:           num(l.Input, where),
+		Output:          num(l.Output, where),
+		CacheRead:       num(l.CacheRead, where),
+		CacheWrite:      nums(l.CacheWrite, where),
+	}
+	if batch {
+		out.BatchInput, out.BatchOutput = num(l.BatchInput, where), num(l.BatchOutput, where)
+	}
+	return out
+}
+
+// Version returns the prices version of a prices.json document: "sha256:" and the SHA-256 of
+// its bytes with CRLF line endings turned into LF, in lowercase hex. It is the function that
+// produces PricesVersion and the PRICES_VERSION constant of the other packages.
+func Version(prices []byte) string {
+	sum := sha256.Sum256(bytes.ReplaceAll(prices, []byte("\r\n"), []byte("\n")))
+	return "sha256:" + hex.EncodeToString(sum[:])
+}
+
+// Generated is the date the table was generated (ISO 8601).
+func (t *Table) Generated() string { return t.generated }
+
+// Version is the table's prices version (see the package-level Version).
+func (t *Table) Version() string { return t.version }
+
+// Len is the number of rows.
+func (t *Table) Len() int { return len(t.rows) }
+
+// All returns every row in table order (copies).
+func (t *Table) All() []Price {
+	out := make([]Price, len(t.rows))
+	for i := range t.rows {
+		out[i] = t.rows[i].clone()
+	}
+	return out
+}
+
+// Rows returns the rows provider sells, in table order (copies). See Provider.Rows.
+func (t *Table) Rows(provider Provider) []Price {
+	var out []Price
+	for i := range t.rows {
+		if t.rows[i].Provider == string(provider) {
+			out = append(out, t.rows[i].clone())
+		}
+	}
+	return out
+}
+
+// Lookup is the package-level Lookup on this table.
+func (t *Table) Lookup(model string) (Price, bool) {
+	i := lookupIndex(t.rows, model)
+	if i < 0 {
+		return Price{}, false
+	}
+	return t.rows[i].clone(), true
+}
+
+// LookupIn is Provider.Lookup on this table.
+func (t *Table) LookupIn(provider Provider, model string) (Price, bool) {
+	i := provider.lookupIndex(t.rows, model)
+	if i < 0 {
+		return Price{}, false
+	}
+	return t.rows[i].clone(), true
+}
+
+// LookupProvider is the package-level LookupProvider on this table.
+func (t *Table) LookupProvider(provider, model string) (Price, bool) {
+	pv, ok := ParseProvider(provider)
+	if !ok {
+		return Price{}, false
+	}
+	return t.LookupIn(pv, model)
 }
 
 // num parses a price as written in prices.json. strconv.ParseFloat rounds correctly, so the
@@ -432,8 +608,8 @@ func num(n *json.Number, where string) *float64 {
 		return nil
 	}
 	v, err := strconv.ParseFloat(n.String(), 64)
-	if err != nil {
-		panic(fmt.Sprintf("llmprices: embedded prices.json: %s: %v", where, err))
+	if err != nil || v < 0 || math.IsInf(v, 0) || math.IsNaN(v) {
+		panic(fmt.Sprintf("%s: price %q is not a finite non-negative number", where, n.String()))
 	}
 	return &v
 }

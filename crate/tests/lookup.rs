@@ -419,3 +419,13 @@ fn lookup_provider_does_not_cross_hosts() {
     assert!(lookup_provider("openrouter", "groq/openai/gpt-oss-120b").is_none());
     assert_eq!(lookup_provider("openai", "azure/gpt-4.1").map(|p| p.provider), Some("openai"));
 }
+
+#[test]
+fn prices_version_names_a_sha256() {
+    // scripts/build.mjs --check (CI) keeps it equal to the SHA-256 of prices.json; the Python,
+    // JavaScript and Go tests recompute the hash.
+    let v = llm_prices::PRICES_VERSION;
+    let hex = v.strip_prefix("sha256:").expect("sha256: prefix");
+    assert_eq!(hex.len(), 64);
+    assert!(hex.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)));
+}

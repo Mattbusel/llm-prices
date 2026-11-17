@@ -1,0 +1,25 @@
+genaicost:
+genaicost/release:
+  prices_url: release
+  reload_interval: 6h
+  on_unpriced: error_attribute
+  breakdown: true
+  openinference: true
+genaicost/litellm:
+  source: litellm
+  prices_url: /etc/otelcol/model_prices_and_context_window.json
+  input_tokens_include_cache: "true"
+  output_tokens_include_reasoning: "false"
+  reported_cost_attributes: [gen_ai.usage.total_cost]
+  max_span_age: 0s
+genaicost/bad_source:
+  source: genai-prices
+genaicost/bad_unpriced:
+  on_unpriced: zero
+genaicost/reload_without_url:
+  reload_interval: 1h
+genaicost/fast_reload:
+  prices_url: release
+  reload_interval: 10s
+genaicost/bad_key:
+  public_key: not-base64

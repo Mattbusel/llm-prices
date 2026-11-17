@@ -6,13 +6,19 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { existsSync, readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { GENERATED, Price, all, longContextRate, lookup, promptTokens } from '../dist/esm/index.js';
+import { createHash } from 'node:crypto';
+import { GENERATED, PRICES_VERSION, Price, all, longContextRate, lookup, promptTokens } from '../dist/esm/index.js';
 
 const COLUMNS = ['input', 'output', 'cache_read', 'batch_input', 'batch_output'];
 const close = (a, b, eps = 1e-12) => Math.abs(a - b) < eps;
 const pricesJson = fileURLToPath(new URL('../../prices.json', import.meta.url));
 
 // -- the generated table --------------------------------------------------------------------
+
+test('PRICES_VERSION is the SHA-256 of prices.json', { skip: !existsSync(pricesJson) && 'prices.json is only in the repository' }, () => {
+  const text = readFileSync(pricesJson, 'utf8').replace(/\r\n/g, '\n');
+  assert.equal(PRICES_VERSION, `sha256:${createHash('sha256').update(text, 'utf8').digest('hex')}`);
+});
 
 test('the table matches prices.json', { skip: !existsSync(pricesJson) && 'prices.json is only in the repository' }, () => {
   const doc = JSON.parse(readFileSync(pricesJson, 'utf8'));

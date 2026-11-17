@@ -88,13 +88,7 @@ func (p Provider) String() string { return string(p) }
 // models it prices itself (Amazon Nova, DeepSeek, Llama, Mistral, Qwen, ...); OpenRouter's are
 // its own model list. Empty for Vertex and Azure, which have no rows of their own.
 func (p Provider) Rows() []Price {
-	var out []Price
-	for i := range table {
-		if table[i].Provider == string(p) {
-			out = append(out, table[i].clone())
-		}
-	}
-	return out
+	return defaultTable.Rows(p)
 }
 
 // FallbackProviders returns the model makers whose list prices Lookup falls back to when this
@@ -108,14 +102,10 @@ func (p Provider) FallbackProviders() []Provider {
 // package-level Lookup. When the provider has no row for it, the rows of its
 // FallbackProviders are tried, so Claude on Bedrock gets Anthropic's row.
 func (p Provider) Lookup(model string) (Price, bool) {
-	i := p.lookupIndex(model)
-	if i < 0 {
-		return Price{}, false
-	}
-	return table[i].clone(), true
+	return defaultTable.LookupIn(p, model)
 }
 
-func (p Provider) lookupIndex(model string) int {
+func (p Provider) lookupIndex(table []Price, model string) int {
 	name := string(p)
 	lower := asciiLower(strings.TrimSpace(model))
 	if host, _, ok := idHint(lower); ok && hosts[host] && host != p && !contains(fallbacks[host], p) {
@@ -124,16 +114,16 @@ func (p Provider) lookupIndex(model string) int {
 		// amazon/nova-2-lite-v1 and perplexity/sonar-pro under those names).
 		head, _, _ := strings.Cut(lower, "/")
 		prefix := head + "/"
-		return resolve(model, func(r *Price) bool { return r.Provider == name && carries(r, prefix) })
+		return resolve(table, model, func(r *Price) bool { return r.Provider == name && carries(r, prefix) })
 	}
-	if i := resolve(model, func(r *Price) bool { return r.Provider == name }); i >= 0 {
+	if i := resolve(table, model, func(r *Price) bool { return r.Provider == name }); i >= 0 {
 		return i
 	}
 	makers := fallbacks[p]
 	if len(makers) == 0 {
 		return -1
 	}
-	return resolve(model, func(r *Price) bool {
+	return resolve(table, model, func(r *Price) bool {
 		for _, m := range makers {
 			if r.Provider == string(m) {
 				return true
@@ -143,10 +133,10 @@ func (p Provider) lookupIndex(model string) int {
 	})
 }
 
-func lookupIndex(model string) int {
+func lookupIndex(table []Price, model string) int {
 	lower := asciiLower(strings.TrimSpace(model))
 	if p, rest, ok := idHint(lower); ok {
-		if i := p.lookupIndex(rest); i >= 0 {
+		if i := p.lookupIndex(table, rest); i >= 0 {
 			return i
 		}
 		if hosts[p] {
@@ -159,17 +149,17 @@ func lookupIndex(model string) int {
 		// a platform's own rows (OpenRouter's x-ai/grok-4.1-fast) only by their exact id.
 		head, _, _ := strings.Cut(lower, "/")
 		prefix := head + "/"
-		if i := resolve(lower, func(r *Price) bool { return !platforms[r.Provider] && carries(r, prefix) }); i >= 0 {
+		if i := resolve(table, lower, func(r *Price) bool { return !platforms[r.Provider] && carries(r, prefix) }); i >= 0 {
 			return i
 		}
-		return exact(lower, func(r *Price) bool { return platforms[r.Provider] })
+		return exact(table, lower, func(r *Price) bool { return platforms[r.Provider] })
 	}
-	if i := resolve(lower, func(r *Price) bool { return !platforms[r.Provider] }); i >= 0 {
+	if i := resolve(table, lower, func(r *Price) bool { return !platforms[r.Provider] }); i >= 0 {
 		return i
 	}
 	// Without a provider path, Bedrock and OpenRouter rows, which resell other makers' models,
 	// are only found by their exact id, so "gpt-4" never takes OpenRouter's "openai/gpt-4".
-	return exact(lower, func(r *Price) bool { return platforms[r.Provider] })
+	return exact(table, lower, func(r *Price) bool { return platforms[r.Provider] })
 }
 
 // carries reports whether the row's id or an alias starts with prefix, ignoring ASCII case.
@@ -183,7 +173,7 @@ func carries(r *Price, prefix string) bool {
 }
 
 // exact returns the first kept row whose id or an alias is lower, ignoring ASCII case.
-func exact(lower string, keep func(*Price) bool) int {
+func exact(table []Price, lower string, keep func(*Price) bool) int {
 	for i := range table {
 		if !keep(&table[i]) {
 			continue
@@ -361,7 +351,7 @@ func ids(p *Price) []string {
 	return append([]string{p.Model}, p.Aliases...)
 }
 
-func resolve(id string, keep func(*Price) bool) int {
+func resolve(table []Price, id string, keep func(*Price) bool) int {
 	var rows []int
 	for i := range table {
 		if keep(&table[i]) {

@@ -26,6 +26,7 @@ Decimal('0.048129')
 
 from ._core import (
     GENERATED,
+    PRICES_VERSION,
     CostBreakdown,
     DecimalCostBreakdown,
     LongContext,
@@ -42,10 +43,11 @@ from ._core import (
 #: by ``from llm_prices import *``, where it would hide the builtin ``all``.
 all = all_prices
 
-__version__ = "1.6.1"
+__version__ = "1.7.0"
 
 __all__ = [
     "GENERATED",
+    "PRICES_VERSION",
     "CostBreakdown",
     "DecimalCostBreakdown",
     "LongContext",

@@ -22,8 +22,13 @@
  *
  * @packageDocumentation
  */
-import { GENERATED, ROWS } from './data.mjs';
-export { GENERATED };
+import { GENERATED, PRICES_VERSION, ROWS } from './data.mjs';
+/**
+ * The table's version: `"sha256:"` and the SHA-256 of the prices.json it was generated from
+ * (UTF-8, LF line endings). Every release states it in its notes; record it as
+ * `gen_ai.usage.cost.pricing.version` next to costs computed from this table.
+ */
+export { GENERATED, PRICES_VERSION };
 const RATES = ['input', 'output', 'cache_read', 'cache_write', 'batch_input', 'batch_output'];
 function pick(tier, rate, ttl) {
     if (!RATES.includes(rate))

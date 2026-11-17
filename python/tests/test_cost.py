@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import dataclasses
 import decimal
+import hashlib
 import json
 import math
 from decimal import Decimal
@@ -25,6 +26,18 @@ def close(a: float, b: float, eps: float = 1e-12) -> bool:
 
 
 # -- the generated table ------------------------------------------------------------------------
+
+
+@pytest.mark.skipif(not PRICES_JSON.exists(), reason="prices.json is only in the repository")
+def test_prices_version_is_the_sha256_of_prices_json():
+    text = PRICES_JSON.read_bytes().replace(b"\r\n", b"\n")
+    assert llm_prices.PRICES_VERSION == "sha256:" + hashlib.sha256(text).hexdigest()
+
+
+def test_prices_version_shape():
+    v = llm_prices.PRICES_VERSION
+    assert v.startswith("sha256:") and len(v) == 71
+    assert all(c in "0123456789abcdef" for c in v[7:])
 
 
 @pytest.mark.skipif(not PRICES_JSON.exists(), reason="prices.json is only in the repository")

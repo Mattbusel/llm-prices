@@ -4,6 +4,11 @@ use crate::{ExactRates, ExactRow, LongContext, Price};
 /// Date the table was generated (ISO 8601).
 pub const GENERATED: &str = "2026-11-17";
 
+/// The SHA-256 of the prices.json this table was generated from (UTF-8, LF line endings), as
+/// `"sha256:<lowercase hex>"`. Every release states it in its notes; record it as
+/// `gen_ai.usage.cost.pricing.version` next to costs computed from this table.
+pub const PRICES_VERSION: &str = "sha256:e8eed72ddf88c237f1ed8b7ed791495a375620c8166f36b8c554db4e5b616f87";
+
 pub static PRICES: &[Price] = &[
     Price { provider: "anthropic", model: "claude-fable-5-2", aliases: &[], status: "listed", input: Some(8.0), output: Some(40.0), cache_read: Some(0.2), cache_write: &[("5m", 10.0), ("1h", 16.0)], batch_input: Some(4.0), batch_output: Some(20.0), long_context: None, source_url: "https://platform.claude.com/docs/en/about-claude/pricing", checked: "2026-11-17" },
     Price { provider: "anthropic", model: "claude-fable-5-1", aliases: &[], status: "listed", input: Some(10.0), output: Some(50.0), cache_read: Some(0.25), cache_write: &[("5m", 12.5), ("1h", 20.0)], batch_input: Some(5.0), batch_output: Some(25.0), long_context: None, source_url: "https://platform.claude.com/docs/en/about-claude/pricing", checked: "2026-11-17" },

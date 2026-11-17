@@ -2,3 +2,8 @@ node_modules/
 target/
 update-summary.md
 crate/Cargo.lock
+__pycache__/
+.hypothesis/
+.mypy_cache/
+go.work
+go.work.sum

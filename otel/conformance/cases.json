@@ -1,0 +1,492 @@
+{
+ "description": "Shared conformance cases for the genaicost Collector processor (Go) and llm-prices-otel (Python). Each case is one span: its attributes before processing, the settings that differ from the defaults, and the attributes expected after it. Amounts are compared with a relative tolerance of 1e-12. PRICES_VERSION stands for the version of the llm-prices table in use. JSON integers are int attributes, numbers with a decimal point are double attributes. Cases with only=collector apply to the Collector processor alone.",
+ "cases": [
+  {
+   "name": "semconv Anthropic span, input includes cache reads and writes",
+   "attributes": {
+    "gen_ai.provider.name": "anthropic",
+    "gen_ai.operation.name": "chat",
+    "gen_ai.request.model": "claude-sonnet-4-6",
+    "gen_ai.usage.input_tokens": 50548,
+    "gen_ai.usage.cache_read.input_tokens": 45000,
+    "gen_ai.usage.cache_write.input_tokens": 3500,
+    "gen_ai.usage.output_tokens": 1024
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.048129,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "input reported without the cache counts (auto detects it)",
+   "attributes": {
+    "gen_ai.system": "Anthropic",
+    "gen_ai.request.model": "claude-sonnet-4-6",
+    "gen_ai.usage.input_tokens": 2048,
+    "gen_ai.usage.cache_read_input_tokens": 45000,
+    "gen_ai.usage.cache_creation_input_tokens": 3500,
+    "gen_ai.usage.output_tokens": 1024
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.048129,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "response model wins and dated snapshots resolve; cache reads at the cache price",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "gpt-4o",
+    "gen_ai.response.model": "gpt-4o-2024-08-06",
+    "gen_ai.usage.input_tokens": 1000,
+    "gen_ai.usage.cache_read.input_tokens": 200,
+    "gen_ai.usage.output_tokens": 500
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.00725,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "OpenAI flex tier from the response service tier",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "o3",
+    "openai.response.service_tier": "flex",
+    "gen_ai.usage.input_tokens": 10000,
+    "gen_ai.usage.output_tokens": 2000,
+    "gen_ai.usage.reasoning.output_tokens": 1500
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.018,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION",
+    "llm_prices.price.tier": "flex"
+   }
+  },
+  {
+   "name": "reasoning tokens larger than output are added to it (auto)",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "o3",
+    "openai.response.service_tier": "default",
+    "gen_ai.usage.input_tokens": 10000,
+    "gen_ai.usage.output_tokens": 500,
+    "gen_ai.usage.reasoning.output_tokens": 1500
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.036,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "Gemini long-context prices above 200k prompt tokens",
+   "attributes": {
+    "gen_ai.provider.name": "gcp.gemini",
+    "gen_ai.request.model": "gemini-2.5-pro",
+    "gen_ai.usage.input_tokens": 250000,
+    "gen_ai.usage.output_tokens": 1000
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.64,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "Gemini priority tier with long context",
+   "attributes": {
+    "gen_ai.provider.name": "gcp.gemini",
+    "gen_ai.request.model": "gemini-2.5-pro",
+    "openai.request.service_tier": "priority",
+    "gen_ai.usage.input_tokens": 300000,
+    "gen_ai.usage.output_tokens": 1000
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 1.377,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION",
+    "llm_prices.price.tier": "priority"
+   }
+  },
+  {
+   "name": "batch request marked by llm_prices.batch",
+   "attributes": {
+    "gen_ai.provider.name": "anthropic",
+    "gen_ai.request.model": "claude-sonnet-4-6",
+    "llm_prices.batch": true,
+    "gen_ai.usage.input_tokens": 10000,
+    "gen_ai.usage.output_tokens": 1000
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.0225,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "OpenInference token counts",
+   "attributes": {
+    "openinference.span.kind": "LLM",
+    "llm.provider": "openai",
+    "llm.system": "openai",
+    "llm.model_name": "gpt-4o-mini",
+    "llm.token_count.prompt": 1200,
+    "llm.token_count.completion": 300,
+    "llm.token_count.prompt_details.cache_read": 1000,
+    "llm.token_count.total": 1500
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.000285,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "an OpenAI client pointed at OpenRouter is priced at OpenRouter",
+   "attributes": {
+    "gen_ai.system": "openai",
+    "server.address": "openrouter.ai",
+    "gen_ai.request.model": "meta-llama/llama-3.3-70b-instruct",
+    "gen_ai.usage.input_tokens": 1000,
+    "gen_ai.usage.output_tokens": 1000
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.00142,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "Groq host",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "server.address": "api.groq.com",
+    "gen_ai.request.model": "openai/gpt-oss-120b",
+    "gen_ai.usage.input_tokens": 1000,
+    "gen_ai.usage.output_tokens": 1000
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.00075,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "Claude on Vertex AI takes the Anthropic list price",
+   "attributes": {
+    "gen_ai.provider.name": "gcp.vertex_ai",
+    "gen_ai.request.model": "claude-sonnet-4-6",
+    "gen_ai.usage.input_tokens": 1000,
+    "gen_ai.usage.output_tokens": 1000
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.018,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "Bedrock inference profile id",
+   "attributes": {
+    "gen_ai.provider.name": "aws.bedrock",
+    "gen_ai.request.model": "us.anthropic.claude-sonnet-4-20250514-v1:0",
+    "gen_ai.usage.input_tokens": 1000,
+    "gen_ai.usage.output_tokens": 1000
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.018,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "token counts as strings and whole doubles",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "gpt-4o",
+    "gen_ai.usage.input_tokens": "1000",
+    "gen_ai.usage.output_tokens": 500.0
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.0075,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "provider the table does not price",
+   "attributes": {
+    "gen_ai.provider.name": "ollama",
+    "gen_ai.request.model": "llama3",
+    "gen_ai.usage.input_tokens": 10,
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "unknown_provider"
+  },
+  {
+   "name": "model the table does not price",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "my-finetune",
+    "gen_ai.usage.input_tokens": 10,
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "unknown_model"
+  },
+  {
+   "name": "no model id",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.usage.input_tokens": 10,
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "no_model"
+  },
+  {
+   "name": "negative token count",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "gpt-4o",
+    "gen_ai.usage.input_tokens": -1,
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "invalid_usage"
+  },
+  {
+   "name": "fractional token count",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "gpt-4o",
+    "gen_ai.usage.input_tokens": 10.5,
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "invalid_usage"
+  },
+  {
+   "name": "service tier the table has no price for",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "gpt-4o",
+    "openai.response.service_tier": "scale",
+    "gen_ai.usage.input_tokens": 10,
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "unpriced_tier"
+  },
+  {
+   "name": "batch request on a row without batch prices",
+   "attributes": {
+    "gen_ai.provider.name": "openrouter",
+    "gen_ai.request.model": "meta-llama/llama-3.3-70b-instruct",
+    "llm_prices.batch": true,
+    "gen_ai.usage.input_tokens": 10,
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "missing_rate"
+  },
+  {
+   "name": "error_attribute also sets error.type",
+   "config": {
+    "on_unpriced": "error_attribute"
+   },
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "my-finetune",
+    "gen_ai.usage.input_tokens": 10,
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "unknown_model",
+   "expect": {
+    "error.type": "llm_prices.unpriced"
+   }
+  },
+  {
+   "name": "error_attribute keeps an existing error.type",
+   "config": {
+    "on_unpriced": "error_attribute"
+   },
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "my-finetune",
+    "error.type": "timeout",
+    "gen_ai.usage.input_tokens": 10,
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "unknown_model",
+   "expect": {
+    "error.type": "timeout"
+   }
+  },
+  {
+   "name": "span without token counts is not touched",
+   "attributes": {
+    "gen_ai.operation.name": "invoke_agent",
+    "gen_ai.request.model": "gpt-4o"
+   },
+   "expect_unchanged": true
+  },
+  {
+   "name": "a cost already on the span is never replaced",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "gpt-4o",
+    "gen_ai.usage.input_tokens": 1000,
+    "gen_ai.usage.output_tokens": 500,
+    "gen_ai.usage.cost.amount": 0.5,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "provider"
+   },
+   "expect_unchanged": true
+  },
+  {
+   "name": "a cost the gateway reported passes through as source=provider",
+   "config": {
+    "reported_cost_attributes": [
+     "gen_ai.usage.total_cost"
+    ]
+   },
+   "attributes": {
+    "gen_ai.system": "openai",
+    "server.address": "openrouter.ai",
+    "gen_ai.request.model": "meta-llama/llama-3.3-70b-instruct",
+    "gen_ai.usage.total_cost": 0.0123,
+    "gen_ai.usage.input_tokens": 1000,
+    "gen_ai.usage.output_tokens": 1000
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.0123,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "provider"
+   },
+   "expect_absent": [
+    "gen_ai.usage.cost.pricing.id",
+    "gen_ai.usage.cost.pricing.version",
+    "llm_prices.unpriced"
+   ]
+  },
+  {
+   "name": "input_tokens_include_cache=false never subtracts the cache counts",
+   "config": {
+    "input_tokens_include_cache": "false"
+   },
+   "attributes": {
+    "gen_ai.provider.name": "anthropic",
+    "gen_ai.request.model": "claude-sonnet-4-6",
+    "gen_ai.usage.input_tokens": 2048,
+    "gen_ai.usage.cache_read.input_tokens": 100,
+    "gen_ai.usage.output_tokens": 1024
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.021534,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "breakdown and OpenInference cost attributes",
+   "config": {
+    "breakdown": true,
+    "openinference": true
+   },
+   "attributes": {
+    "gen_ai.provider.name": "anthropic",
+    "gen_ai.request.model": "claude-sonnet-4-6",
+    "gen_ai.usage.input_tokens": 50548,
+    "gen_ai.usage.cache_read.input_tokens": 45000,
+    "gen_ai.usage.cache_write.input_tokens": 3500,
+    "gen_ai.usage.output_tokens": 1024
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.048129,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION",
+    "llm_prices.price.row": "anthropic/claude-sonnet-4-6",
+    "llm_prices.cost.input": 0.006144,
+    "llm_prices.cost.cache_read": 0.0135,
+    "llm_prices.cost.cache_write": 0.013125,
+    "llm_prices.cost.output": 0.01536,
+    "llm.cost.total": 0.048129,
+    "llm.cost.completion": 0.01536,
+    "llm.cost.prompt": 0.032769,
+    "llm.cost.prompt_details.input": 0.006144,
+    "llm.cost.prompt_details.cache_read": 0.0135,
+    "llm.cost.prompt_details.cache_write": 0.013125,
+    "llm.cost.completion_details.output": 0.01536
+   }
+  },
+  {
+   "name": "OpenInference cost details split reasoning from the rest of the output",
+   "config": {
+    "openinference": true
+   },
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "o3",
+    "gen_ai.usage.input_tokens": 10000,
+    "gen_ai.usage.output_tokens": 2000,
+    "gen_ai.usage.reasoning.output_tokens": 1500
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.036,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION",
+    "llm.cost.total": 0.036,
+    "llm.cost.prompt": 0.02,
+    "llm.cost.completion": 0.016,
+    "llm.cost.completion_details.reasoning": 0.012,
+    "llm.cost.completion_details.output": 0.004
+   }
+  },
+  {
+   "name": "stale span (collector only: ended longer ago than max_span_age)",
+   "only": "collector",
+   "end_age_seconds": 3600,
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "gpt-4o",
+    "gen_ai.usage.input_tokens": 1000,
+    "gen_ai.usage.output_tokens": 500
+   },
+   "expect_unpriced": "stale_span"
+  }
+ ]
+}

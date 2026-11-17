@@ -10,6 +10,9 @@ from typing import Any, Dict, Tuple
 #: Date the table was generated (ISO 8601).
 GENERATED = "2026-11-17"
 
+#: SHA-256 of the prices.json this table was generated from (UTF-8, LF line endings).
+PRICES_VERSION = "sha256:e8eed72ddf88c237f1ed8b7ed791495a375620c8166f36b8c554db4e5b616f87"
+
 ROWS: Tuple[Dict[str, Any], ...] = (
     {"provider": "anthropic", "model": "claude-fable-5-2", "name": "Claude Fable 5.2", "aliases": (), "status": "listed", "input": "8", "output": "40", "cache_read": "0.2", "cache_write": {"5m": "10", "1h": "16"}, "batch_input": "4", "batch_output": "20", "long_context": None, "source_url": "https://platform.claude.com/docs/en/about-claude/pricing", "checked": "2026-11-17", "note": "fast mode (other_tiers.fast) is a separate premium tier; cache multipliers apply on top; page footnote: Cache hits and refreshes on Claude Fable 5.2, Claude Mythos 5.2, Claude Fable 5.1, and Claude Mythos 5.1 are priced at 0.025x the base input price; US-only inference (inference_geo \"us\") is 1.1x on every price (inference_geo field)", "tiers": {"fast": {"input": "16", "output": "80", "cache_read": None, "cache_write": {}, "batch_input": None, "batch_output": None, "long_context": None}}, "inference_geo": {"us": "1.1"}},
     {"provider": "anthropic", "model": "claude-fable-5-1", "name": "Claude Fable 5.1", "aliases": (), "status": "listed", "input": "10", "output": "50", "cache_read": "0.25", "cache_write": {"5m": "12.5", "1h": "20"}, "batch_input": "5", "batch_output": "25", "long_context": None, "source_url": "https://platform.claude.com/docs/en/about-claude/pricing", "checked": "2026-11-17", "note": "page footnote: Cache hits and refreshes on Claude Fable 5.2, Claude Mythos 5.2, Claude Fable 5.1, and Claude Mythos 5.1 are priced at 0.025x the base input price; US-only inference (inference_geo \"us\") is 1.1x on every price (inference_geo field)", "tiers": {}, "inference_geo": {"us": "1.1"}},

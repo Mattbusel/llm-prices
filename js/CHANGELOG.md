@@ -3,6 +3,17 @@
 All notable changes to the `@mattbusel/llm-prices` npm package. Versions follow the Rust
 crate's: price-data-only updates are patch releases, new API is a minor release.
 
+## [1.7.0] - 2026-11-17
+
+### Added
+
+`PRICES_VERSION` (also exported by the root module, `index.mjs`). Every release now names the exact table it ships. `PRICES_VERSION` is `"sha256:"` and the
+SHA-256 of `prices.json` (UTF-8, LF line endings), the same value in every package; it is
+generated with the data and CI checks it against the file. Record it as
+`gen_ai.usage.cost.pricing.version` next to a cost computed from the table (the attribute
+proposed in open-telemetry/semantic-conventions-genai#624). This release's table:
+`sha256:e8eed72ddf88c237f1ed8b7ed791495a375620c8166f36b8c554db4e5b616f87`. No price changed.
+
 ## [1.6.1] - 2026-11-17
 
 ### Added

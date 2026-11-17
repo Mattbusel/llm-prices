@@ -36,6 +36,9 @@ fallback, never treat it as zero.
 | `Price.InputPerToken()`, `Price.OutputPerToken()` | USD per token, for code that keeps per-token prices. |
 | `ParseProvider(name) (Provider, bool)` | Provider names in any case with `_`, `-` and spaces alike: `google_genai`, `vertex_ai`, `bedrock_converse`, `azure_openai`, `together_ai`, `x-ai`, ... (the LangChain, LiteLLM and OpenRouter spellings). |
 | `All() []Price`, `Provider.Rows()`, `Generated` | The whole table, one provider's rows, and the date it was generated. |
+| `Price.Tier(name) (Price, bool)` | The prices of a service tier (`"flex"`, `"priority"`, `"fast"`, ...) as a `Price`, for `CostUsage`. |
+| `PricesVersion`, `Version(b []byte)` | The table's version: `"sha256:"` and the SHA-256 of its prices.json (LF line endings). Every release states it; record it as `gen_ai.usage.cost.pricing.version`. |
+| `ParseTable(b) (*Table, error)`, `Default()` | Read another prices.json (a newer release, your own fork) into a `Table` with the same `Lookup`, `LookupProvider`, `LookupIn`, `All`, `Rows` and `Version`; `Default()` is the embedded table. A `Table` never changes, so it is safe to share and to swap atomically. |
 
 Returned rows are copies; changing them does not change the table.
 
@@ -55,6 +58,22 @@ func requestCost(provider, model string, promptTokens, completionTokens int64) (
 
 `Usage` field mapping from provider responses is in the
 [package docs](https://pkg.go.dev/github.com/Mattbusel/llm-prices/go#Usage).
+
+### Loading a newer table
+
+```go
+b, _ := os.ReadFile("prices.json") // or the prices.json of the latest release
+t, err := llmprices.ParseTable(b)
+if err != nil {
+	t = llmprices.Default()
+}
+p, ok := t.LookupProvider("anthropic", "claude-sonnet-4-6")
+fmt.Println(t.Version()) // sha256:...
+```
+
+Releases from 1.7.0 on publish `prices.json` with an Ed25519 signature (`prices.json.sig`); the
+OpenTelemetry Collector processor in [otel/genaicostprocessor](otel.md) checks it before it
+swaps a table in.
 
 ## Versions
 

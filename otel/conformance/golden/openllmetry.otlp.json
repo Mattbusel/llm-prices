@@ -1,0 +1,366 @@
+{
+ "resourceSpans": [
+  {
+   "resource": {
+    "attributes": [
+     {
+      "key": "telemetry.sdk.language",
+      "value": {
+       "stringValue": "python"
+      }
+     },
+     {
+      "key": "telemetry.sdk.name",
+      "value": {
+       "stringValue": "opentelemetry"
+      }
+     },
+     {
+      "key": "telemetry.sdk.version",
+      "value": {
+       "stringValue": "1.45.2"
+      }
+     },
+     {
+      "key": "service.instance.id",
+      "value": {
+       "stringValue": "7e382abc-e681-46ad-abd6-c4a9e64202e1"
+      }
+     },
+     {
+      "key": "service.name",
+      "value": {
+       "stringValue": "unknown_service:python.exe"
+      }
+     }
+    ]
+   },
+   "scopeSpans": [
+    {
+     "scope": {
+      "name": "opentelemetry.instrumentation.openai.v1",
+      "version": "0.63.1"
+     },
+     "spans": [
+      {
+       "attributes": [
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "chat"
+         }
+        },
+        {
+         "key": "gen_ai.provider.name",
+         "value": {
+          "stringValue": "openai"
+         }
+        },
+        {
+         "key": "gen_ai.request.model",
+         "value": {
+          "stringValue": "gpt-4o-mini"
+         }
+        },
+        {
+         "key": "gen_ai.is_streaming",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "gen_ai.openai.api_base",
+         "value": {
+          "stringValue": "http://127.0.0.1:55270/v1/"
+         }
+        },
+        {
+         "key": "gen_ai.response.model",
+         "value": {
+          "stringValue": "gpt-4o-mini-2024-07-18"
+         }
+        },
+        {
+         "key": "gen_ai.response.id",
+         "value": {
+          "stringValue": "chatcmpl-mock"
+         }
+        },
+        {
+         "key": "gen_ai.response.finish_reasons",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "stop"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "key": "gen_ai.openai.response.system_fingerprint",
+         "value": {
+          "stringValue": "fp_mock"
+         }
+        },
+        {
+         "key": "openai.response.service_tier",
+         "value": {
+          "stringValue": "default"
+         }
+        },
+        {
+         "key": "gen_ai.usage.total_tokens",
+         "value": {
+          "intValue": "1500"
+         }
+        },
+        {
+         "key": "gen_ai.usage.output_tokens",
+         "value": {
+          "intValue": "300"
+         }
+        },
+        {
+         "key": "gen_ai.usage.input_tokens",
+         "value": {
+          "intValue": "1200"
+         }
+        },
+        {
+         "key": "gen_ai.usage.cache_read.input_tokens",
+         "value": {
+          "intValue": "1000"
+         }
+        },
+        {
+         "key": "gen_ai.usage.reasoning_tokens",
+         "value": {
+          "intValue": "0"
+         }
+        }
+       ],
+       "endTimeUnixNano": "1794937911650137100",
+       "flags": 256,
+       "kind": 3,
+       "name": "openai.chat",
+       "spanId": "685bd1557da22b79",
+       "startTimeUnixNano": "1794937911628150400",
+       "status": {},
+       "traceId": "d44a198a86114d227128452b246fdfb3"
+      },
+      {
+       "attributes": [
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "chat"
+         }
+        },
+        {
+         "key": "gen_ai.provider.name",
+         "value": {
+          "stringValue": "openai"
+         }
+        },
+        {
+         "key": "gen_ai.request.model",
+         "value": {
+          "stringValue": "o3"
+         }
+        },
+        {
+         "key": "gen_ai.is_streaming",
+         "value": {
+          "boolValue": false
+         }
+        },
+        {
+         "key": "gen_ai.openai.api_base",
+         "value": {
+          "stringValue": "http://127.0.0.1:55270/v1/"
+         }
+        },
+        {
+         "key": "gen_ai.response.model",
+         "value": {
+          "stringValue": "o3-2025-04-16"
+         }
+        },
+        {
+         "key": "gen_ai.response.id",
+         "value": {
+          "stringValue": "chatcmpl-mock"
+         }
+        },
+        {
+         "key": "gen_ai.response.finish_reasons",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "stop"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "key": "gen_ai.openai.response.system_fingerprint",
+         "value": {
+          "stringValue": "fp_mock"
+         }
+        },
+        {
+         "key": "openai.response.service_tier",
+         "value": {
+          "stringValue": "default"
+         }
+        },
+        {
+         "key": "gen_ai.usage.total_tokens",
+         "value": {
+          "intValue": "12000"
+         }
+        },
+        {
+         "key": "gen_ai.usage.output_tokens",
+         "value": {
+          "intValue": "2000"
+         }
+        },
+        {
+         "key": "gen_ai.usage.input_tokens",
+         "value": {
+          "intValue": "10000"
+         }
+        },
+        {
+         "key": "gen_ai.usage.cache_read.input_tokens",
+         "value": {
+          "intValue": "0"
+         }
+        },
+        {
+         "key": "gen_ai.usage.reasoning_tokens",
+         "value": {
+          "intValue": "1500"
+         }
+        }
+       ],
+       "endTimeUnixNano": "1794937911652141400",
+       "flags": 256,
+       "kind": 3,
+       "name": "openai.chat",
+       "spanId": "150bf0348fbea8be",
+       "startTimeUnixNano": "1794937911650137100",
+       "status": {},
+       "traceId": "f6805519fe74907eb20613ad1bbb9878"
+      }
+     ]
+    },
+    {
+     "scope": {
+      "name": "opentelemetry.instrumentation.anthropic",
+      "version": "0.63.1"
+     },
+     "spans": [
+      {
+       "attributes": [
+        {
+         "key": "gen_ai.provider.name",
+         "value": {
+          "stringValue": "anthropic"
+         }
+        },
+        {
+         "key": "gen_ai.operation.name",
+         "value": {
+          "stringValue": "chat"
+         }
+        },
+        {
+         "key": "gen_ai.request.model",
+         "value": {
+          "stringValue": "claude-sonnet-4-6"
+         }
+        },
+        {
+         "key": "gen_ai.request.max_tokens",
+         "value": {
+          "intValue": "16"
+         }
+        },
+        {
+         "key": "gen_ai.response.model",
+         "value": {
+          "stringValue": "claude-sonnet-4-6"
+         }
+        },
+        {
+         "key": "gen_ai.response.id",
+         "value": {
+          "stringValue": "msg_mock"
+         }
+        },
+        {
+         "key": "gen_ai.response.finish_reasons",
+         "value": {
+          "arrayValue": {
+           "values": [
+            {
+             "stringValue": "stop"
+            }
+           ]
+          }
+         }
+        },
+        {
+         "key": "gen_ai.usage.input_tokens",
+         "value": {
+          "intValue": "50548"
+         }
+        },
+        {
+         "key": "gen_ai.usage.output_tokens",
+         "value": {
+          "intValue": "1024"
+         }
+        },
+        {
+         "key": "gen_ai.usage.total_tokens",
+         "value": {
+          "intValue": "51572"
+         }
+        },
+        {
+         "key": "gen_ai.usage.cache_read.input_tokens",
+         "value": {
+          "intValue": "45000"
+         }
+        },
+        {
+         "key": "gen_ai.usage.cache_creation.input_tokens",
+         "value": {
+          "intValue": "3500"
+         }
+        }
+       ],
+       "endTimeUnixNano": "1794937911660008200",
+       "flags": 256,
+       "kind": 3,
+       "name": "anthropic.chat",
+       "spanId": "d178c9ffad6b4229",
+       "startTimeUnixNano": "1794937911652141400",
+       "status": {
+        "code": 1
+       },
+       "traceId": "0aa95414fe86d1c633113e522547a324"
+      }
+     ]
+    }
+   ]
+  }
+ ]
+}

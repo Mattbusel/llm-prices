@@ -1,0 +1,87 @@
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "llm-prices-otel"
+version = "0.1.0"
+description = "OpenTelemetry span processor that writes gen_ai.usage.cost.* (amount, currency, source, pricing.id, pricing.version) on GenAI spans from OpenLLMetry, OpenInference, Logfire and the GenAI semantic conventions, priced with the llm-prices table."
+readme = { content-type = "text/markdown", text = """
+# llm-prices-otel
+
+An OpenTelemetry `SpanProcessor` that prices GenAI inference spans when they end and writes the
+cost attributes proposed for the GenAI semantic conventions
+([semantic-conventions-genai#443](https://github.com/open-telemetry/semantic-conventions-genai/pull/443),
+[#624](https://github.com/open-telemetry/semantic-conventions-genai/issues/624)):
+
+| attribute | value |
+|---|---|
+| `gen_ai.usage.cost.amount` | cost in USD |
+| `gen_ai.usage.cost.currency` | `USD` |
+| `gen_ai.usage.cost.source` | `local` (computed here) or `provider` (passed through) |
+| `gen_ai.usage.cost.pricing.id` | `llm-prices` (or `litellm.model_cost_map`, `genai-prices`) |
+| `gen_ai.usage.cost.pricing.version` | `sha256:...` of the price table in use |
+
+```python
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
+from llm_prices_otel import CostSpanProcessor
+
+provider = TracerProvider()
+provider.add_span_processor(CostSpanProcessor(BatchSpanProcessor(exporter)))
+```
+
+It reads the token counts that OpenLLMetry, OpenInference, Logfire and the GenAI semantic
+conventions write, prices uncached input, cache reads and writes, output (reasoning included),
+batch requests, OpenAI and Gemini service tiers and long-context tiers, and records the
+`gen_ai.client.operation.cost` histogram. A span it cannot price gets `llm_prices.unpriced` with
+the reason, never a zero. The OpenTelemetry Collector processor `genaicost` in the same
+repository applies the same rules.
+
+Docs: https://github.com/Mattbusel/llm-prices/blob/main/docs/otel.md
+""" }
+requires-python = ">=3.9"
+license = "MIT"
+license-files = ["LICENSE"]
+authors = [{ name = "Matthew Busel" }]
+keywords = ["opentelemetry", "otel", "llm", "genai", "cost", "pricing", "tracing", "openllmetry", "openinference", "logfire"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: System :: Monitoring",
+    "Typing :: Typed",
+]
+dependencies = [
+    "llm-prices>=1.7.0",
+    "opentelemetry-api>=1.24",
+    "opentelemetry-sdk>=1.24",
+]
+
+[project.optional-dependencies]
+genai-prices = ["genai-prices>=0.0.40"]
+
+[project.urls]
+Homepage = "https://github.com/Mattbusel/llm-prices"
+Source = "https://github.com/Mattbusel/llm-prices/tree/main/otel/python"
+Changelog = "https://github.com/Mattbusel/llm-prices/blob/main/otel/python/CHANGELOG.md"
+Issues = "https://github.com/Mattbusel/llm-prices/issues"
+Documentation = "https://github.com/Mattbusel/llm-prices/blob/main/docs/otel.md"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/llm_prices_otel"]
+
+[tool.hatch.build.targets.sdist]
+include = ["src/llm_prices_otel", "tests", "CHANGELOG.md", "LICENSE", "pyproject.toml"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests", "src"]
+addopts = "--doctest-modules"

@@ -140,7 +140,7 @@ mod provider;
 #[cfg(feature = "serde")]
 mod serde_impls;
 
-pub use data::GENERATED;
+pub use data::{GENERATED, PRICES_VERSION};
 #[cfg(feature = "rust_decimal")]
 pub use decimal::DecimalCostBreakdown;
 pub use provider::{lookup_provider, Provider, UnknownProvider};
