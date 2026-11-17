@@ -6,6 +6,16 @@ repository as a whole. The packages have their own changelogs:
 The Go module is tagged `go/vX.Y.Z` and listed here.
 The `v1` tag moves to every 1.x release.
 
+## [1.6.2] - 2026-11-17
+
+### Fixed (the GitHub Action only; the packages stay at 1.6.1)
+
+The drift scan no longer reads an id that another provider sells at its own price as the model
+maker's: a file listing OpenRouter's `deepseek/deepseek-v4-flash` at OpenRouter's price is not
+quoting DeepSeek's price. Ids of rows from providers not being checked are skipped unless a
+checked provider uses the same id. The repository's own self-check skips the generated table
+files, which now hold Bedrock's and OpenRouter's prices next to the model makers'.
+
 ## [1.6.1] - 2026-11-17
 
 ### Added

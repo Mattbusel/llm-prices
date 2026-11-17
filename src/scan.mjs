@@ -17,8 +17,14 @@ export function buildIndex(prices, providers) {
   // Ids that two chosen providers both sell (openai/gpt-oss-120b on Groq and Together) say
   // nothing about which price is meant, so they are left out.
   const ambiguous = new Set();
+  // Ids of rows from providers not chosen (OpenRouter lists deepseek/deepseek-v4-flash at its
+  // own price): a file that names one of these is not quoting the model maker's price.
+  const foreign = new Set();
   for (const row of prices.models) {
-    if (!want.has(row.provider)) continue;
+    if (!want.has(row.provider)) {
+      for (const id of [row.model, ...(row.aliases || [])]) foreign.add(id.toLowerCase());
+      continue;
+    }
     for (const id of [row.model, ...(row.aliases || [])]) {
       const key = id.toLowerCase();
       const prev = exact.get(key);
@@ -32,13 +38,15 @@ export function buildIndex(prices, providers) {
       if (row.provider === 'anthropic' && DATE8.test(id)) undated.set(id.toLowerCase().replace(DATE8, ''), row);
     }
   }
-  return { exact, undated };
+  for (const key of exact.keys()) foreign.delete(key);
+  return { exact, undated, foreign };
 }
 
 /** Maps a raw token from a file to a row, or null. */
 export function resolveModel(index, token) {
   let t = token.toLowerCase().replace(/[.:\/-]+$/, '');
   if (index.exact.has(t)) return index.exact.get(t);
+  if (index.foreign && index.foreign.has(t.replace(/^openrouter\//, ''))) return null;
   t = t.replace(PREFIX, '').replace(BEDROCK, '').replace(/-v\d+(?::\d+)?$/, '').replace(/@(20\d{6})$/, '-$1');
   if (index.exact.has(t)) return index.exact.get(t);
   if (index.undated.has(t)) return index.undated.get(t);

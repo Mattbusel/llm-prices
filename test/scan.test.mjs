@@ -302,3 +302,18 @@ test('flex and priority prices above a long-context threshold are not drift (Lit
   assert.ok(findings.length >= 4, `found ${findings.length}`);
   assert.deepEqual(findings.filter((f) => !f.ok), []);
 });
+
+test('ids another provider sells at its own price are not the maker price', async () => {
+  const { buildIndex, resolveModel } = await import('../src/scan.mjs');
+  const prices = JSON.parse((await import('node:fs')).readFileSync(new URL('../prices.json', import.meta.url), 'utf8'));
+  const index = buildIndex(prices);
+  // OpenRouter lists deepseek/deepseek-v4-flash at its own price; a file naming that id is not
+  // quoting DeepSeek's.
+  const openrouter = prices.models.find((m) => m.provider === 'openrouter' && m.model.startsWith('deepseek/') && resolveModel(buildIndex({ models: prices.models.filter((r) => r.provider !== 'openrouter') }), m.model));
+  if (openrouter) {
+    assert.equal(resolveModel(index, openrouter.model), null);
+    assert.equal(resolveModel(index, `openrouter/${openrouter.model}`), null);
+  }
+  assert.equal(resolveModel(index, 'deepseek/deepseek-chat')?.provider ?? 'deepseek', 'deepseek');
+  assert.equal(resolveModel(index, 'gpt-4o')?.model, 'gpt-4o');
+});

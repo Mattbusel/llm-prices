@@ -36,7 +36,20 @@ jobs:
       - name: this repo itself has no drift
         uses: ./
         with:
-          exclude: test/**
+          # The generated table files hold OpenRouter's and Bedrock's own prices next to the
+          # model makers' (build.mjs --check keeps them in sync with prices.json).
+          exclude: |
+            test/**
+            prices.json
+            prices.toml
+            litellm.json
+            data.mjs
+            crate/prices.json
+            crate/src/data.rs
+            go/prices.json
+            js/src/data.ts
+            python/src/llm_prices/_data.py
+            python/src/llm_prices/litellm.json
 
   python:
     strategy:
