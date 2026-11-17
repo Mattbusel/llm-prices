@@ -536,6 +536,100 @@
     },
     {
       "provider": "openai",
+      "model": "gpt-6.2-astra",
+      "name": null,
+      "aliases": [],
+      "status": "listed",
+      "unit": "USD per 1M tokens",
+      "input": 8,
+      "output": 40,
+      "cache_write": {
+        "30m": 10,
+        "12h": 20
+      },
+      "cache_read": 0.4,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": {
+        "threshold_tokens": 272000,
+        "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
+        "input": 16,
+        "output": 60,
+        "cache_write": {
+          "30m": 20,
+          "12h": 40
+        },
+        "cache_read": 0.8,
+        "batch_input": null,
+        "batch_output": null
+      },
+      "other_tiers": {
+        "fast": {
+          "input": 16,
+          "output": 80,
+          "cache_read": 0.8
+        },
+        "ultrafast": {
+          "input": 24,
+          "output": 120,
+          "cache_read": 1.2
+        }
+      },
+      "inference_geo": null,
+      "scheduled": null,
+      "source_url": "https://developers.openai.com/api/docs/pricing",
+      "checked": "2026-11-17",
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
+    },
+    {
+      "provider": "openai",
+      "model": "gpt-6.2-sol",
+      "name": null,
+      "aliases": [],
+      "status": "listed",
+      "unit": "USD per 1M tokens",
+      "input": 2,
+      "output": 10,
+      "cache_write": {
+        "30m": 2.5,
+        "12h": 5
+      },
+      "cache_read": 0.1,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": {
+        "threshold_tokens": 272000,
+        "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
+        "input": 4,
+        "output": 15,
+        "cache_write": {
+          "30m": 5,
+          "12h": 10
+        },
+        "cache_read": 0.2,
+        "batch_input": null,
+        "batch_output": null
+      },
+      "other_tiers": {
+        "fast": {
+          "input": 4,
+          "output": 20,
+          "cache_read": 0.2
+        },
+        "ultrafast": {
+          "input": 6,
+          "output": 30,
+          "cache_read": 0.3
+        }
+      },
+      "inference_geo": null,
+      "scheduled": null,
+      "source_url": "https://developers.openai.com/api/docs/pricing",
+      "checked": "2026-11-17",
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
+    },
+    {
+      "provider": "openai",
       "model": "gpt-6-astra",
       "name": null,
       "aliases": [],
@@ -548,8 +642,8 @@
         "12h": 25
       },
       "cache_read": 1,
-      "batch_input": 5,
-      "batch_output": 25,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -560,15 +654,10 @@
           "12h": 50
         },
         "cache_read": 2,
-        "batch_input": 10,
-        "batch_output": 37.5
+        "batch_input": null,
+        "batch_output": null
       },
       "other_tiers": {
-        "flex": {
-          "input": 5,
-          "output": 25,
-          "cache_read": 0.5
-        },
         "fast": {
           "input": 20,
           "output": 100,
@@ -584,7 +673,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.5; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -600,8 +689,8 @@
         "12h": 5
       },
       "cache_read": 0.1,
-      "batch_input": 1,
-      "batch_output": 5,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -612,15 +701,10 @@
           "12h": 10
         },
         "cache_read": 0.2,
-        "batch_input": 2,
-        "batch_output": 7.5
+        "batch_input": null,
+        "batch_output": null
       },
       "other_tiers": {
-        "flex": {
-          "input": 1,
-          "output": 5,
-          "cache_read": 0.05
-        },
         "fast": {
           "input": 4,
           "output": 20,
@@ -636,7 +720,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.05; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -652,8 +736,8 @@
         "12h": 2.5
       },
       "cache_read": 0.05,
-      "batch_input": 0.5,
-      "batch_output": 2.5,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -664,15 +748,10 @@
           "12h": 5
         },
         "cache_read": 0.1,
-        "batch_input": 1,
-        "batch_output": 3.75
+        "batch_input": null,
+        "batch_output": null
       },
       "other_tiers": {
-        "flex": {
-          "input": 0.5,
-          "output": 2.5,
-          "cache_read": 0.025
-        },
         "fast": {
           "input": 2,
           "output": 10,
@@ -683,7 +762,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.025; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -699,8 +778,8 @@
         "12h": 0.25
       },
       "cache_read": 0.01,
-      "batch_input": 0.05,
-      "batch_output": 0.25,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -711,15 +790,10 @@
           "12h": 0.5
         },
         "cache_read": 0.02,
-        "batch_input": 0.1,
-        "batch_output": 0.375
+        "batch_input": null,
+        "batch_output": null
       },
       "other_tiers": {
-        "flex": {
-          "input": 0.05,
-          "output": 0.25,
-          "cache_read": 0.005
-        },
         "fast": {
           "input": 0.2,
           "output": 1,
@@ -730,7 +804,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.005; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -746,8 +820,8 @@
         "12h": 5
       },
       "cache_read": 0.2,
-      "batch_input": 1,
-      "batch_output": 5,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -758,15 +832,10 @@
           "12h": 10
         },
         "cache_read": 0.4,
-        "batch_input": 2,
-        "batch_output": 7.5
+        "batch_input": null,
+        "batch_output": null
       },
       "other_tiers": {
-        "flex": {
-          "input": 1,
-          "output": 5,
-          "cache_read": 0.1
-        },
         "fast": {
           "input": 4,
           "output": 20,
@@ -777,7 +846,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.1; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -793,8 +862,8 @@
         "12h": 10
       },
       "cache_read": 0.4,
-      "batch_input": 2,
-      "batch_output": 10,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -805,15 +874,10 @@
           "12h": 20
         },
         "cache_read": 0.8,
-        "batch_input": 4,
-        "batch_output": 15
+        "batch_input": null,
+        "batch_output": null
       },
       "other_tiers": {
-        "flex": {
-          "input": 2,
-          "output": 10,
-          "cache_read": 0.2
-        },
         "fast": {
           "input": 8,
           "output": 40,
@@ -824,7 +888,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.2; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -840,8 +904,8 @@
         "12h": 5
       },
       "cache_read": 0.2,
-      "batch_input": 1,
-      "batch_output": 6,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -852,15 +916,10 @@
           "12h": 10
         },
         "cache_read": 0.4,
-        "batch_input": 2,
-        "batch_output": 9
+        "batch_input": null,
+        "batch_output": null
       },
       "other_tiers": {
-        "flex": {
-          "input": 1,
-          "output": 6,
-          "cache_read": 0.1
-        },
         "fast": {
           "input": 4,
           "output": 24,
@@ -871,7 +930,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.1; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -887,8 +946,8 @@
         "12h": 0.5
       },
       "cache_read": 0.02,
-      "batch_input": 0.1,
-      "batch_output": 0.6,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -899,15 +958,10 @@
           "12h": 1
         },
         "cache_read": 0.04,
-        "batch_input": 0.2,
-        "batch_output": 0.9
+        "batch_input": null,
+        "batch_output": null
       },
       "other_tiers": {
-        "flex": {
-          "input": 0.1,
-          "output": 0.6,
-          "cache_read": 0.01
-        },
         "fast": {
           "input": 0.4,
           "output": 2.4,
@@ -918,7 +972,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.01; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -931,8 +985,8 @@
       "output": 30,
       "cache_write": null,
       "cache_read": 0.5,
-      "batch_input": 2.5,
-      "batch_output": 15,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -940,15 +994,10 @@
         "output": 45,
         "cache_write": null,
         "cache_read": 1,
-        "batch_input": 5,
-        "batch_output": 22.5
+        "batch_input": null,
+        "batch_output": null
       },
       "other_tiers": {
-        "flex": {
-          "input": 2.5,
-          "output": 15,
-          "cache_read": 0.25
-        },
         "fast": {
           "input": 12.5,
           "output": 75,
@@ -959,7 +1008,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.25; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -972,8 +1021,8 @@
       "output": 180,
       "cache_write": null,
       "cache_read": null,
-      "batch_input": 15,
-      "batch_output": 90,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -984,18 +1033,12 @@
         "batch_input": null,
         "batch_output": null
       },
-      "other_tiers": {
-        "flex": {
-          "input": 15,
-          "output": 90,
-          "cache_read": null
-        }
-      },
+      "other_tiers": null,
       "inference_geo": null,
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1008,8 +1051,8 @@
       "output": 15,
       "cache_write": null,
       "cache_read": 0.25,
-      "batch_input": 1.25,
-      "batch_output": 7.5,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -1017,15 +1060,10 @@
         "output": 22.5,
         "cache_write": null,
         "cache_read": 0.5,
-        "batch_input": 2.5,
-        "batch_output": 11.25
+        "batch_input": null,
+        "batch_output": null
       },
       "other_tiers": {
-        "flex": {
-          "input": 1.25,
-          "output": 7.5,
-          "cache_read": 0.13
-        },
         "fast": {
           "input": 5,
           "output": 30,
@@ -1036,7 +1074,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.13; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1049,8 +1087,8 @@
       "output": 180,
       "cache_write": null,
       "cache_read": null,
-      "batch_input": 15,
-      "batch_output": 90,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
@@ -1058,21 +1096,15 @@
         "output": 270,
         "cache_write": null,
         "cache_read": null,
-        "batch_input": 30,
-        "batch_output": 135
+        "batch_input": null,
+        "batch_output": null
       },
-      "other_tiers": {
-        "flex": {
-          "input": 15,
-          "output": 90,
-          "cache_read": null
-        }
-      },
+      "other_tiers": null,
       "inference_geo": null,
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1085,15 +1117,10 @@
       "output": 4.5,
       "cache_write": null,
       "cache_read": 0.075,
-      "batch_input": 0.375,
-      "batch_output": 2.25,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": {
-        "flex": {
-          "input": 0.375,
-          "output": 2.25,
-          "cache_read": 0.0375
-        },
         "fast": {
           "input": 1.5,
           "output": 9,
@@ -1104,7 +1131,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.0375; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1117,21 +1144,15 @@
       "output": 1.25,
       "cache_write": null,
       "cache_read": 0.02,
-      "batch_input": 0.1,
-      "batch_output": 0.625,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
-      "other_tiers": {
-        "flex": {
-          "input": 0.1,
-          "output": 0.625,
-          "cache_read": 0.01
-        }
-      },
+      "other_tiers": null,
       "inference_geo": null,
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.01; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1144,15 +1165,10 @@
       "output": 14,
       "cache_write": null,
       "cache_read": 0.175,
-      "batch_input": 0.875,
-      "batch_output": 7,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": {
-        "flex": {
-          "input": 0.875,
-          "output": 7,
-          "cache_read": 0.0875
-        },
         "fast": {
           "input": 3.5,
           "output": 28,
@@ -1163,7 +1179,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.0875; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1176,15 +1192,15 @@
       "output": 168,
       "cache_write": null,
       "cache_read": null,
-      "batch_input": 10.5,
-      "batch_output": 84,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": null,
       "inference_geo": null,
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1197,15 +1213,10 @@
       "output": 10,
       "cache_write": null,
       "cache_read": 0.125,
-      "batch_input": 0.625,
-      "batch_output": 5,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": {
-        "flex": {
-          "input": 0.625,
-          "output": 5,
-          "cache_read": 0.0625
-        },
         "fast": {
           "input": 2.5,
           "output": 20,
@@ -1216,7 +1227,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.0625; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1229,15 +1240,10 @@
       "output": 10,
       "cache_write": null,
       "cache_read": 0.125,
-      "batch_input": 0.625,
-      "batch_output": 5,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": {
-        "flex": {
-          "input": 0.625,
-          "output": 5,
-          "cache_read": 0.0625
-        },
         "fast": {
           "input": 2.5,
           "output": 20,
@@ -1248,7 +1254,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.0625; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1261,15 +1267,10 @@
       "output": 2,
       "cache_write": null,
       "cache_read": 0.025,
-      "batch_input": 0.125,
-      "batch_output": 1,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": {
-        "flex": {
-          "input": 0.125,
-          "output": 1,
-          "cache_read": 0.0125
-        },
         "fast": {
           "input": 0.45,
           "output": 3.6,
@@ -1280,7 +1281,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.0125; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1293,21 +1294,15 @@
       "output": 0.4,
       "cache_write": null,
       "cache_read": 0.005,
-      "batch_input": 0.025,
-      "batch_output": 0.2,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
-      "other_tiers": {
-        "flex": {
-          "input": 0.025,
-          "output": 0.2,
-          "cache_read": 0.0025
-        }
-      },
+      "other_tiers": null,
       "inference_geo": null,
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "batch cached input 0.0025; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1320,15 +1315,15 @@
       "output": 120,
       "cache_write": null,
       "cache_read": null,
-      "batch_input": 7.5,
-      "batch_output": 60,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": null,
       "inference_geo": null,
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1341,8 +1336,8 @@
       "output": 8,
       "cache_write": null,
       "cache_read": 0.5,
-      "batch_input": 1,
-      "batch_output": 4,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": {
         "fast": {
@@ -1355,7 +1350,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1368,8 +1363,8 @@
       "output": 1.6,
       "cache_write": null,
       "cache_read": 0.1,
-      "batch_input": 0.2,
-      "batch_output": 0.8,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": {
         "fast": {
@@ -1382,7 +1377,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1395,8 +1390,8 @@
       "output": 10,
       "cache_write": null,
       "cache_read": 1.25,
-      "batch_input": 1.25,
-      "batch_output": 5,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": {
         "fast": {
@@ -1409,7 +1404,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1422,8 +1417,8 @@
       "output": 0.6,
       "cache_write": null,
       "cache_read": 0.075,
-      "batch_input": 0.075,
-      "batch_output": 0.3,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": {
         "fast": {
@@ -1436,7 +1431,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1449,15 +1444,15 @@
       "output": 80,
       "cache_write": null,
       "cache_read": null,
-      "batch_input": 10,
-      "batch_output": 40,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": null,
       "inference_geo": null,
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1470,15 +1465,10 @@
       "output": 8,
       "cache_write": null,
       "cache_read": 0.5,
-      "batch_input": 1,
-      "batch_output": 4,
+      "batch_input": null,
+      "batch_output": null,
       "long_context": null,
       "other_tiers": {
-        "flex": {
-          "input": 1,
-          "output": 4,
-          "cache_read": 0.25
-        },
         "fast": {
           "input": 3.5,
           "output": 14,
@@ -1489,7 +1479,7 @@
       "scheduled": null,
       "source_url": "https://developers.openai.com/api/docs/pricing",
       "checked": "2026-11-17",
-      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openai",
@@ -1576,25 +1566,25 @@
       "aliases": [],
       "status": "listed",
       "unit": "USD per 1M tokens",
-      "input": 15,
-      "output": 75,
+      "input": 10,
+      "output": 50,
       "cache_write": {
-        "30m": 18.75,
-        "12h": 37.5
+        "30m": 12.5,
+        "12h": 25
       },
-      "cache_read": 1.5,
+      "cache_read": 1,
       "batch_input": null,
       "batch_output": null,
       "long_context": {
         "threshold_tokens": 272000,
         "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
-        "input": 30,
-        "output": 112.5,
+        "input": 20,
+        "output": 75,
         "cache_write": {
-          "30m": 37.5,
-          "12h": 75
+          "30m": 25,
+          "12h": 50
         },
-        "cache_read": 3,
+        "cache_read": 2,
         "batch_input": null,
         "batch_output": null
       },
@@ -1649,6 +1639,42 @@
     },
     {
       "provider": "openai",
+      "model": "gpt-6.2-astra-law",
+      "name": null,
+      "aliases": [],
+      "status": "listed",
+      "unit": "USD per 1M tokens",
+      "input": 8,
+      "output": 40,
+      "cache_write": {
+        "30m": 10,
+        "12h": 20
+      },
+      "cache_read": 0.4,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": {
+        "threshold_tokens": 272000,
+        "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
+        "input": 16,
+        "output": 60,
+        "cache_write": {
+          "30m": 20,
+          "12h": 40
+        },
+        "cache_read": 0.8,
+        "batch_input": null,
+        "batch_output": null
+      },
+      "other_tiers": null,
+      "inference_geo": null,
+      "scheduled": null,
+      "source_url": "https://developers.openai.com/api/docs/pricing",
+      "checked": "2026-11-17",
+      "note": "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
+    },
+    {
+      "provider": "openai",
       "model": "gpt-6-astra-law",
       "name": null,
       "aliases": [],
@@ -1660,7 +1686,16 @@
       "cache_read": 1,
       "batch_input": null,
       "batch_output": null,
-      "long_context": null,
+      "long_context": {
+        "threshold_tokens": 272000,
+        "applies_when": "input tokens over 272K (page: short context is up to 272K input tokens)",
+        "input": 20,
+        "output": 75,
+        "cache_write": null,
+        "cache_read": 2,
+        "batch_input": null,
+        "batch_output": null
+      },
       "other_tiers": null,
       "inference_geo": null,
       "scheduled": null,
@@ -6380,10 +6415,10 @@
       ],
       "status": "listed",
       "unit": "USD per 1M tokens",
-      "input": 0.09,
-      "output": 0.3,
+      "input": 0.0765,
+      "output": 0.255,
       "cache_write": null,
-      "cache_read": 0.05,
+      "cache_read": 0.0425,
       "batch_input": null,
       "batch_output": null,
       "long_context": null,
@@ -7188,10 +7223,10 @@
       ],
       "status": "listed",
       "unit": "USD per 1M tokens",
-      "input": 0.15,
-      "output": 0.6,
+      "input": 0.075,
+      "output": 0.3,
       "cache_write": null,
-      "cache_read": 0.015,
+      "cache_read": 0.0075,
       "batch_input": null,
       "batch_output": null,
       "long_context": null,
@@ -7400,10 +7435,10 @@
       "aliases": [],
       "status": "listed",
       "unit": "USD per 1M tokens",
-      "input": 0.4,
-      "output": 2,
+      "input": 0.44,
+      "output": 2.2,
       "cache_write": null,
-      "cache_read": 0.04,
+      "cache_read": 0.044,
       "batch_input": null,
       "batch_output": null,
       "long_context": null,
@@ -7444,10 +7479,10 @@
       "aliases": [],
       "status": "listed",
       "unit": "USD per 1M tokens",
-      "input": 0.4,
-      "output": 2,
+      "input": 0.44,
+      "output": 2.2,
       "cache_write": null,
-      "cache_read": 0.04,
+      "cache_read": 0.044,
       "batch_input": null,
       "batch_output": null,
       "long_context": null,
@@ -7576,10 +7611,10 @@
       ],
       "status": "listed",
       "unit": "USD per 1M tokens",
-      "input": 0.1,
-      "output": 0.3,
+      "input": 0.075,
+      "output": 0.2,
       "cache_write": null,
-      "cache_read": 0.01,
+      "cache_read": null,
       "batch_input": null,
       "batch_output": null,
       "long_context": null,
@@ -7588,7 +7623,7 @@
       "scheduled": null,
       "source_url": "https://openrouter.ai/mistralai/mistral-small-3.2-24b-instruct",
       "checked": "2026-11-17",
-      "note": "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
+      "note": "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: cache_read, batch_input, batch_output"
     },
     {
       "provider": "openrouter",
@@ -7801,7 +7836,7 @@
       "input": 0.7,
       "output": 3.75,
       "cache_write": null,
-      "cache_read": 0.16,
+      "cache_read": 0.17,
       "batch_input": null,
       "batch_output": null,
       "long_context": null,
@@ -9454,6 +9489,134 @@
       "source_url": "https://openrouter.ai/openai/gpt-6.1-terra-pro",
       "checked": "2026-11-17",
       "note": "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); batch prices are the openai/gpt-6.1-terra-pro:batch entry; the API also lists web_search prices, which are not per-token and are left out"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6.2-astra",
+      "name": "OpenAI: GPT-6.2 Astra",
+      "aliases": [
+        "openai/gpt-6.2-astra-20261117"
+      ],
+      "status": "listed",
+      "unit": "USD per 1M tokens",
+      "input": 8,
+      "output": 40,
+      "cache_write": null,
+      "cache_read": 0.4,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": {
+        "threshold_tokens": 271999,
+        "applies_when": "prompts of 272000 tokens or more (OpenRouter pricing.overrides min_prompt_tokens)",
+        "input": 16,
+        "output": 60,
+        "cache_write": null,
+        "cache_read": 0.8,
+        "batch_input": null,
+        "batch_output": null
+      },
+      "other_tiers": null,
+      "inference_geo": null,
+      "scheduled": null,
+      "source_url": "https://openrouter.ai/openai/gpt-6.2-astra",
+      "checked": "2026-11-17",
+      "note": "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); the API also lists web_search prices, which are not per-token and are left out; null means the page lists no price: batch_input, batch_output"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6.2-astra-pro",
+      "name": "OpenAI: GPT-6.2 Astra Pro",
+      "aliases": [
+        "openai/gpt-6.2-astra-pro-20261117"
+      ],
+      "status": "listed",
+      "unit": "USD per 1M tokens",
+      "input": 8,
+      "output": 40,
+      "cache_write": null,
+      "cache_read": 0.4,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": {
+        "threshold_tokens": 271999,
+        "applies_when": "prompts of 272000 tokens or more (OpenRouter pricing.overrides min_prompt_tokens)",
+        "input": 16,
+        "output": 60,
+        "cache_write": null,
+        "cache_read": 0.8,
+        "batch_input": null,
+        "batch_output": null
+      },
+      "other_tiers": null,
+      "inference_geo": null,
+      "scheduled": null,
+      "source_url": "https://openrouter.ai/openai/gpt-6.2-astra-pro",
+      "checked": "2026-11-17",
+      "note": "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); the API also lists web_search prices, which are not per-token and are left out; null means the page lists no price: batch_input, batch_output"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6.2-sol",
+      "name": "OpenAI: GPT-6.2 Sol",
+      "aliases": [
+        "openai/gpt-6.2-sol-20261117"
+      ],
+      "status": "listed",
+      "unit": "USD per 1M tokens",
+      "input": 2,
+      "output": 10,
+      "cache_write": null,
+      "cache_read": 0.1,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": {
+        "threshold_tokens": 271999,
+        "applies_when": "prompts of 272000 tokens or more (OpenRouter pricing.overrides min_prompt_tokens)",
+        "input": 4,
+        "output": 15,
+        "cache_write": null,
+        "cache_read": 0.2,
+        "batch_input": null,
+        "batch_output": null
+      },
+      "other_tiers": null,
+      "inference_geo": null,
+      "scheduled": null,
+      "source_url": "https://openrouter.ai/openai/gpt-6.2-sol",
+      "checked": "2026-11-17",
+      "note": "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); the API also lists web_search prices, which are not per-token and are left out; null means the page lists no price: batch_input, batch_output"
+    },
+    {
+      "provider": "openrouter",
+      "model": "openai/gpt-6.2-sol-pro",
+      "name": "OpenAI: GPT-6.2 Sol Pro",
+      "aliases": [
+        "openai/gpt-6.2-sol-pro-20261117"
+      ],
+      "status": "listed",
+      "unit": "USD per 1M tokens",
+      "input": 2,
+      "output": 10,
+      "cache_write": null,
+      "cache_read": 0.1,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": {
+        "threshold_tokens": 271999,
+        "applies_when": "prompts of 272000 tokens or more (OpenRouter pricing.overrides min_prompt_tokens)",
+        "input": 4,
+        "output": 15,
+        "cache_write": null,
+        "cache_read": 0.2,
+        "batch_input": null,
+        "batch_output": null
+      },
+      "other_tiers": null,
+      "inference_geo": null,
+      "scheduled": null,
+      "source_url": "https://openrouter.ai/openai/gpt-6.2-sol-pro",
+      "checked": "2026-11-17",
+      "note": "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); the API also lists web_search prices, which are not per-token and are left out; null means the page lists no price: batch_input, batch_output"
     },
     {
       "provider": "openrouter",
@@ -11209,10 +11372,10 @@
       ],
       "status": "listed",
       "unit": "USD per 1M tokens",
-      "input": 0.132,
-      "output": 0.528,
+      "input": 0.0825,
+      "output": 0.33,
       "cache_write": null,
-      "cache_read": 0.033,
+      "cache_read": 0.020625,
       "batch_input": null,
       "batch_output": null,
       "long_context": null,
@@ -11301,10 +11464,10 @@
       ],
       "status": "listed",
       "unit": "USD per 1M tokens",
-      "input": 0.834,
-      "output": 2.501,
+      "input": 0.7506,
+      "output": 2.2509,
       "cache_write": null,
-      "cache_read": 0.042,
+      "cache_read": 0.0378,
       "batch_input": null,
       "batch_output": null,
       "long_context": null,

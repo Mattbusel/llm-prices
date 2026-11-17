@@ -2,6 +2,110 @@
  "note": "Excerpt of https://openrouter.ai/api/v1/models, kept only for parser tests.",
  "data": [
   {
+   "id": "openai/gpt-6.2-astra-pro",
+   "canonical_slug": "openai/gpt-6.2-astra-pro-20261117",
+   "name": "OpenAI: GPT-6.2 Astra Pro",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.000008",
+    "completion": "0.00004",
+    "web_search": "0.01",
+    "input_cache_read": "0.0000004",
+    "input_cache_write": "0.00001",
+    "overrides": [
+     {
+      "min_prompt_tokens": 272000,
+      "prompt": "0.000016",
+      "completion": "0.00006",
+      "input_cache_read": "0.0000008",
+      "input_cache_write": "0.00002"
+     }
+    ]
+   }
+  },
+  {
+   "id": "openai/gpt-6.2-astra",
+   "canonical_slug": "openai/gpt-6.2-astra-20261117",
+   "name": "OpenAI: GPT-6.2 Astra",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.000008",
+    "completion": "0.00004",
+    "web_search": "0.01",
+    "input_cache_read": "0.0000004",
+    "input_cache_write": "0.00001",
+    "overrides": [
+     {
+      "min_prompt_tokens": 272000,
+      "prompt": "0.000016",
+      "completion": "0.00006",
+      "input_cache_read": "0.0000008",
+      "input_cache_write": "0.00002"
+     }
+    ]
+   }
+  },
+  {
+   "id": "openai/gpt-6.2-sol-pro",
+   "canonical_slug": "openai/gpt-6.2-sol-pro-20261117",
+   "name": "OpenAI: GPT-6.2 Sol Pro",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.000002",
+    "completion": "0.00001",
+    "web_search": "0.01",
+    "input_cache_read": "0.0000001",
+    "input_cache_write": "0.0000025",
+    "overrides": [
+     {
+      "min_prompt_tokens": 272000,
+      "prompt": "0.000004",
+      "completion": "0.000015",
+      "input_cache_read": "0.0000002",
+      "input_cache_write": "0.000005"
+     }
+    ]
+   }
+  },
+  {
+   "id": "openai/gpt-6.2-sol",
+   "canonical_slug": "openai/gpt-6.2-sol-20261117",
+   "name": "OpenAI: GPT-6.2 Sol",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.000002",
+    "completion": "0.00001",
+    "web_search": "0.01",
+    "input_cache_read": "0.0000001",
+    "input_cache_write": "0.0000025",
+    "overrides": [
+     {
+      "min_prompt_tokens": 272000,
+      "prompt": "0.000004",
+      "completion": "0.000015",
+      "input_cache_read": "0.0000002",
+      "input_cache_write": "0.000005"
+     }
+    ]
+   }
+  },
+  {
    "id": "tencent/hy4-flash",
    "canonical_slug": "tencent/hy4-flash-20261116",
    "name": "Tencent: Hy4 flash",
@@ -579,9 +683,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000015",
-    "completion": "0.0000006",
-    "input_cache_read": "0.000000015",
+    "prompt": "0.000000075",
+    "completion": "0.0000003",
+    "input_cache_read": "0.0000000075",
     "overrides": [
      {
       "utc_start": 1500,
@@ -2214,9 +2318,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000834",
-    "completion": "0.000002501",
-    "input_cache_read": "0.000000042",
+    "prompt": "0.0000007506",
+    "completion": "0.0000022509",
+    "input_cache_read": "0.0000000378",
     "overrides": [
      {
       "utc_start": 0,
@@ -3423,9 +3527,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000132",
-    "completion": "0.000000528",
-    "input_cache_read": "0.000000033",
+    "prompt": "0.0000000825",
+    "completion": "0.00000033",
+    "input_cache_read": "0.000000020625",
     "overrides": [
      {
       "utc_start": 0,
@@ -3617,7 +3721,7 @@
    "pricing": {
     "prompt": "0.0000007",
     "completion": "0.00000375",
-    "input_cache_read": "0.00000016"
+    "input_cache_read": "0.00000017"
    }
   },
   {
@@ -4552,9 +4656,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000009",
-    "completion": "0.0000003",
-    "input_cache_read": "0.00000005"
+    "prompt": "0.0000000765",
+    "completion": "0.000000255",
+    "input_cache_read": "0.0000000425"
    }
   },
   {
@@ -6353,9 +6457,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000004",
-    "completion": "0.000002",
-    "input_cache_read": "0.00000004"
+    "prompt": "0.00000044",
+    "completion": "0.0000022",
+    "input_cache_read": "0.000000044"
    }
   },
   {
@@ -6811,9 +6915,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000001",
-    "completion": "0.0000003",
-    "input_cache_read": "0.00000001"
+    "prompt": "0.000000075",
+    "completion": "0.0000002"
    }
   },
   {
@@ -6939,9 +7042,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000004",
-    "completion": "0.000002",
-    "input_cache_read": "0.00000004"
+    "prompt": "0.00000044",
+    "completion": "0.0000022",
+    "input_cache_read": "0.000000044"
    }
   },
   {

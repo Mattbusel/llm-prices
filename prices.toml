@@ -433,6 +433,74 @@ note = "no longer on the pricing page since 2026-11-15; prices as last listed (c
 
 [[models]]
 provider = "openai"
+model = "gpt-6.2-astra"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 8.0
+output = 40.0
+cache_read = 0.4
+source_url = "https://developers.openai.com/api/docs/pricing"
+checked = "2026-11-17"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+30m = 10.0
+12h = 20.0
+[models.long_context]
+threshold_tokens = 272000
+applies_when = "input tokens over 272K (page: short context is up to 272K input tokens)"
+input = 16.0
+output = 60.0
+cache_read = 0.8
+[models.long_context.cache_write]
+30m = 20.0
+12h = 40.0
+[models.other_tiers]
+[models.other_tiers.fast]
+input = 16.0
+output = 80.0
+cache_read = 0.8
+[models.other_tiers.ultrafast]
+input = 24.0
+output = 120.0
+cache_read = 1.2
+
+[[models]]
+provider = "openai"
+model = "gpt-6.2-sol"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 2.0
+output = 10.0
+cache_read = 0.1
+source_url = "https://developers.openai.com/api/docs/pricing"
+checked = "2026-11-17"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+30m = 2.5
+12h = 5.0
+[models.long_context]
+threshold_tokens = 272000
+applies_when = "input tokens over 272K (page: short context is up to 272K input tokens)"
+input = 4.0
+output = 15.0
+cache_read = 0.2
+[models.long_context.cache_write]
+30m = 5.0
+12h = 10.0
+[models.other_tiers]
+[models.other_tiers.fast]
+input = 4.0
+output = 20.0
+cache_read = 0.2
+[models.other_tiers.ultrafast]
+input = 6.0
+output = 30.0
+cache_read = 0.3
+
+[[models]]
+provider = "openai"
 model = "gpt-6-astra"
 aliases = []
 status = "listed"
@@ -440,11 +508,9 @@ unit = "USD per 1M tokens"
 input = 10.0
 output = 50.0
 cache_read = 1.0
-batch_input = 5.0
-batch_output = 25.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.5; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.cache_write]
 30m = 12.5
 12h = 25.0
@@ -454,16 +520,10 @@ applies_when = "input tokens over 272K (page: short context is up to 272K input 
 input = 20.0
 output = 75.0
 cache_read = 2.0
-batch_input = 10.0
-batch_output = 37.5
 [models.long_context.cache_write]
 30m = 25.0
 12h = 50.0
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 5.0
-output = 25.0
-cache_read = 0.5
 [models.other_tiers.fast]
 input = 20.0
 output = 100.0
@@ -482,11 +542,9 @@ unit = "USD per 1M tokens"
 input = 2.0
 output = 10.0
 cache_read = 0.1
-batch_input = 1.0
-batch_output = 5.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.05; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.cache_write]
 30m = 2.5
 12h = 5.0
@@ -496,16 +554,10 @@ applies_when = "input tokens over 272K (page: short context is up to 272K input 
 input = 4.0
 output = 15.0
 cache_read = 0.2
-batch_input = 2.0
-batch_output = 7.5
 [models.long_context.cache_write]
 30m = 5.0
 12h = 10.0
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 1.0
-output = 5.0
-cache_read = 0.05
 [models.other_tiers.fast]
 input = 4.0
 output = 20.0
@@ -524,11 +576,9 @@ unit = "USD per 1M tokens"
 input = 1.0
 output = 5.0
 cache_read = 0.05
-batch_input = 0.5
-batch_output = 2.5
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.025; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.cache_write]
 30m = 1.25
 12h = 2.5
@@ -538,16 +588,10 @@ applies_when = "input tokens over 272K (page: short context is up to 272K input 
 input = 2.0
 output = 7.5
 cache_read = 0.1
-batch_input = 1.0
-batch_output = 3.75
 [models.long_context.cache_write]
 30m = 2.5
 12h = 5.0
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 0.5
-output = 2.5
-cache_read = 0.025
 [models.other_tiers.fast]
 input = 2.0
 output = 10.0
@@ -562,11 +606,9 @@ unit = "USD per 1M tokens"
 input = 0.1
 output = 0.5
 cache_read = 0.01
-batch_input = 0.05
-batch_output = 0.25
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.005; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.cache_write]
 30m = 0.125
 12h = 0.25
@@ -576,16 +618,10 @@ applies_when = "input tokens over 272K (page: short context is up to 272K input 
 input = 0.2
 output = 0.75
 cache_read = 0.02
-batch_input = 0.1
-batch_output = 0.375
 [models.long_context.cache_write]
 30m = 0.25
 12h = 0.5
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 0.05
-output = 0.25
-cache_read = 0.005
 [models.other_tiers.fast]
 input = 0.2
 output = 1.0
@@ -600,11 +636,9 @@ unit = "USD per 1M tokens"
 input = 2.0
 output = 10.0
 cache_read = 0.2
-batch_input = 1.0
-batch_output = 5.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.1; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.cache_write]
 30m = 2.5
 12h = 5.0
@@ -614,16 +648,10 @@ applies_when = "input tokens over 272K (page: short context is up to 272K input 
 input = 4.0
 output = 15.0
 cache_read = 0.4
-batch_input = 2.0
-batch_output = 7.5
 [models.long_context.cache_write]
 30m = 5.0
 12h = 10.0
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 1.0
-output = 5.0
-cache_read = 0.1
 [models.other_tiers.fast]
 input = 4.0
 output = 20.0
@@ -638,11 +666,9 @@ unit = "USD per 1M tokens"
 input = 4.0
 output = 20.0
 cache_read = 0.4
-batch_input = 2.0
-batch_output = 10.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.2; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.cache_write]
 30m = 5.0
 12h = 10.0
@@ -652,16 +678,10 @@ applies_when = "input tokens over 272K (page: short context is up to 272K input 
 input = 8.0
 output = 30.0
 cache_read = 0.8
-batch_input = 4.0
-batch_output = 15.0
 [models.long_context.cache_write]
 30m = 10.0
 12h = 20.0
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 2.0
-output = 10.0
-cache_read = 0.2
 [models.other_tiers.fast]
 input = 8.0
 output = 40.0
@@ -676,11 +696,9 @@ unit = "USD per 1M tokens"
 input = 2.0
 output = 12.0
 cache_read = 0.2
-batch_input = 1.0
-batch_output = 6.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.1; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.cache_write]
 30m = 2.5
 12h = 5.0
@@ -690,16 +708,10 @@ applies_when = "input tokens over 272K (page: short context is up to 272K input 
 input = 4.0
 output = 18.0
 cache_read = 0.4
-batch_input = 2.0
-batch_output = 9.0
 [models.long_context.cache_write]
 30m = 5.0
 12h = 10.0
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 1.0
-output = 6.0
-cache_read = 0.1
 [models.other_tiers.fast]
 input = 4.0
 output = 24.0
@@ -714,11 +726,9 @@ unit = "USD per 1M tokens"
 input = 0.2
 output = 1.2
 cache_read = 0.02
-batch_input = 0.1
-batch_output = 0.6
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.01; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.cache_write]
 30m = 0.25
 12h = 0.5
@@ -728,16 +738,10 @@ applies_when = "input tokens over 272K (page: short context is up to 272K input 
 input = 0.4
 output = 1.8
 cache_read = 0.04
-batch_input = 0.2
-batch_output = 0.9
 [models.long_context.cache_write]
 30m = 0.5
 12h = 1.0
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 0.1
-output = 0.6
-cache_read = 0.01
 [models.other_tiers.fast]
 input = 0.4
 output = 2.4
@@ -752,24 +756,16 @@ unit = "USD per 1M tokens"
 input = 5.0
 output = 30.0
 cache_read = 0.5
-batch_input = 2.5
-batch_output = 15.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.25; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.long_context]
 threshold_tokens = 272000
 applies_when = "input tokens over 272K (page: short context is up to 272K input tokens)"
 input = 10.0
 output = 45.0
 cache_read = 1.0
-batch_input = 5.0
-batch_output = 22.5
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 2.5
-output = 15.0
-cache_read = 0.25
 [models.other_tiers.fast]
 input = 12.5
 output = 75.0
@@ -783,20 +779,14 @@ status = "listed"
 unit = "USD per 1M tokens"
 input = 30.0
 output = 180.0
-batch_input = 15.0
-batch_output = 90.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
 [models.long_context]
 threshold_tokens = 272000
 applies_when = "input tokens over 272K (page: short context is up to 272K input tokens)"
 input = 60.0
 output = 270.0
-[models.other_tiers]
-[models.other_tiers.flex]
-input = 15.0
-output = 90.0
 
 [[models]]
 provider = "openai"
@@ -807,24 +797,16 @@ unit = "USD per 1M tokens"
 input = 2.5
 output = 15.0
 cache_read = 0.25
-batch_input = 1.25
-batch_output = 7.5
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.13; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.long_context]
 threshold_tokens = 272000
 applies_when = "input tokens over 272K (page: short context is up to 272K input tokens)"
 input = 5.0
 output = 22.5
 cache_read = 0.5
-batch_input = 2.5
-batch_output = 11.25
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 1.25
-output = 7.5
-cache_read = 0.13
 [models.other_tiers.fast]
 input = 5.0
 output = 30.0
@@ -838,22 +820,14 @@ status = "listed"
 unit = "USD per 1M tokens"
 input = 30.0
 output = 180.0
-batch_input = 15.0
-batch_output = 90.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
 [models.long_context]
 threshold_tokens = 272000
 applies_when = "input tokens over 272K (page: short context is up to 272K input tokens)"
 input = 60.0
 output = 270.0
-batch_input = 30.0
-batch_output = 135.0
-[models.other_tiers]
-[models.other_tiers.flex]
-input = 15.0
-output = 90.0
 
 [[models]]
 provider = "openai"
@@ -864,16 +838,10 @@ unit = "USD per 1M tokens"
 input = 0.75
 output = 4.5
 cache_read = 0.075
-batch_input = 0.375
-batch_output = 2.25
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.0375; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 0.375
-output = 2.25
-cache_read = 0.0375
 [models.other_tiers.fast]
 input = 1.5
 output = 9.0
@@ -888,16 +856,9 @@ unit = "USD per 1M tokens"
 input = 0.2
 output = 1.25
 cache_read = 0.02
-batch_input = 0.1
-batch_output = 0.625
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.01; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
-[models.other_tiers]
-[models.other_tiers.flex]
-input = 0.1
-output = 0.625
-cache_read = 0.01
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 
 [[models]]
 provider = "openai"
@@ -908,16 +869,10 @@ unit = "USD per 1M tokens"
 input = 1.75
 output = 14.0
 cache_read = 0.175
-batch_input = 0.875
-batch_output = 7.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.0875; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 0.875
-output = 7.0
-cache_read = 0.0875
 [models.other_tiers.fast]
 input = 3.5
 output = 28.0
@@ -931,11 +886,9 @@ status = "listed"
 unit = "USD per 1M tokens"
 input = 21.0
 output = 168.0
-batch_input = 10.5
-batch_output = 84.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
 
 [[models]]
 provider = "openai"
@@ -946,16 +899,10 @@ unit = "USD per 1M tokens"
 input = 1.25
 output = 10.0
 cache_read = 0.125
-batch_input = 0.625
-batch_output = 5.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.0625; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 0.625
-output = 5.0
-cache_read = 0.0625
 [models.other_tiers.fast]
 input = 2.5
 output = 20.0
@@ -970,16 +917,10 @@ unit = "USD per 1M tokens"
 input = 1.25
 output = 10.0
 cache_read = 0.125
-batch_input = 0.625
-batch_output = 5.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.0625; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 0.625
-output = 5.0
-cache_read = 0.0625
 [models.other_tiers.fast]
 input = 2.5
 output = 20.0
@@ -994,16 +935,10 @@ unit = "USD per 1M tokens"
 input = 0.25
 output = 2.0
 cache_read = 0.025
-batch_input = 0.125
-batch_output = 1.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.0125; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 0.125
-output = 1.0
-cache_read = 0.0125
 [models.other_tiers.fast]
 input = 0.45
 output = 3.6
@@ -1018,16 +953,9 @@ unit = "USD per 1M tokens"
 input = 0.05
 output = 0.4
 cache_read = 0.005
-batch_input = 0.025
-batch_output = 0.2
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "batch cached input 0.0025; regional processing (data residency) adds 10% for models released on or after 2026-03-05"
-[models.other_tiers]
-[models.other_tiers.flex]
-input = 0.025
-output = 0.2
-cache_read = 0.0025
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 
 [[models]]
 provider = "openai"
@@ -1037,11 +965,9 @@ status = "listed"
 unit = "USD per 1M tokens"
 input = 15.0
 output = 120.0
-batch_input = 7.5
-batch_output = 60.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
 
 [[models]]
 provider = "openai"
@@ -1052,11 +978,9 @@ unit = "USD per 1M tokens"
 input = 2.0
 output = 8.0
 cache_read = 0.5
-batch_input = 1.0
-batch_output = 4.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
 [models.other_tiers.fast]
 input = 3.5
@@ -1072,11 +996,9 @@ unit = "USD per 1M tokens"
 input = 0.4
 output = 1.6
 cache_read = 0.1
-batch_input = 0.2
-batch_output = 0.8
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
 [models.other_tiers.fast]
 input = 0.7
@@ -1092,11 +1014,9 @@ unit = "USD per 1M tokens"
 input = 2.5
 output = 10.0
 cache_read = 1.25
-batch_input = 1.25
-batch_output = 5.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
 [models.other_tiers.fast]
 input = 4.25
@@ -1112,11 +1032,9 @@ unit = "USD per 1M tokens"
 input = 0.15
 output = 0.6
 cache_read = 0.075
-batch_input = 0.075
-batch_output = 0.3
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
 [models.other_tiers.fast]
 input = 0.25
@@ -1131,11 +1049,9 @@ status = "listed"
 unit = "USD per 1M tokens"
 input = 20.0
 output = 80.0
-batch_input = 10.0
-batch_output = 40.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: cache_read, batch_input, batch_output"
 
 [[models]]
 provider = "openai"
@@ -1146,16 +1062,10 @@ unit = "USD per 1M tokens"
 input = 2.0
 output = 8.0
 cache_read = 0.5
-batch_input = 1.0
-batch_output = 4.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
-note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.other_tiers]
-[models.other_tiers.flex]
-input = 1.0
-output = 4.0
-cache_read = 0.25
 [models.other_tiers.fast]
 input = 3.5
 output = 14.0
@@ -1218,24 +1128,24 @@ model = "gpt-6-rosalind"
 aliases = []
 status = "listed"
 unit = "USD per 1M tokens"
-input = 15.0
-output = 75.0
-cache_read = 1.5
+input = 10.0
+output = 50.0
+cache_read = 1.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
 [models.cache_write]
-30m = 18.75
-12h = 37.5
+30m = 12.5
+12h = 25.0
 [models.long_context]
 threshold_tokens = 272000
 applies_when = "input tokens over 272K (page: short context is up to 272K input tokens)"
-input = 30.0
-output = 112.5
-cache_read = 3.0
+input = 20.0
+output = 75.0
+cache_read = 2.0
 [models.long_context.cache_write]
-30m = 37.5
-12h = 75.0
+30m = 25.0
+12h = 50.0
 
 [[models]]
 provider = "openai"
@@ -1265,6 +1175,31 @@ note = "regional processing (data residency) adds 10% for models released on or 
 
 [[models]]
 provider = "openai"
+model = "gpt-6.2-astra-law"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 8.0
+output = 40.0
+cache_read = 0.4
+source_url = "https://developers.openai.com/api/docs/pricing"
+checked = "2026-11-17"
+note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+30m = 10.0
+12h = 20.0
+[models.long_context]
+threshold_tokens = 272000
+applies_when = "input tokens over 272K (page: short context is up to 272K input tokens)"
+input = 16.0
+output = 60.0
+cache_read = 0.8
+[models.long_context.cache_write]
+30m = 20.0
+12h = 40.0
+
+[[models]]
+provider = "openai"
 model = "gpt-6-astra-law"
 aliases = []
 status = "listed"
@@ -1275,6 +1210,12 @@ cache_read = 1.0
 source_url = "https://developers.openai.com/api/docs/pricing"
 checked = "2026-11-17"
 note = "regional processing (data residency) adds 10% for models released on or after 2026-03-05; null means the page lists no price: batch_input, batch_output"
+[models.long_context]
+threshold_tokens = 272000
+applies_when = "input tokens over 272K (page: short context is up to 272K input tokens)"
+input = 20.0
+output = 75.0
+cache_read = 2.0
 
 [[models]]
 provider = "openai"
@@ -4476,9 +4417,9 @@ name = "Google: Gemma 4 26B A4B "
 aliases = ["google/gemma-4-26b-a4b-it-20260403"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.09
-output = 0.3
-cache_read = 0.05
+input = 0.0765
+output = 0.255
+cache_read = 0.0425
 source_url = "https://openrouter.ai/google/gemma-4-26b-a4b-it"
 checked = "2026-11-17"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -4975,9 +4916,9 @@ name = "MiniMax: MiniMax M3.1 Flash"
 aliases = ["minimax/minimax-m3.1-flash-20261019"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.15
-output = 0.6
-cache_read = 0.015
+input = 0.075
+output = 0.3
+cache_read = 0.0075
 source_url = "https://openrouter.ai/minimax/minimax-m3.1-flash"
 checked = "2026-11-17"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -5115,9 +5056,9 @@ name = "Mistral: Mistral Medium 3"
 aliases = []
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.4
-output = 2.0
-cache_read = 0.04
+input = 0.44
+output = 2.2
+cache_read = 0.044
 source_url = "https://openrouter.ai/mistralai/mistral-medium-3"
 checked = "2026-11-17"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -5144,9 +5085,9 @@ name = "Mistral: Mistral Medium 3.1"
 aliases = []
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.4
-output = 2.0
-cache_read = 0.04
+input = 0.44
+output = 2.2
+cache_read = 0.044
 source_url = "https://openrouter.ai/mistralai/mistral-medium-3.1"
 checked = "2026-11-17"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -5225,12 +5166,11 @@ name = "Mistral: Mistral Small 3.2 24B"
 aliases = ["mistralai/mistral-small-3.2-24b-instruct-2506"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.1
-output = 0.3
-cache_read = 0.01
+input = 0.075
+output = 0.2
 source_url = "https://openrouter.ai/mistralai/mistral-small-3.2-24b-instruct"
 checked = "2026-11-17"
-note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
+note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: cache_read, batch_input, batch_output"
 
 [[models]]
 provider = "openrouter"
@@ -5363,7 +5303,7 @@ status = "listed"
 unit = "USD per 1M tokens"
 input = 0.7
 output = 3.75
-cache_read = 0.16
+cache_read = 0.17
 source_url = "https://openrouter.ai/moonshotai/kimi-k2.7-code"
 checked = "2026-11-17"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -6462,6 +6402,86 @@ cache_read = 0.1
 
 [[models]]
 provider = "openrouter"
+model = "openai/gpt-6.2-astra"
+name = "OpenAI: GPT-6.2 Astra"
+aliases = ["openai/gpt-6.2-astra-20261117"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 8.0
+output = 40.0
+cache_read = 0.4
+source_url = "https://openrouter.ai/openai/gpt-6.2-astra"
+checked = "2026-11-17"
+note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); the API also lists web_search prices, which are not per-token and are left out; null means the page lists no price: batch_input, batch_output"
+[models.long_context]
+threshold_tokens = 271999
+applies_when = "prompts of 272000 tokens or more (OpenRouter pricing.overrides min_prompt_tokens)"
+input = 16.0
+output = 60.0
+cache_read = 0.8
+
+[[models]]
+provider = "openrouter"
+model = "openai/gpt-6.2-astra-pro"
+name = "OpenAI: GPT-6.2 Astra Pro"
+aliases = ["openai/gpt-6.2-astra-pro-20261117"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 8.0
+output = 40.0
+cache_read = 0.4
+source_url = "https://openrouter.ai/openai/gpt-6.2-astra-pro"
+checked = "2026-11-17"
+note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); the API also lists web_search prices, which are not per-token and are left out; null means the page lists no price: batch_input, batch_output"
+[models.long_context]
+threshold_tokens = 271999
+applies_when = "prompts of 272000 tokens or more (OpenRouter pricing.overrides min_prompt_tokens)"
+input = 16.0
+output = 60.0
+cache_read = 0.8
+
+[[models]]
+provider = "openrouter"
+model = "openai/gpt-6.2-sol"
+name = "OpenAI: GPT-6.2 Sol"
+aliases = ["openai/gpt-6.2-sol-20261117"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 2.0
+output = 10.0
+cache_read = 0.1
+source_url = "https://openrouter.ai/openai/gpt-6.2-sol"
+checked = "2026-11-17"
+note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); the API also lists web_search prices, which are not per-token and are left out; null means the page lists no price: batch_input, batch_output"
+[models.long_context]
+threshold_tokens = 271999
+applies_when = "prompts of 272000 tokens or more (OpenRouter pricing.overrides min_prompt_tokens)"
+input = 4.0
+output = 15.0
+cache_read = 0.2
+
+[[models]]
+provider = "openrouter"
+model = "openai/gpt-6.2-sol-pro"
+name = "OpenAI: GPT-6.2 Sol Pro"
+aliases = ["openai/gpt-6.2-sol-pro-20261117"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 2.0
+output = 10.0
+cache_read = 0.1
+source_url = "https://openrouter.ai/openai/gpt-6.2-sol-pro"
+checked = "2026-11-17"
+note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); the API also lists web_search prices, which are not per-token and are left out; null means the page lists no price: batch_input, batch_output"
+[models.long_context]
+threshold_tokens = 271999
+applies_when = "prompts of 272000 tokens or more (OpenRouter pricing.overrides min_prompt_tokens)"
+input = 4.0
+output = 15.0
+cache_read = 0.2
+
+[[models]]
+provider = "openrouter"
 model = "openai/gpt-audio"
 name = "OpenAI: GPT Audio"
 aliases = []
@@ -7537,9 +7557,9 @@ name = "Tencent: Hy3"
 aliases = ["tencent/hy3-20260706"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.132
-output = 0.528
-cache_read = 0.033
+input = 0.0825
+output = 0.33
+cache_read = 0.020625
 source_url = "https://openrouter.ai/tencent/hy3"
 checked = "2026-11-17"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -7593,9 +7613,9 @@ name = "Tencent: Hy4 preview"
 aliases = ["tencent/hy4-preview-20260827"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.834
-output = 2.501
-cache_read = 0.042
+input = 0.7506
+output = 2.2509
+cache_read = 0.0378
 source_url = "https://openrouter.ai/tencent/hy4-preview"
 checked = "2026-11-17"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
