@@ -46,6 +46,8 @@ from .._core import Price, lookup
 from ..litellm import model_cost
 
 __all__ = [
+    "LEGACY_MODELS",
+    "LEGACY_REDIRECTS",
     "TOKEN_COSTS",
     "TOKEN_COSTS_STATIC",
     "TokenType",
@@ -78,6 +80,77 @@ TOKEN_COSTS_STATIC: Dict[str, Dict[str, Any]] = model_cost()
 TOKEN_COSTS: Dict[str, Dict[str, Any]] = {k: dict(v) for k, v in TOKEN_COSTS_STATIC.items()}
 
 MODEL_PRICE_PATTERNS: List[Tuple[Pattern[str], Dict[str, Any]]] = []
+
+# -- retired and legacy models ------------------------------------------------------------------
+
+#: Retired and legacy ids that tokencost priced and the current table does not (claude-3-x,
+#: claude-2, gpt-4, gpt-4-32k, gpt-3.5-turbo snapshots, chatgpt-4o-latest, o1-mini,
+#: o1-preview, gpt-4.5-preview, the search, audio and realtime previews, o3 and o4-mini deep
+#: research, gemini-1.5 and 2.0, gemini-2.5 preview ids, older Mistral, Grok 2 and 3, Cohere
+#: Command and Embed): id -> the row, with ``source_url`` (an archived snapshot of the
+#: provider's own pricing page), ``source_date``, ``retired`` and ``note``. USD per 1M tokens.
+#: Ids the table prices today are never taken from here.
+LEGACY_MODELS: Dict[str, Dict[str, Any]] = {}
+
+#: Retired ids the provider now serves and bills as another model (``grok-3`` -> ``grok-4.3``):
+#: id -> ``{"to", "source_url", "note"}``. They are priced as the model they redirect to.
+LEGACY_REDIRECTS: Dict[str, Dict[str, Any]] = {}
+
+_PER_TOKEN = Decimal(1_000_000)
+
+
+def _per_token(v: Any) -> Optional[float]:
+    return None if v is None else float(Decimal(str(v)) / _PER_TOKEN)
+
+
+def _legacy_entry(r: Dict[str, Any]) -> Dict[str, Any]:
+    e: Dict[str, Any] = {
+        "input_cost_per_token": _per_token(r["input"]),
+        "output_cost_per_token": _per_token(r["output"]) if r["output"] is not None else 0.0,
+        "litellm_provider": {"google": "gemini", "cohere": "cohere_chat"}.get(r["provider"], r["provider"]),
+        "mode": "embedding" if r["output"] is None else "chat",
+        "source": r["source_url"],
+        "llm_prices_checked": r["source_date"],
+        "llm_prices_legacy": True,
+    }
+    for key, field in (("cache_read_input_token_cost", "cache_read"), ("input_cost_per_token_batches", "batch_input"), ("output_cost_per_token_batches", "batch_output")):
+        if r.get(field) is not None:
+            e[key] = _per_token(r[field])
+    lc = r.get("long_context")
+    if lc:
+        k = f"above_{int(lc['threshold_tokens']) // 1000}k_tokens"
+        e[f"input_cost_per_token_{k}"] = _per_token(lc["input"])
+        e[f"output_cost_per_token_{k}"] = _per_token(lc["output"])
+        if lc.get("cache_read") is not None:
+            e[f"cache_read_input_token_cost_{k}"] = _per_token(lc["cache_read"])
+    if r.get("retired"):
+        e["deprecation_date"] = r["retired"]
+    return e
+
+
+def _load_legacy() -> None:
+    import json
+    from importlib import resources
+
+    doc = json.loads(resources.files(__package__).joinpath("tokencost_legacy.json").read_text(encoding="utf-8"))
+    for r in doc["models"]:
+        entry = _legacy_entry(r)
+        for model_id in [r["model"], *r["aliases"]]:
+            key = model_id.lower()
+            if key in TOKEN_COSTS_STATIC or lookup(key) is not None:
+                continue  # the current table prices it
+            LEGACY_MODELS[key] = r
+            TOKEN_COSTS_STATIC[key] = entry
+            TOKEN_COSTS[key] = dict(entry)
+    for model_id, red in doc["redirects"].items():
+        key = model_id.lower()
+        target = lookup(red["to"])
+        if key in TOKEN_COSTS_STATIC or lookup(key) is not None or target is None or _key_of(target) not in TOKEN_COSTS_STATIC:
+            continue
+        LEGACY_REDIRECTS[key] = red
+        entry = dict(TOKEN_COSTS_STATIC[_key_of(target)], llm_prices_redirect=red["to"], llm_prices_legacy=True)
+        TOKEN_COSTS_STATIC[key] = entry
+        TOKEN_COSTS[key] = dict(entry)
 
 # Model ids by row, to map a resolved Price back to its TOKEN_COSTS key.
 _PREFIX = {
@@ -153,6 +226,9 @@ def register_model_pattern(
     MODEL_PRICE_PATTERNS.append((compiled, entry))
 
 
+_load_legacy()
+
+
 def strip_ft_model_name(model: str) -> str:
     """``ft:gpt-4o-mini-2024-07-18:org:suffix:id`` -> ``gpt-4o-mini-2024-07-18``: a fine-tuned
     model is looked up by its base model."""
@@ -165,6 +241,8 @@ def strip_ft_model_name(model: str) -> str:
 
 def _resolve(model: str) -> Optional[str]:
     """The TOKEN_COSTS key for ``model``, or ``None``."""
+    if model.lower() in TOKEN_COSTS:  # fine-tune prices such as "ft:gpt-3.5-turbo"
+        return model.lower()
     m = strip_ft_model_name(model.lower())
     if m in TOKEN_COSTS:
         return m

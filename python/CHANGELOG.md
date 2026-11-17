@@ -3,6 +3,28 @@
 All notable changes to the `llm-prices` Python package. Versions follow the Rust crate's:
 price-data-only updates are patch releases, new API is a minor release.
 
+## [1.5.0] - 2026-11-17
+
+### Added
+
+- `llm_prices.compat.tokencost` prices retired and legacy models tokencost 0.1.26 priced and
+  the table does not: about 160 ids across OpenAI (`gpt-4`, `gpt-4-32k`, `gpt-3.5-turbo`
+  snapshots, `chatgpt-4o-latest`, `gpt-4o-search-preview`, `o1-mini`, `o1-preview`,
+  `gpt-4.5-preview`, `o3-deep-research`, `o4-mini-deep-research`, audio and realtime
+  previews, `davinci-002`, `babbage-002`, fine-tunes), Anthropic (`claude-3-*`, `claude-2.x`,
+  `claude-instant-1.2`, `-latest` aliases), Gemini (`gemini-1.0-pro`, `gemini-1.5-*`,
+  `gemini-2.0-flash`, `-lite`, `-live-001`, `gemini-2.5-*-preview-*`), Mistral, xAI (Grok 2
+  and 3), Cohere (Command, Command R, Embed v2 to v4) and `deepseek-coder`. Each row is the last
+  price on the provider's own pricing page, read from an archived snapshot (URL and date on
+  the row), with the shutdown date from the deprecation page. `LEGACY_MODELS` and
+  `LEGACY_REDIRECTS` expose them; `TOKEN_COSTS` entries carry `source`, `llm_prices_checked`,
+  `deprecation_date` and `llm_prices_legacy`. Rows the current table prices always win.
+- Retired ids that the provider now bills as another model are priced as that model:
+  `grok-3`, `grok-4-0709` (and aliases) as `grok-4.3`; `deepseek-v3`, `deepseek-r1` as
+  `deepseek-flash`.
+- `ft:` keys in `TOKEN_COSTS` (for example `ft:gpt-3.5-turbo`) are looked up before the
+  fine-tune prefix is stripped.
+
 ## [1.4.1] - 2026-11-17
 
 ### Table (generated 2026-11-17, 146 rows)

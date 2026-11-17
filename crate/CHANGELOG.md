@@ -3,6 +3,11 @@
 All notable changes to the `llm-prices` crate. Versions follow semver: price-data-only
 updates are patch releases, new API is a minor release.
 
+## [1.5.0] - 2026-11-17
+
+No change to this package. Version kept in step with the Python package, whose 1.5.0 adds
+retired and legacy model prices to `llm_prices.compat.tokencost`.
+
 ## [1.4.1] - 2026-11-17
 
 ### Table (generated 2026-11-17, 146 rows)

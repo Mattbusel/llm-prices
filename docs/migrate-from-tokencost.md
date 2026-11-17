@@ -46,6 +46,42 @@ Errors are the same types: `KeyError` for a model the table does not price, `Typ
 prompt that is neither a string nor a list, `ValueError` for an unknown token type or for
 `count_string_tokens` on a Claude model.
 
+## Retired and legacy models
+
+tokencost priced many models the providers have since retired: `gpt-4`, `gpt-4-32k`, the
+`gpt-3.5-turbo` snapshots, `chatgpt-4o-latest`, `gpt-4o-search-preview`, `o1-mini`,
+`o1-preview`, `gpt-4.5-preview`, `o3-deep-research`, `o4-mini-deep-research`, the audio and
+realtime previews, `claude-3-*` and `claude-2.x`, `gemini-1.5-*`, `gemini-2.0-flash`, the
+`gemini-2.5-*-preview-*` ids, older Mistral models, Grok 2 and 3, Cohere Command and Embed.
+`llm_prices.compat.tokencost` prices them too, from a separate table
+([tokencost_legacy.json](../python/src/llm_prices/compat/tokencost_legacy.json), about 160
+ids). Each row is the last price the provider's own pricing page listed, read from an
+archived snapshot of that page (the snapshot URL and date are on the row), with the shutdown
+date from the provider's deprecation page:
+
+```python
+from llm_prices.compat.tokencost import calculate_cost_by_tokens, LEGACY_MODELS, TOKEN_COSTS
+
+calculate_cost_by_tokens(1_000, "gpt-4", "input")   # Decimal('0.03000')
+LEGACY_MODELS["gpt-4"]["model"], LEGACY_MODELS["gpt-4"]["retired"]   # ('gpt-4-0613', '2026-10-23')
+TOKEN_COSTS["gpt-4"]["source"]   # https://web.archive.org/web/20261102160440/https://developers.openai.com/api/docs/pricing
+```
+
+- The current table always wins: an id it prices is never taken from the legacy table.
+- Retired ids the provider still answers and bills as another model are priced as that
+  model (`LEGACY_REDIRECTS`): `grok-3` and `grok-4-0709` bill as `grok-4.3` since 2026-05-15
+  (https://docs.x.ai/developers/migration/may-15-retirement), and tokencost's `deepseek-v3` /
+  `deepseek-r1` bill as `deepseek-flash`.
+- Some tokencost prices were wrong and are corrected here, for example `claude-instant-1`
+  (0.80 / 2.40, not 1.63 / 5.51), `command-r7b-12-2024` (0.0375 / 0.15) and `command-r` /
+  `command-r-plus` (aliases of the 03-2024 and 04-2024 models: 0.50 / 1.50 and 3 / 15).
+- Still not priced, because no official page gave them a per-token price: the free
+  experimental Gemini ids (`gemini-exp-1206`, `gemini-2.0-flash-exp`, ...), Gemma,
+  `gemini-pro-vision`, TTS and image-generation ids, `gpt-3.5-turbo-16k`,
+  `gpt-3.5-turbo-instruct-0914`, `gpt-5-chat`, `claude-3-haiku-latest`, `command-nightly` and
+  fine-tunes of dated snapshots. Hosts (Bedrock, Azure, Vertex, OpenRouter and the rest) are
+  out of scope, as in the main table. `configure_model` adds any of them.
+
 ## What is different, on purpose
 
 - **Where prices come from.** The llm-prices table, re-read from the Anthropic, OpenAI, Google

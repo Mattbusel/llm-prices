@@ -6,6 +6,17 @@ repository as a whole. The packages have their own changelogs:
 The Go module is tagged `go/vX.Y.Z` and listed here.
 The `v1` tag moves to every 1.x release.
 
+## [1.5.0] - 2026-11-17
+
+- `llm_prices.compat.tokencost` prices about 160 retired and legacy ids tokencost priced
+  (gpt-4, gpt-4-32k, chatgpt-4o-latest, gpt-4o-search-preview, o3/o4-mini deep research,
+  claude-3-x, claude-2, gemini-1.5, gemini-2.0-flash, gemini-2.5 preview ids, older Mistral,
+  Grok 2 and 3, Cohere Command and Embed) from archived snapshots of the providers' own
+  pricing pages. See [docs/migrate-from-tokencost.md](docs/migrate-from-tokencost.md#retired-and-legacy-models)
+  and the [Python changelog](python/CHANGELOG.md). No change to the table, the crate, the Go
+  module or the Action; the crate, npm and root packages move to 1.5.0 only to keep
+  the versions in step.
+
 ## [1.4.1] - 2026-11-17
 
 ### Table (generated 2026-11-17, 146 rows)
