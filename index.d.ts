@@ -219,11 +219,13 @@ export declare class Price implements Tier {
  * against a model's long-context threshold. */
 export declare function promptTokens(usage: Usage): bigint;
 /** Every row in the table, in prices.json order: Anthropic, OpenAI, Google and DeepSeek first,
- * then Mistral, xAI, Cohere, Groq, Together AI and Fireworks AI. */
+ * then Amazon Bedrock and OpenRouter, then Mistral, xAI, Cohere, Groq, Together AI, Fireworks AI
+ * and Perplexity. */
 export declare function all(): readonly Price[];
-/** The canonical provider names. Rows of the table carry one of the first ten as
- * {@link Price.provider}; Vertex, Bedrock, Azure and OpenRouter have no rows of their own and
- * fall back to the model makers they resell (see {@link fallbackProviders}). */
+/** The canonical provider names, the {@link Price.provider} of the table's rows. Bedrock and
+ * OpenRouter have rows of their own (the AWS price list and OpenRouter's model list); for other
+ * models, and for Vertex and Azure, which have no rows of their own, lookups fall back to the
+ * model makers they resell (see {@link fallbackProviders}). */
 export declare const Provider: Readonly<{
     readonly Anthropic: "anthropic";
     readonly OpenAi: "openai";
@@ -239,6 +241,7 @@ export declare const Provider: Readonly<{
     readonly Xai: "xai";
     readonly Cohere: "cohere";
     readonly OpenRouter: "openrouter";
+    readonly Perplexity: "perplexity";
 }>;
 /** A canonical provider name. */
 export type Provider = (typeof Provider)[keyof typeof Provider];

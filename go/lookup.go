@@ -7,8 +7,9 @@ import "strings"
 // name, the Price.Provider of that provider's rows.
 type Provider string
 
-// The providers the table knows. Vertex, Bedrock, Azure and OpenRouter have no rows of their
-// own; lookups through them fall back to the model makers they resell.
+// The providers the table knows. Bedrock and OpenRouter have rows of their own (the AWS price
+// list and OpenRouter's model list); for other models, and for Vertex and Azure, which have no
+// rows of their own, lookups through them fall back to the model makers they resell.
 const (
 	Anthropic  Provider = "anthropic"
 	OpenAI     Provider = "openai"
@@ -24,10 +25,11 @@ const (
 	XAI        Provider = "xai"
 	Cohere     Provider = "cohere"
 	OpenRouter Provider = "openrouter"
+	Perplexity Provider = "perplexity"
 )
 
 // Providers lists every Provider, model makers first.
-var Providers = []Provider{Anthropic, OpenAI, Google, Vertex, Bedrock, Azure, DeepSeek, Mistral, Groq, Together, Fireworks, XAI, Cohere, OpenRouter}
+var Providers = []Provider{Anthropic, OpenAI, Google, Vertex, Bedrock, Azure, DeepSeek, Mistral, Groq, Together, Fireworks, XAI, Cohere, OpenRouter, Perplexity}
 
 var providerNames = func() map[string]Provider {
 	m := map[string]Provider{}
@@ -46,6 +48,7 @@ var providerNames = func() map[string]Provider {
 		XAI:        {"xai", "x-ai", "grok"},
 		Cohere:     {"cohere", "cohere-chat", "cohere-ai"},
 		OpenRouter: {"openrouter", "open-router"},
+		Perplexity: {"perplexity", "perplexity-ai", "perplexityai", "pplx"},
 	} {
 		for _, n := range names {
 			m[n] = p
@@ -81,8 +84,9 @@ func ParseProvider(name string) (p Provider, ok bool) {
 // String returns the canonical lowercase name.
 func (p Provider) String() string { return string(p) }
 
-// Rows returns the rows this provider sells, in table order (copies). Empty for Vertex,
-// Bedrock, Azure and OpenRouter, which have no rows of their own.
+// Rows returns the rows this provider sells, in table order (copies). Bedrock's rows are the
+// models it prices itself (Amazon Nova, DeepSeek, Llama, Mistral, Qwen, ...); OpenRouter's are
+// its own model list. Empty for Vertex and Azure, which have no rows of their own.
 func (p Provider) Rows() []Price {
 	var out []Price
 	for i := range table {
@@ -112,10 +116,16 @@ func (p Provider) Lookup(model string) (Price, bool) {
 }
 
 func (p Provider) lookupIndex(model string) int {
-	if host, _, ok := idHint(asciiLower(strings.TrimSpace(model))); ok && hosts[host] && host != p && !contains(fallbacks[host], p) {
-		return -1 // the id names another host or platform, which sells at its own price
-	}
 	name := string(p)
+	lower := asciiLower(strings.TrimSpace(model))
+	if host, _, ok := idHint(lower); ok && hosts[host] && host != p && !contains(fallbacks[host], p) {
+		// The id names another host or platform, which sells at its own price. Only this
+		// provider's own ids that start with the same path match (OpenRouter lists
+		// amazon/nova-2-lite-v1 and perplexity/sonar-pro under those names).
+		head, _, _ := strings.Cut(lower, "/")
+		prefix := head + "/"
+		return resolve(model, func(r *Price) bool { return r.Provider == name && carries(r, prefix) })
+	}
 	if i := resolve(model, func(r *Price) bool { return r.Provider == name }); i >= 0 {
 		return i
 	}
@@ -145,22 +155,46 @@ func lookupIndex(model string) int {
 			return -1
 		}
 		// A model maker's prefix on a model it does not sell ("openai/gpt-oss-120b") only
-		// matches rows whose own id starts with that prefix, such as a host's open-weight row.
+		// matches rows whose own id starts with that prefix, such as a host's open-weight row;
+		// a platform's own rows (OpenRouter's x-ai/grok-4.1-fast) only by their exact id.
 		head, _, _ := strings.Cut(lower, "/")
 		prefix := head + "/"
-		return resolve(lower, func(r *Price) bool {
-			for _, m := range ids(r) {
-				if len(m) >= len(prefix) && strings.EqualFold(m[:len(prefix)], prefix) {
-					return true
-				}
-			}
-			return false
-		})
+		if i := resolve(lower, func(r *Price) bool { return !platforms[r.Provider] && carries(r, prefix) }); i >= 0 {
+			return i
+		}
+		return exact(lower, func(r *Price) bool { return platforms[r.Provider] })
 	}
 	if i := resolve(lower, func(r *Price) bool { return !platforms[r.Provider] }); i >= 0 {
 		return i
 	}
-	return resolve(lower, func(r *Price) bool { return platforms[r.Provider] })
+	// Without a provider path, Bedrock and OpenRouter rows, which resell other makers' models,
+	// are only found by their exact id, so "gpt-4" never takes OpenRouter's "openai/gpt-4".
+	return exact(lower, func(r *Price) bool { return platforms[r.Provider] })
+}
+
+// carries reports whether the row's id or an alias starts with prefix, ignoring ASCII case.
+func carries(r *Price, prefix string) bool {
+	for _, m := range ids(r) {
+		if len(m) >= len(prefix) && strings.EqualFold(m[:len(prefix)], prefix) {
+			return true
+		}
+	}
+	return false
+}
+
+// exact returns the first kept row whose id or an alias is lower, ignoring ASCII case.
+func exact(lower string, keep func(*Price) bool) int {
+	for i := range table {
+		if !keep(&table[i]) {
+			continue
+		}
+		for _, m := range ids(&table[i]) {
+			if eqCI(m, lower) {
+				return i
+			}
+		}
+	}
+	return -1
 }
 
 func contains(ps []Provider, p Provider) bool {
@@ -174,7 +208,7 @@ func contains(ps []Provider, p Provider) bool {
 
 // hosts sell other companies' models at their own prices: the cloud platforms and the
 // open-weight hosts. An id that starts with one of these is only priced at that provider.
-var hosts = map[Provider]bool{Vertex: true, Bedrock: true, Azure: true, OpenRouter: true, Groq: true, Together: true, Fireworks: true}
+var hosts = map[Provider]bool{Vertex: true, Bedrock: true, Azure: true, OpenRouter: true, Groq: true, Together: true, Fireworks: true, Perplexity: true}
 
 // idHint returns the provider an id (already ASCII-lowercased) names at its start
 // ("groq/...", "accounts/fireworks/...") and the rest of the id.
@@ -215,6 +249,7 @@ var prefixes = []string{
 	"fireworks/",
 	"fireworks_ai/",
 	"accounts/fireworks/models/",
+	"perplexity/",
 	// Bedrock's vendor prefix with an optional cross-region inference profile.
 	"us.anthropic.",
 	"eu.anthropic.",

@@ -86,8 +86,19 @@ def test_snapshot_and_latest_suffixes():
     assert lookup("gpt-4-turbo").model == "gpt-4-turbo-2024-04-09"
 
 
+PLATFORM_ROWS = ("bedrock", "openrouter")
+
+
 def test_ids_and_aliases_resolve_exactly():
     for p in all_prices():
+        if p.provider in PLATFORM_ROWS:
+            # A platform's ids are its own path (OpenRouter's anthropic/claude-fable-5 is
+            # Anthropic's id too): they resolve under the platform's name.
+            for id in ids(p):
+                for form in (id, id.upper(), f"  {id}\n"):
+                    assert_resolves_under_provider(form, p)
+                    assert lookup(f"{p.provider}/{form.strip()}") is p, form
+            continue
         for id in ids(p):
             for form in (id, id.upper(), f"  {id}\n"):
                 assert_resolves(form, p)
@@ -116,6 +127,9 @@ PREFIXES = {
     "groq": ["groq/"],
     "together": ["together_ai/", "together/"],
     "fireworks": ["fireworks_ai/", "fireworks/"],
+    "bedrock": ["bedrock/"],
+    "openrouter": ["openrouter/"],
+    "perplexity": [""],
 }
 
 
@@ -125,6 +139,11 @@ def test_provider_prefixes_resolve():
         for id in ids(p):
             for prefix in PREFIXES[p.provider]:
                 form = prefix + id
+                if prefix == "openrouter/" and p.provider != "openrouter":
+                    # OpenRouter's own row for the same model wins when it lists one.
+                    found = lookup(form)
+                    assert found is p or found.provider == "openrouter", form
+                    continue
                 assert_resolves(form, p)
                 # The prefix names the provider, so plain lookup finds this exact row even
                 # when another host sells the same id.
@@ -183,7 +202,10 @@ def test_every_dated_row_is_still_its_own_answer():
     assert lookup("gpt-4o").input == 2.5
     for p in all_prices():
         for id in ids(p):
-            assert_resolves(f"{id}-2099-01-01", p)
+            if p.provider in PLATFORM_ROWS:
+                assert lookup(f"{p.provider}/{id}-2099-01-01") is p, id
+            else:
+                assert_resolves(f"{id}-2099-01-01", p)
 
 
 @pytest.mark.parametrize(
@@ -220,8 +242,12 @@ def test_provider_lookup_keeps_hosts_apart():
     assert lookup_provider("bedrock", "claude-sonnet-4-6").provider == "anthropic"
     assert lookup_provider("vertex", "gemini-2.5-pro").provider == "google"
     assert lookup_provider("azure", "gpt-4o").provider == "openai"
-    assert lookup_provider("openrouter", "mistralai/mistral-large-4").provider == "mistral"
-    assert lookup_provider("openrouter", "x-ai/grok-4.7").provider == "xai"
+    # OpenRouter's own rows (its model list) come first; models it does not list fall back
+    # to the maker's list price.
+    for id, maker in (("mistralai/mistral-large-4", "mistral"), ("x-ai/grok-4.7", "xai")):
+        p = lookup_provider("openrouter", id)
+        assert p.provider in ("openrouter", maker), id
+    assert lookup_provider("openrouter", "claude-fable-5").provider in ("openrouter", "anthropic")
     assert lookup_provider("bedrock", "gpt-4o") is None
     assert lookup_provider("azure", "claude-sonnet-4-6") is None
     assert lookup_provider("vertex", "mistral-large-4") is None
@@ -272,8 +298,8 @@ def test_every_table_provider_parses():
         kind = p.provider_kind()
         assert kind is not None, p.provider
         assert kind.as_str() == p.provider
-        # Platform rows would change the order plain lookup tries rows in.
-        assert kind.value not in ("vertex", "bedrock", "azure", "openrouter")
+        # Bedrock and OpenRouter have rows of their own; Vertex and Azure do not yet.
+        assert kind.value not in ("vertex", "azure")
 
 
 @pytest.mark.parametrize(

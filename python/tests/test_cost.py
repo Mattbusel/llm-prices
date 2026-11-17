@@ -4,6 +4,7 @@ docs), plus checks that the generated table matches prices.json."""
 from __future__ import annotations
 
 import dataclasses
+import decimal
 import json
 import math
 from decimal import Decimal
@@ -304,7 +305,11 @@ def test_decimal_agrees_with_cost_usage():
                         assert f.long_context == d.long_context
                         dt = float(d.total)
                         assert abs(f.total - dt) <= 1e-9 * max(abs(f.total), 1.0), f"{p.model} {u}"
-                        assert d.total == d.input + d.output + d.cache_read + d.cache_write
+                        # Summed at 60 digits: a batch row whose batch/standard ratio does not
+                        # terminate (OpenRouter's meta/muse-glimmer-30b, 0.24/0.35) has 28-digit
+                        # cache-read costs, and the default context would round their sum.
+                        with decimal.localcontext(decimal.Context(prec=60)):
+                            assert d.total == d.input + d.output + d.cache_read + d.cache_write
 
 
 def test_exact_where_float_is_not():

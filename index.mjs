@@ -384,14 +384,16 @@ const PRICES = Object.freeze(ROWS.map((r) => new Price({
 })));
 const EXACT = new Map(ROWS.map((r) => [key(r.provider, r.model), { base: r, long_context: r.long_context }]));
 /** Every row in the table, in prices.json order: Anthropic, OpenAI, Google and DeepSeek first,
- * then Mistral, xAI, Cohere, Groq, Together AI and Fireworks AI. */
+ * then Amazon Bedrock and OpenRouter, then Mistral, xAI, Cohere, Groq, Together AI, Fireworks AI
+ * and Perplexity. */
 export function all() {
     return PRICES;
 }
 // -- providers ------------------------------------------------------------------------------
-/** The canonical provider names. Rows of the table carry one of the first ten as
- * {@link Price.provider}; Vertex, Bedrock, Azure and OpenRouter have no rows of their own and
- * fall back to the model makers they resell (see {@link fallbackProviders}). */
+/** The canonical provider names, the {@link Price.provider} of the table's rows. Bedrock and
+ * OpenRouter have rows of their own (the AWS price list and OpenRouter's model list); for other
+ * models, and for Vertex and Azure, which have no rows of their own, lookups fall back to the
+ * model makers they resell (see {@link fallbackProviders}). */
 export const Provider = Object.freeze({
     Anthropic: 'anthropic',
     OpenAi: 'openai',
@@ -407,6 +409,7 @@ export const Provider = Object.freeze({
     Xai: 'xai',
     Cohere: 'cohere',
     OpenRouter: 'openrouter',
+    Perplexity: 'perplexity',
 });
 /** Every provider, in declaration order. */
 export const PROVIDERS = Object.freeze(Object.values(Provider));
@@ -425,6 +428,7 @@ const PROVIDER_NAMES = new Map([
     ['xai', ['xai', 'x-ai', 'grok']],
     ['cohere', ['cohere', 'cohere-chat', 'cohere-ai']],
     ['openrouter', ['openrouter', 'open-router']],
+    ['perplexity', ['perplexity', 'perplexity-ai', 'perplexityai', 'pplx']],
 ].flatMap(([p, names]) => names.map((n) => [n, p])));
 const FALLBACKS = {
     vertex: ['google', 'anthropic'],
@@ -435,7 +439,7 @@ const FALLBACKS = {
 const PLATFORMS = new Set(['vertex', 'bedrock', 'azure', 'openrouter']);
 /** Providers that sell other companies' models at their own prices: the cloud platforms and the
  * open-weight hosts. An id that starts with one of these is only priced at that provider. */
-const HOSTS = new Set(['vertex', 'bedrock', 'azure', 'openrouter', 'groq', 'together', 'fireworks']);
+const HOSTS = new Set(['vertex', 'bedrock', 'azure', 'openrouter', 'groq', 'together', 'fireworks', 'perplexity']);
 /** The provider an id (already ASCII-lowercased) names at its start (`groq/...`,
  * `accounts/fireworks/...`) and the rest of the id. */
 function idHint(lower) {
@@ -490,10 +494,15 @@ export function lookupProvider(provider, model) {
     const p = parseProvider(provider);
     if (p === null)
         return null;
-    const host = idHint(asciiLower(String(model).trim()))?.[0];
-    // The id names another host or platform, which sells at its own price.
-    if (host !== undefined && HOSTS.has(host) && host !== p && !fallbackProviders(host).includes(p))
-        return null;
+    const lower = asciiLower(String(model).trim());
+    const host = idHint(lower)?.[0];
+    if (host !== undefined && HOSTS.has(host) && host !== p && !fallbackProviders(host).includes(p)) {
+        // The id names another host or platform, which sells at its own price. Only this
+        // provider's own ids that start with the same path match (OpenRouter lists
+        // `amazon/nova-2-lite-v1` and `perplexity/sonar-pro` under those names).
+        const prefix = lower.slice(0, lower.indexOf('/') + 1);
+        return resolve(model, (row) => row.provider === p && carries(row, prefix));
+    }
     const found = resolve(model, (row) => row.provider === p);
     if (found)
         return found;
@@ -523,6 +532,7 @@ const PREFIXES = [
     'fireworks/',
     'fireworks_ai/',
     'accounts/fireworks/models/',
+    'perplexity/',
     // Bedrock's vendor prefix with an optional cross-region inference profile.
     'us.anthropic.',
     'eu.anthropic.',
@@ -574,6 +584,14 @@ function stripVersion(id) {
 }
 function ids(p) {
     return [p.model, ...p.aliases];
+}
+/** The row's id or an alias starts with `prefix` (`openai/`), ignoring ASCII case. */
+function carries(p, prefix) {
+    return ids(p).some((m) => m.length >= prefix.length && eqCi(m.slice(0, prefix.length), prefix));
+}
+/** The first kept row whose id or an alias is `lower`, ignoring ASCII case. */
+function exact(lower, keep) {
+    return PRICES.find((p) => keep(p) && ids(p).some((m) => eqCi(m, lower))) ?? null;
 }
 function normalize(lower) {
     let s = stripPrefix(lower);
@@ -642,9 +660,12 @@ export function lookup(model) {
         if (HOSTS.has(hint[0]))
             return null;
         // A model maker's prefix on a model it does not sell (`openai/gpt-oss-120b`) only matches
-        // rows whose own id starts with that prefix, such as a host's open-weight row.
+        // rows whose own id starts with that prefix, such as a host's open-weight row; a platform's
+        // own rows (OpenRouter's `x-ai/grok-4.1-fast`) only by their exact id.
         const prefix = lower.slice(0, lower.indexOf('/') + 1);
-        return resolve(lower, (p) => ids(p).some((m) => m.length >= prefix.length && eqCi(m.slice(0, prefix.length), prefix)));
+        return resolve(lower, (p) => !PLATFORMS.has(p.provider) && carries(p, prefix)) ?? exact(lower, (p) => PLATFORMS.has(p.provider));
     }
-    return resolve(lower, (p) => !PLATFORMS.has(p.provider)) ?? resolve(lower, (p) => PLATFORMS.has(p.provider));
+    // Without a provider path, Bedrock and OpenRouter rows, which resell other makers' models, are
+    // only found by their exact id, so `gpt-4` never takes OpenRouter's `openai/gpt-4`.
+    return resolve(lower, (p) => !PLATFORMS.has(p.provider)) ?? exact(lower, (p) => PLATFORMS.has(p.provider));
 }

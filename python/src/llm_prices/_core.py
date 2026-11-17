@@ -737,7 +737,8 @@ _PRICES, _EXACT_ROWS = _build()
 
 def all_prices() -> Tuple[Price, ...]:
     """Every row in the table, in prices.json order: Anthropic, OpenAI, Google and DeepSeek
-    first, then Mistral, xAI, Cohere, Groq, Together AI and Fireworks AI."""
+    first, then Amazon Bedrock and OpenRouter, then Mistral, xAI, Cohere, Groq, Together AI,
+    Fireworks AI and Perplexity."""
     return _PRICES
 
 
@@ -768,6 +769,7 @@ class Provider(str, Enum):
     XAI = "xai"
     COHERE = "cohere"
     OPENROUTER = "openrouter"
+    PERPLEXITY = "perplexity"
 
     def __str__(self) -> str:
         return self.value
@@ -800,8 +802,9 @@ class Provider(str, Enum):
         return _PROVIDER_NAMES.get(key)
 
     def rows(self) -> Iterator[Price]:
-        """The rows this provider sells, in table order. Empty for Vertex, Bedrock, Azure and
-        OpenRouter, which have no rows of their own yet."""
+        """The rows this provider sells, in table order. Bedrock's rows are the models it prices
+        itself (Amazon Nova, DeepSeek, Llama, Mistral, Qwen, ...); OpenRouter's are its own
+        model list. Empty for Vertex and Azure, which have no rows of their own yet."""
         return (p for p in _PRICES if p.provider == self.value)
 
     def fallback_providers(self) -> Tuple["Provider", ...]:
@@ -823,9 +826,14 @@ class Provider(str, Enum):
         True
         """
         name = self.value
-        host = _host_hint(_ascii_lower(model.strip()))
+        lower = _ascii_lower(model.strip())
+        host = _host_hint(lower)
         if host is not None and host is not self and self not in host.fallback_providers():
-            return None  # the id names another host or platform, which sells at its own price
+            # The id names another host or platform, which sells at its own price. Only this
+            # provider's own ids that start with the same path match (OpenRouter lists
+            # ``amazon/nova-2-lite-v1`` and ``perplexity/sonar-pro`` under those names).
+            prefix = lower.split("/", 1)[0] + "/"
+            return _resolve(model, lambda p: p.provider == name and _carries(p, prefix))
         found = _resolve(model, lambda p: p.provider == name)
         if found is not None:
             return found
@@ -851,6 +859,7 @@ for _p, _names in (
     (Provider.XAI, ("xai", "x-ai", "grok")),
     (Provider.COHERE, ("cohere", "cohere-chat", "cohere-ai")),
     (Provider.OPENROUTER, ("openrouter", "open-router")),
+    (Provider.PERPLEXITY, ("perplexity", "perplexity-ai", "perplexityai", "pplx")),
 ):
     for _n in _names:
         _PROVIDER_NAMES[_n] = _p
@@ -875,7 +884,7 @@ _PLATFORMS = frozenset({"vertex", "bedrock", "azure", "openrouter"})
 
 #: Providers that sell other companies' models at their own prices: the cloud platforms and
 #: the open-weight hosts. An id that starts with one of these is only priced at that provider.
-_HOSTS = frozenset({Provider.VERTEX, Provider.BEDROCK, Provider.AZURE, Provider.OPENROUTER, Provider.GROQ, Provider.TOGETHER, Provider.FIREWORKS})
+_HOSTS = frozenset({Provider.VERTEX, Provider.BEDROCK, Provider.AZURE, Provider.OPENROUTER, Provider.GROQ, Provider.TOGETHER, Provider.FIREWORKS, Provider.PERPLEXITY})
 
 
 def _id_hint(lower: str) -> Optional[Tuple[Provider, str]]:
@@ -921,6 +930,7 @@ _PREFIXES = (
     "fireworks/",
     "fireworks_ai/",
     "accounts/fireworks/models/",
+    "perplexity/",
     # Bedrock's vendor prefix with an optional cross-region inference profile.
     "us.anthropic.",
     "eu.anthropic.",
@@ -985,6 +995,19 @@ def _normalize_id(lower: str) -> str:
     return s.replace("@", "-", 1)
 
 
+def _carries(p: Price, prefix: str) -> bool:
+    """The row's id or an alias starts with ``prefix`` (``openai/``), ignoring ASCII case."""
+    return any(_ascii_lower(m).startswith(prefix) for m in _ids(p))
+
+
+def _exact(lower: str, keep: Callable[[Price], bool]) -> Optional[Price]:
+    """The first kept row whose id or an alias is ``lower``, ignoring ASCII case."""
+    for p in _PRICES:
+        if keep(p) and any(_eq_ci(m, lower) for m in _ids(p)):
+            return p
+    return None
+
+
 def _resolve(id: str, keep: Callable[[Price], bool]) -> Optional[Price]:
     rows = [p for p in _PRICES if keep(p)]
     lower = _ascii_lower(id.strip())
@@ -1029,17 +1052,23 @@ def lookup(model: str) -> Optional[Price]:
 
     When the id starts with a provider name and a slash (``groq/``, ``together_ai/``, ...),
     that provider is tried first. A host or platform path (``groq/``, ``together_ai/``,
-    ``fireworks_ai/``, ``accounts/fireworks/models/``, ``bedrock/``, ``vertex_ai/``,
-    ``azure/``, ``openrouter/``) is only priced at that host, or at the model maker's list
-    price where the platform charges it (:meth:`Provider.fallback_providers`); otherwise the
-    result is ``None``, never another provider's row. A model maker's prefix
-    (``anthropic/``, ``openai/``, ...) on a model that maker does not sell only matches rows
-    whose own id carries the same prefix (Groq's ``openai/gpt-oss-120b``). Without a provider prefix the first matching row in
-    table order wins: model makers before the hosts that resell open-weight models. Use
-    :func:`lookup_provider` whenever you know which provider served the request.
+    ``fireworks_ai/``, ``accounts/fireworks/models/``, ``perplexity/``, ``bedrock/``,
+    ``vertex_ai/``, ``azure/``, ``openrouter/``) is priced at that host's own row
+    (``bedrock/us.deepseek.r1-v1:0``, ``openrouter/meta-llama/llama-3.3-70b-instruct``), or at
+    the model maker's list price where the platform charges it
+    (:meth:`Provider.fallback_providers`); otherwise the result is ``None``, never another
+    provider's row. A model maker's prefix (``anthropic/``, ``openai/``, ...) on a model that
+    maker does not sell only matches rows whose own id carries the same prefix (Groq's
+    ``openai/gpt-oss-120b``, then OpenRouter's ``x-ai/grok-4.1-fast`` by its exact id).
+    Without a provider prefix the first matching row in table order wins: model makers
+    before the hosts that resell open-weight models; Bedrock and OpenRouter rows only match
+    their exact id there. Use :func:`lookup_provider` whenever you know which provider served
+    the request.
 
     >>> lookup("accounts/fireworks/models/deepseek-r1") is None  # Fireworks' price, not DeepSeek's
     True
+    >>> lookup("bedrock/us.deepseek.r1-v1:0").input  # Bedrock's own price for DeepSeek-R1
+    1.35
 
     >>> lookup("gpt-4o-2024-08-06").model
     'gpt-4o'
@@ -1060,9 +1089,13 @@ def lookup(model: str) -> Optional[Price]:
             return None
         # A model maker's prefix on a model it does not sell (``openai/gpt-oss-120b``) only
         # matches rows whose own id starts with that prefix, such as a host's open-weight row.
+        # A platform's own rows (OpenRouter's ``x-ai/grok-4.1-fast``) only match their exact id.
         prefix = lower.split("/", 1)[0] + "/"
-        return _resolve(lower, lambda p: any(_ascii_lower(m).startswith(prefix) for m in _ids(p)))
-    return _resolve(lower, lambda p: p.provider not in _PLATFORMS) or _resolve(lower, lambda p: p.provider in _PLATFORMS)
+        return _resolve(lower, lambda p: p.provider not in _PLATFORMS and _carries(p, prefix)) or _exact(lower, lambda p: p.provider in _PLATFORMS)
+    # Without a provider path, the rows of Bedrock and OpenRouter, which resell other makers'
+    # models, are only found by their exact id (``deepseek.r1-v1:0``,
+    # ``meta-llama/llama-3.3-70b-instruct``), so ``gpt-4`` never takes OpenRouter's row.
+    return _resolve(lower, lambda p: p.provider not in _PLATFORMS) or _exact(lower, lambda p: p.provider in _PLATFORMS)
 
 
 def lookup_provider(provider: Union[str, Provider], model: str) -> Optional[Price]:
@@ -1075,14 +1108,19 @@ def lookup_provider(provider: Union[str, Provider], model: str) -> Optional[Pric
       ``"openai"``, ``"anthropic"``, ``"google_genai"``, ``"gemini"``, ``"vertex_ai"``,
       ``"google_vertexai"``, ``"bedrock"``, ``"bedrock_converse"``, ``"azure_openai"``,
       ``"deepseek"``, ``"mistralai"``, ``"groq"``, ``"xai"``, ``"together"``,
-      ``"together_ai"``, ``"fireworks"``, ``"cohere"``, ``"openrouter"``, in any ASCII case.
+      ``"together_ai"``, ``"fireworks"``, ``"cohere"``, ``"openrouter"``, ``"perplexity"``,
+      in any ASCII case.
     - ``model`` gets the same id handling as :func:`lookup`: aliases (``deepseek-chat``,
       ``mistral-large-latest``), dated snapshots, ``-latest`` ids, Bedrock ids
       (``us.anthropic.claude-...-v1:0``), Vertex ``@date`` ids and provider prefixes.
-    - Only rows that provider sells are searched. Vertex AI, Bedrock and Azure, which have no
-      rows of their own, fall back to the list price of the model maker they resell (see
-      :meth:`Provider.fallback_providers`); the returned row's :attr:`Price.provider` says
-      whose price it is. A host is never priced with another host's row.
+    - Only rows that provider sells are searched. Bedrock and OpenRouter have rows of their
+      own (Bedrock's from the AWS price list, ``lookup_provider("bedrock",
+      "us.deepseek.r1-v1:0")``; OpenRouter's from its model list,
+      ``lookup_provider("openrouter", "deepseek/deepseek-r1-0528")``). For a model they have no
+      row for, and for Vertex AI and Azure, the list price of the model maker they resell is
+      used (see :meth:`Provider.fallback_providers`); the returned row's
+      :attr:`Price.provider` says whose price it is. A host is never priced with another
+      host's row.
     - ``None`` when the provider name is unknown (``"ollama"``, ``"huggingface"``) or the
       table has no price for the model there, so the caller can fall back to its own default.
 

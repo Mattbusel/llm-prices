@@ -722,6 +722,7 @@ const PREFIXES: &[&str] = &[
     "fireworks/",
     "fireworks_ai/",
     "accounts/fireworks/models/",
+    "perplexity/",
 ];
 
 /// Bedrock's vendor prefix with an optional cross-region inference profile.
@@ -791,6 +792,16 @@ fn normalize(lower: &str) -> String {
     s
 }
 
+/// Whether the row's id or an alias starts with `prefix` (`openai/`), ignoring ASCII case.
+pub(crate) fn carries(p: &Price, prefix: &str) -> bool {
+    core::iter::once(p.model).chain(p.aliases.iter().copied()).any(|m| strip_ci(m, prefix).is_some())
+}
+
+/// The first row `keep` accepts whose id or an alias is `lower`, ignoring ASCII case.
+fn exact(lower: &str, keep: &dyn Fn(&Price) -> bool) -> Option<&'static Price> {
+    all().iter().filter(|p| keep(p)).find(|p| ids(p).any(|m| m.eq_ignore_ascii_case(lower)))
+}
+
 /// Resolves `id` against the rows `keep` accepts, each step in table order:
 ///
 /// 1. the id or an alias, ignoring ASCII case;
@@ -840,16 +851,19 @@ pub(crate) fn resolve(id: &str, keep: &dyn Fn(&Price) -> bool) -> Option<&'stati
 /// When the id starts with a provider name and a slash (`groq/`, `together_ai/`,
 /// `vertex_ai/`, ...), that provider is tried first, as [`lookup_provider`] does. A host or
 /// platform path (`groq/`, `together_ai/`, `fireworks_ai/`, `accounts/fireworks/models/`,
-/// `bedrock/`, `vertex_ai/`, `azure/`, `openrouter/`) is only priced at that host, or at the
-/// model maker's list price where the platform charges it
+/// `perplexity/`, `bedrock/`, `vertex_ai/`, `azure/`, `openrouter/`) is priced at that host's
+/// own row (`bedrock/us.deepseek.r1-v1:0`, `openrouter/meta-llama/llama-3.3-70b-instruct`), or
+/// at the model maker's list price where the platform charges it
 /// ([`Provider::fallback_providers`]); otherwise the result is `None`, never another
 /// provider's row, so `accounts/fireworks/models/deepseek-r1` does not get DeepSeek's own
 /// price. A model maker's prefix (`anthropic/`, `openai/`, ...) on a model that maker does not
 /// sell only matches rows whose own id carries the same prefix (Groq's
-/// `openai/gpt-oss-120b`). Without a provider prefix the first matching row in table order
-/// wins: model makers come before the hosts that resell open-weight models, and the hosts are
-/// ordered Groq, Together AI, Fireworks AI. Use [`lookup_provider`] whenever you know which provider served
-/// the request, since several hosts sell the same open-weight model at different prices.
+/// `openai/gpt-oss-120b`, then OpenRouter's `x-ai/grok-4.1-fast` by its exact id). Without a
+/// provider prefix the first matching row in table order wins: model makers come before the
+/// hosts that resell open-weight models, and the hosts are ordered Groq, Together AI,
+/// Fireworks AI, Perplexity; Bedrock and OpenRouter rows only match their exact id there. Use
+/// [`lookup_provider`] whenever you know which provider served the request, since several
+/// hosts sell the same open-weight model at different prices.
 ///
 /// A dated id resolves to the base row's price. Providers sometimes price an old snapshot
 /// differently from the current alias; the table lists such a snapshot on its own row when
@@ -865,6 +879,8 @@ pub(crate) fn resolve(id: &str, keep: &dyn Fn(&Price) -> bool) -> Option<&'stati
 /// assert_eq!(lookup("vertex_ai/claude-opus-4-1@20250805").unwrap().model, "claude-opus-4-1-20250805");
 /// // Fireworks' price for DeepSeek R1 is not DeepSeek's first-party price.
 /// assert!(lookup("accounts/fireworks/models/deepseek-r1").is_none());
+/// // Bedrock's own price for DeepSeek-R1 (AWS price list, us-east-1).
+/// assert_eq!(lookup("bedrock/us.deepseek.r1-v1:0").unwrap().input, Some(1.35));
 /// ```
 pub fn lookup(id: &str) -> Option<&'static Price> {
     let lower = id.trim().to_ascii_lowercase();
@@ -878,11 +894,15 @@ pub fn lookup(id: &str) -> Option<&'static Price> {
             return None;
         }
         // A model maker's prefix on a model it does not sell (`openai/gpt-oss-120b`) only
-        // matches rows whose own id starts with that prefix, such as a host's open-weight row.
+        // matches rows whose own id starts with that prefix, such as a host's open-weight row;
+        // a platform's own rows (OpenRouter's `x-ai/grok-4.1-fast`) only by their exact id.
         let prefix = &lower[..=lower.find('/').unwrap_or(0)];
-        return resolve(&lower, &|p| core::iter::once(p.model).chain(p.aliases.iter().copied()).any(|m| strip_ci(m, prefix).is_some()));
+        return resolve(&lower, &|p| !provider::is_platform(p.provider) && carries(p, prefix))
+            .or_else(|| exact(&lower, &|p| provider::is_platform(p.provider)));
     }
-    resolve(&lower, &|p| !provider::is_platform(p.provider)).or_else(|| resolve(&lower, &|p| provider::is_platform(p.provider)))
+    // Without a provider path, Bedrock and OpenRouter rows, which resell other makers' models,
+    // are only found by their exact id, so `gpt-4` never takes OpenRouter's `openai/gpt-4`.
+    resolve(&lower, &|p| !provider::is_platform(p.provider)).or_else(|| exact(&lower, &|p| provider::is_platform(p.provider)))
 }
 
 #[cfg(test)]

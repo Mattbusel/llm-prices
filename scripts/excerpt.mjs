@@ -1,6 +1,8 @@
 // Cuts each provider page down to the parts the parsers read, for test/pages.
 
 import { GEMINI_TEXT_MODELS } from './meta.mjs';
+import { excerptBedrock } from './parse/bedrock.mjs';
+import { excerptOpenRouter } from './parse/openrouter.mjs';
 
 const note = (url, date) => `<!-- Excerpt of ${url} fetched ${date}, kept only for parser tests. -->\n`;
 
@@ -46,5 +48,7 @@ export function excerpt(provider, text, date) {
     if (t0 < 0 || n1 < t0) throw new Error('excerpt: deepseek table not found');
     return note('https://api-docs.deepseek.com/quick_start/pricing', date) + '<html><body>' + text.slice(t0, text.lastIndexOf('<', n1)) + '</body></html>\n';
   }
+  if (provider === 'bedrock') return excerptBedrock(text);
+  if (provider === 'openrouter') return excerptOpenRouter(text);
   throw new Error(`excerpt: unknown provider ${provider}`);
 }

@@ -4,7 +4,8 @@
 // outputs.mjs) when a price changed.
 //
 //   node scripts/update.mjs                  fetch live pages
-//   node scripts/update.mjs --pages DIR      read saved pages (anthropic.md, openai.md, gemini.md, deepseek.html)
+//   node scripts/update.mjs --pages DIR      read saved pages (anthropic.md, openai.md, gemini.md, deepseek.html,
+//                                           bedrock.json, openrouter.json)
 //   node scripts/update.mjs --force          rewrite files even when only dates changed
 //
 // Exit codes: 0 no price change, 10 prices changed (files rewritten), 2 fetch or parse failure.
@@ -18,6 +19,8 @@ import { parseAnthropic } from './parse/anthropic.mjs';
 import { parseOpenAI } from './parse/openai.mjs';
 import { parseGemini } from './parse/gemini.mjs';
 import { parseDeepSeek } from './parse/deepseek.mjs';
+import { parseBedrock } from './parse/bedrock.mjs';
+import { parseOpenRouter } from './parse/openrouter.mjs';
 import { generatedFiles } from './outputs.mjs';
 import { excerpt } from './excerpt.mjs';
 import { mergeParsed } from './merge.mjs';
@@ -34,6 +37,8 @@ const PROVIDERS = [
   ['openai', 'openai.md', parseOpenAI],
   ['google', 'gemini.md', parseGemini],
   ['deepseek', 'deepseek.html', parseDeepSeek],
+  ['bedrock', 'bedrock.json', parseBedrock],
+  ['openrouter', 'openrouter.json', parseOpenRouter],
 ];
 
 async function load(provider, file) {
@@ -42,7 +47,7 @@ async function load(provider, file) {
   let last;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
-      const res = await fetch(url, { headers: { 'user-agent': 'llm-prices-updater (+https://github.com/Mattbusel/llm-prices)', accept: 'text/markdown,text/html;q=0.9,*/*;q=0.5' } });
+      const res = await fetch(url, { headers: { 'user-agent': 'llm-prices-updater (+https://github.com/Mattbusel/llm-prices)', accept: 'text/markdown,text/html;q=0.9,application/json;q=0.8,*/*;q=0.5' } });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       return await res.text();
     } catch (e) {

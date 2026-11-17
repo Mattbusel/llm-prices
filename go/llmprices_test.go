@@ -189,8 +189,10 @@ func TestProviderLookupKeepsHostsApart(t *testing.T) {
 		{"bedrock", "claude-sonnet-4-6", "anthropic"},
 		{"vertex", "gemini-2.5-pro", "google"},
 		{"azure", "gpt-4o", "openai"},
-		{"openrouter", "mistralai/mistral-large-4", "mistral"},
-		{"openrouter", "x-ai/grok-4.7", "xai"},
+		// OpenRouter's own row (its model list) when it lists the model.
+		{"openrouter", "deepseek/deepseek-r1-0528", "openrouter"},
+		{"bedrock", "us.deepseek.r1-v1:0", "bedrock"},
+		{"perplexity", "sonar", "perplexity"},
 		{"together", "moonshotai/Kimi-K3", "together"},
 		{"fireworks", "accounts/fireworks/models/kimi-k3", "fireworks"},
 		{"bedrock", "global.anthropic.claude-opus-4-5-20251101-v1:0", "anthropic"},
@@ -435,7 +437,7 @@ func TestHostPathsNeverTakeTheMakersPrice(t *testing.T) {
 		"vertex_ai/gpt-4o",
 		"azure/deepseek-r1",
 		"azure/claude-sonnet-4-6",
-		"openrouter/meta-llama/llama-3.3-70b-instruct",
+		"openrouter/acme/not-a-model",
 	} {
 		if p, ok := Lookup(id); ok {
 			t.Errorf("%s resolved to %s/%s", id, p.Provider, p.Model)
@@ -456,6 +458,18 @@ func TestHostPathsResolveToTheHostsOwnRow(t *testing.T) {
 		{"together/deepseek-ai/DeepSeek-V4.1-Flash", "together", "deepseek-ai/DeepSeek-V4.1-Flash"},
 		{"groq/openai/gpt-oss-120b", "groq", "openai/gpt-oss-120b"},
 		{"groq/qwen/qwen3.8-27b", "groq", "qwen/qwen3.8-27b"},
+		// Bedrock's own rows (AWS price list): runtime id, US geo profile, mantle id.
+		{"bedrock/us.deepseek.r1-v1:0", "bedrock", "deepseek.r1-v1:0"},
+		{"bedrock/openai.gpt-oss-120b", "bedrock", "openai.gpt-oss-120b-1:0"},
+		{"deepseek.r1-v1:0", "bedrock", "deepseek.r1-v1:0"},
+		// OpenRouter's own rows, also under a host's name it lists models as.
+		{"openrouter/deepseek/deepseek-r1-0528", "openrouter", "deepseek/deepseek-r1-0528"},
+		{"openrouter/perplexity/sonar-pro", "openrouter", "perplexity/sonar-pro"},
+		{"meta-llama/llama-3.3-70b-instruct", "openrouter", "meta-llama/llama-3.3-70b-instruct"},
+		// Perplexity's Agent API rows.
+		{"perplexity/sonar", "perplexity", "perplexity/sonar"},
+		{"sonar", "perplexity", "perplexity/sonar"},
+		{"perplexity/kimi-k3", "perplexity", "perplexity/kimi-k3"},
 	} {
 		p, ok := Lookup(c.id)
 		if !ok || p.Provider != c.provider || p.Model != c.model {
@@ -503,5 +517,20 @@ func TestLookupProviderDoesNotCrossHosts(t *testing.T) {
 	}
 	if p, ok := LookupProvider("openai", "azure/gpt-4.1"); !ok || p.Provider != "openai" {
 		t.Errorf("azure/gpt-4.1 under openai: %q %v", p.Provider, ok)
+	}
+}
+
+func TestPlatformRowsOnlyAnswerTheirExactID(t *testing.T) {
+	// gpt-4 is a retired OpenAI id; OpenRouter lists openai/gpt-4, but a bare id only matches
+	// a platform row by its exact id.
+	if p, ok := Lookup("gpt-4"); ok && p.Provider != "openai" {
+		t.Errorf("gpt-4 resolved to %s/%s", p.Provider, p.Model)
+	}
+	if p, ok := Lookup("openai/gpt-oss-120b"); !ok || p.Provider != "groq" {
+		t.Errorf("openai/gpt-oss-120b resolved to %s/%s", p.Provider, p.Model)
+	}
+	p, ok := Lookup("bedrock/us.deepseek.r1-v1:0")
+	if !ok || f(p.Input) != 1.35 || f(p.Output) != 5.4 {
+		t.Errorf("bedrock DeepSeek-R1: %v %v", p.Input, p.Output)
 	}
 }

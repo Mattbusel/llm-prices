@@ -38,9 +38,25 @@ fn assert_resolves_under_provider(form: &str, p: &Price) {
     }
 }
 
+/// Bedrock and OpenRouter resell other makers' models under their own ids (OpenRouter's
+/// `anthropic/claude-fable-5` is also Anthropic's id), so their rows are reached by naming them.
+fn platform_row(p: &Price) -> bool {
+    matches!(p.provider, "bedrock" | "openrouter")
+}
+
 #[test]
 fn ids_and_aliases_resolve_exactly() {
     for p in all() {
+        if platform_row(p) {
+            for id in ids(p) {
+                for form in [id.to_string(), id.to_ascii_uppercase(), format!("  {id}\n")] {
+                    assert_resolves_under_provider(&form, p);
+                    let named = format!("{}/{}", p.provider, form.trim());
+                    assert!(std::ptr::eq(lookup(&named).unwrap_or_else(|| panic!("{named} did not resolve")), p), "{named}");
+                }
+            }
+            continue;
+        }
         for id in ids(p) {
             for form in [id.to_string(), id.to_ascii_uppercase(), format!("  {id}\n")] {
                 assert_resolves(&form, p);
@@ -81,11 +97,20 @@ fn provider_prefixes_resolve() {
             "groq" => &["groq/"],
             "together" => &["together_ai/", "together/"],
             "fireworks" => &["fireworks_ai/", "fireworks/"],
+            "bedrock" => &["bedrock/"],
+            "openrouter" => &["openrouter/"],
+            "perplexity" => &[""],
             other => panic!("new provider {other}: add its prefixes here"),
         };
         for id in ids(p) {
             for prefix in prefixes {
                 let form = format!("{prefix}{id}");
+                if *prefix == "openrouter/" && p.provider != "openrouter" {
+                    // OpenRouter's own row for the same model wins when it lists one.
+                    let found = lookup(&form).unwrap_or_else(|| panic!("{form} did not resolve"));
+                    assert!(std::ptr::eq(found, p) || found.provider == "openrouter", "{form}");
+                    continue;
+                }
                 assert_resolves(&form, p);
                 // The prefix names the provider, so plain lookup finds this exact row even
                 // when another host sells the same id.
@@ -159,7 +184,12 @@ fn dated_openai_ids_resolve_to_the_base_row() {
     // Every dated row of every provider is still its own answer.
     for p in all() {
         for id in ids(p) {
-            assert_resolves(&format!("{id}-2099-01-01"), p);
+            if platform_row(p) {
+                let named = format!("{}/{id}-2099-01-01", p.provider);
+                assert!(lookup(&named).is_some_and(|f| std::ptr::eq(f, p)), "{named}");
+            } else {
+                assert_resolves(&format!("{id}-2099-01-01"), p);
+            }
         }
     }
 }
@@ -199,8 +229,12 @@ fn provider_lookup_keeps_hosts_apart() {
     assert_eq!(lookup_provider("bedrock", "claude-sonnet-4-6").unwrap().provider, "anthropic");
     assert_eq!(lookup_provider("vertex", "gemini-2.5-pro").unwrap().provider, "google");
     assert_eq!(lookup_provider("azure", "gpt-4o").unwrap().provider, "openai");
-    assert_eq!(lookup_provider("openrouter", "mistralai/mistral-large-4").unwrap().provider, "mistral");
-    assert_eq!(lookup_provider("openrouter", "x-ai/grok-4.7").unwrap().provider, "xai");
+    // OpenRouter's own rows (its model list) come first; models it does not list fall back to
+    // the maker's list price.
+    for (id, maker) in [("mistralai/mistral-large-4", "mistral"), ("x-ai/grok-4.7", "xai")] {
+        let p = lookup_provider("openrouter", id).unwrap();
+        assert!(p.provider == "openrouter" || p.provider == maker, "{id}");
+    }
     assert!(lookup_provider("bedrock", "gpt-4o").is_none());
     assert!(lookup_provider("azure", "claude-sonnet-4-6").is_none());
     assert!(lookup_provider("vertex", "mistral-large-4").is_none());
@@ -213,7 +247,7 @@ fn provider_lookup_keeps_hosts_apart() {
 fn provider_rows_cover_the_table() {
     let total: usize = Provider::ALL.iter().map(|p| p.rows().count()).sum();
     assert_eq!(total, all().len());
-    for name in ["mistral", "xai", "cohere", "groq", "together", "fireworks"] {
+    for name in ["mistral", "xai", "cohere", "groq", "together", "fireworks", "bedrock", "openrouter", "perplexity"] {
         let p = Provider::parse(name).unwrap();
         assert!(p.rows().count() > 0, "{name}");
         for row in p.rows() {
@@ -312,7 +346,7 @@ fn host_paths_never_take_the_makers_price() {
         "vertex_ai/gpt-4o",
         "azure/deepseek-r1",
         "azure/claude-sonnet-4-6",
-        "openrouter/meta-llama/llama-3.3-70b-instruct",
+        "openrouter/acme/not-a-model",
     ] {
         assert!(llm_prices::lookup(id).is_none(), "{id} resolved to {:?}", llm_prices::lookup(id).map(|p| (p.provider, p.model)));
     }
@@ -329,6 +363,19 @@ fn host_paths_resolve_to_the_hosts_own_row() {
         ("together/deepseek-ai/DeepSeek-V4.1-Flash", "together", "deepseek-ai/DeepSeek-V4.1-Flash"),
         ("groq/openai/gpt-oss-120b", "groq", "openai/gpt-oss-120b"),
         ("groq/qwen/qwen3.8-27b", "groq", "qwen/qwen3.8-27b"),
+        // Bedrock's own rows (AWS price list): the runtime id, its US geo profile, the mantle id.
+        ("bedrock/us.deepseek.r1-v1:0", "bedrock", "deepseek.r1-v1:0"),
+        ("bedrock/deepseek.r1-v1:0", "bedrock", "deepseek.r1-v1:0"),
+        ("bedrock/openai.gpt-oss-120b", "bedrock", "openai.gpt-oss-120b-1:0"),
+        ("deepseek.r1-v1:0", "bedrock", "deepseek.r1-v1:0"),
+        // OpenRouter's own rows (its model list), also under a host's name it lists models as.
+        ("openrouter/deepseek/deepseek-r1-0528", "openrouter", "deepseek/deepseek-r1-0528"),
+        ("openrouter/perplexity/sonar-pro", "openrouter", "perplexity/sonar-pro"),
+        ("meta-llama/llama-3.3-70b-instruct", "openrouter", "meta-llama/llama-3.3-70b-instruct"),
+        // Perplexity's Agent API rows.
+        ("perplexity/sonar", "perplexity", "perplexity/sonar"),
+        ("sonar", "perplexity", "perplexity/sonar"),
+        ("perplexity/kimi-k3", "perplexity", "perplexity/kimi-k3"),
     ] {
         let p = llm_prices::lookup(id).unwrap_or_else(|| panic!("{id} did not resolve"));
         assert_eq!((p.provider, p.model), (provider, model), "{id}");
@@ -349,10 +396,15 @@ fn first_party_prefixes_still_resolve() {
         ("bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0", "anthropic"),
         ("vertex_ai/gemini-2.5-pro", "google"),
         ("azure/gpt-4o", "openai"),
-        ("openrouter/anthropic/claude-sonnet-4-6", "anthropic"),
     ] {
         assert_eq!(llm_prices::lookup(id).map(|p| p.provider), Some(provider), "{id}");
     }
+    // OpenRouter's own row when it lists the model, Anthropic's otherwise.
+    let p = llm_prices::lookup("openrouter/anthropic/claude-sonnet-4-6").unwrap();
+    assert!(p.provider == "openrouter" || p.provider == "anthropic");
+    // A bare id never takes a platform's row unless it is that row's exact id.
+    assert!(llm_prices::lookup("gpt-4").map_or(true, |p| p.provider == "openai"));
+    assert_eq!(llm_prices::lookup("openai/gpt-oss-120b").unwrap().provider, "groq");
     for id in ["anthropic/gpt-4o", "openai/claude-sonnet-4-6", "openai/deepseek-chat", "huggingface/deepseek-r1", "deepseek-ai/DeepSeek-R1", "accounts/fireworks/models/not-a-model"] {
         assert!(llm_prices::lookup(id).is_none(), "{id}");
     }

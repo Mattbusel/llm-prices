@@ -63,8 +63,21 @@ test('snapshot and -latest suffixes', () => {
   assert.equal(lookup('2024-08-06'), null);
 });
 
+// Bedrock and OpenRouter resell other makers' models under their own ids (OpenRouter's
+// anthropic/claude-fable-5 is also Anthropic's id), so their rows are reached by naming them.
+const platformRow = (p) => p.provider === 'bedrock' || p.provider === 'openrouter';
+
 test('ids and aliases resolve exactly', () => {
   for (const p of all()) {
+    if (platformRow(p)) {
+      for (const id of ids(p)) {
+        for (const form of [id, id.toUpperCase(), `  ${id}\n`]) {
+          assertResolvesUnderProvider(form, p);
+          assert.equal(lookup(`${p.provider}/${form.trim()}`), p, form);
+        }
+      }
+      continue;
+    }
     for (const id of ids(p)) {
       for (const form of [id, id.toUpperCase(), `  ${id}\n`]) {
         assertResolves(form, p);
@@ -97,6 +110,9 @@ const PREFIXES = {
   groq: ['groq/'],
   together: ['together_ai/', 'together/'],
   fireworks: ['fireworks_ai/', 'fireworks/'],
+  bedrock: ['bedrock/'],
+  openrouter: ['openrouter/'],
+  perplexity: [''],
 };
 
 test('provider prefixes resolve', () => {
@@ -105,6 +121,12 @@ test('provider prefixes resolve', () => {
     for (const id of ids(p)) {
       for (const prefix of PREFIXES[p.provider]) {
         const form = prefix + id;
+        if (prefix === 'openrouter/' && p.provider !== 'openrouter') {
+          // OpenRouter's own row for the same model wins when it lists one.
+          const found = lookup(form);
+          assert.ok(found === p || found?.provider === 'openrouter', form);
+          continue;
+        }
         assertResolves(form, p);
         if (!['openrouter/', 'us.anthropic.', 'models/'].includes(prefix)) assert.equal(lookup(form), p, form);
       }
@@ -163,7 +185,12 @@ test('dated OpenAI ids resolve to the base row', () => {
   }
   assert.equal(lookup('gpt-4o-2024-05-13').input, 5);
   assert.equal(lookup('gpt-4o').input, 2.5);
-  for (const p of all()) for (const id of ids(p)) assertResolves(`${id}-2099-01-01`, p);
+  for (const p of all()) {
+    for (const id of ids(p)) {
+      if (platformRow(p)) assert.equal(lookup(`${p.provider}/${id}-2099-01-01`), p, id);
+      else assertResolves(`${id}-2099-01-01`, p);
+    }
+  }
 });
 
 test('-latest aliases resolve', () => {
@@ -198,8 +225,11 @@ test('provider lookup keeps hosts apart', () => {
   assert.equal(lookupProvider('bedrock', 'claude-sonnet-4-6').provider, 'anthropic');
   assert.equal(lookupProvider('vertex', 'gemini-2.5-pro').provider, 'google');
   assert.equal(lookupProvider('azure', 'gpt-4o').provider, 'openai');
-  assert.equal(lookupProvider('openrouter', 'mistralai/mistral-large-4').provider, 'mistral');
-  assert.equal(lookupProvider('openrouter', 'x-ai/grok-4.7').provider, 'xai');
+  // OpenRouter's own rows (its model list) come first; models it does not list fall back to the
+  // maker's list price.
+  for (const [id, maker] of [['mistralai/mistral-large-4', 'mistral'], ['x-ai/grok-4.7', 'xai']]) {
+    assert.ok(['openrouter', maker].includes(lookupProvider('openrouter', id).provider), id);
+  }
   assert.equal(lookupProvider('bedrock', 'gpt-4o'), null);
   assert.equal(lookupProvider('azure', 'claude-sonnet-4-6'), null);
   assert.equal(lookupProvider('vertex', 'mistral-large-4'), null);
@@ -237,14 +267,15 @@ test('unknown ids do not resolve', () => {
 });
 
 test('provider names round-trip', () => {
-  assert.equal(PROVIDERS.length, 14);
+  assert.equal(PROVIDERS.length, 15);
   for (const p of PROVIDERS) {
     assert.equal(parseProvider(p), p);
     assert.equal(parseProvider(p.toUpperCase()), p);
   }
   for (const p of all()) {
     assert.equal(p.providerKind(), p.provider);
-    assert.ok(!['vertex', 'bedrock', 'azure', 'openrouter'].includes(p.provider));
+    // Bedrock and OpenRouter have rows of their own; Vertex and Azure do not yet.
+    assert.ok(!['vertex', 'azure'].includes(p.provider));
   }
 });
 
@@ -312,7 +343,7 @@ test('host paths never take the maker price', () => {
     'vertex_ai/gpt-4o',
     'azure/deepseek-r1',
     'azure/claude-sonnet-4-6',
-    'openrouter/meta-llama/llama-3.3-70b-instruct',
+    'openrouter/acme/not-a-model',
   ]) {
     const p = lookup(id);
     assert.equal(p, null, `${id} resolved to ${p?.provider}/${p?.model}`);
@@ -329,6 +360,18 @@ test('host paths resolve to the host own row', () => {
     ['together/deepseek-ai/DeepSeek-V4.1-Flash', 'together', 'deepseek-ai/DeepSeek-V4.1-Flash'],
     ['groq/openai/gpt-oss-120b', 'groq', 'openai/gpt-oss-120b'],
     ['groq/qwen/qwen3.8-27b', 'groq', 'qwen/qwen3.8-27b'],
+    // Bedrock's own rows (AWS price list): runtime id, US geo profile, mantle id.
+    ['bedrock/us.deepseek.r1-v1:0', 'bedrock', 'deepseek.r1-v1:0'],
+    ['bedrock/openai.gpt-oss-120b', 'bedrock', 'openai.gpt-oss-120b-1:0'],
+    ['deepseek.r1-v1:0', 'bedrock', 'deepseek.r1-v1:0'],
+    // OpenRouter's own rows, also under a host's name it lists models as.
+    ['openrouter/deepseek/deepseek-r1-0528', 'openrouter', 'deepseek/deepseek-r1-0528'],
+    ['openrouter/perplexity/sonar-pro', 'openrouter', 'perplexity/sonar-pro'],
+    ['meta-llama/llama-3.3-70b-instruct', 'openrouter', 'meta-llama/llama-3.3-70b-instruct'],
+    // Perplexity's Agent API rows.
+    ['perplexity/sonar', 'perplexity', 'perplexity/sonar'],
+    ['sonar', 'perplexity', 'perplexity/sonar'],
+    ['perplexity/kimi-k3', 'perplexity', 'perplexity/kimi-k3'],
   ]) {
     const p = lookup(id);
     assert.deepEqual([p?.provider, p?.model], [provider, model], id);
@@ -348,10 +391,15 @@ test('first-party prefixes still resolve', () => {
     ['bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0', 'anthropic'],
     ['vertex_ai/gemini-2.5-pro', 'google'],
     ['azure/gpt-4o', 'openai'],
-    ['openrouter/anthropic/claude-sonnet-4-6', 'anthropic'],
   ]) {
     assert.equal(lookup(id)?.provider, provider, id);
   }
+  // OpenRouter's own row when it lists the model, Anthropic's otherwise.
+  assert.ok(['openrouter', 'anthropic'].includes(lookup('openrouter/anthropic/claude-sonnet-4-6')?.provider));
+  // A bare id never takes a platform's row unless it is that row's exact id.
+  const gpt4 = lookup('gpt-4');
+  assert.ok(gpt4 === null || gpt4.provider === 'openai');
+  assert.equal(lookup('openai/gpt-oss-120b')?.provider, 'groq');
   for (const id of ['anthropic/gpt-4o', 'openai/claude-sonnet-4-6', 'openai/deepseek-chat', 'huggingface/deepseek-r1', 'deepseek-ai/DeepSeek-R1', 'accounts/fireworks/models/not-a-model']) {
     assert.equal(lookup(id), null, id);
   }

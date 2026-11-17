@@ -7,6 +7,8 @@ import { parseAnthropic } from '../scripts/parse/anthropic.mjs';
 import { parseOpenAI } from '../scripts/parse/openai.mjs';
 import { parseGemini } from '../scripts/parse/gemini.mjs';
 import { parseDeepSeek } from '../scripts/parse/deepseek.mjs';
+import { parseBedrock, per1kToPer1m } from '../scripts/parse/bedrock.mjs';
+import { parseOpenRouter, perTokenToPer1m } from '../scripts/parse/openrouter.mjs';
 import { ParseError } from '../scripts/parse/common.mjs';
 import { toToml } from '../scripts/toml.mjs';
 import { toRust } from '../scripts/rust.mjs';
@@ -170,12 +172,53 @@ test('deepseek parser reads peak and off-peak', () => {
   assert.equal(rows.find((r) => r.model === 'deepseek-v4-pro').input, 1.32);
 });
 
+test('bedrock parser reads the AWS price list: runtime ids, US geo profiles, batch, flex and priority', () => {
+  const { rows, unknown } = parseBedrock(page('bedrock.json'), '2026-11-17');
+  assert.deepEqual(unknown, []);
+  const at = (id) => rows.find((r) => r.model === id);
+  // DeepSeek-R1 on Bedrock: $1.35 / $5.40 per 1M (0.00135 / 0.0054 per 1K in the price list).
+  assert.deepEqual([at('deepseek.r1-v1:0').input, at('deepseek.r1-v1:0').output], [1.35, 5.4]);
+  assert.deepEqual(at('deepseek.r1-v1:0').aliases, ['us.deepseek.r1-v1:0']);
+  const nova = at('amazon.nova-pro-v1:0');
+  assert.deepEqual([nova.input, nova.output, nova.cache_read, nova.batch_input, nova.batch_output], [0.8, 3.2, 0.2, 0.4, 1.6]);
+  assert.deepEqual(nova.other_tiers.priority, { input: 1.4, output: 5.6, cache_read: 0.35 });
+  // The runtime id is the row id and the mantle id an alias.
+  assert.deepEqual(at('openai.gpt-oss-120b-1:0').aliases, ['openai.gpt-oss-120b']);
+  // Global inference profiles bill at their own (lower) price and are not aliases.
+  assert.ok(!at('moonshotai.kimi-k3').aliases.some((a) => a.startsWith('global.')));
+  assert.equal(at('moonshotai.kimi-k3').input, 3.3);
+  assert.ok(rows.every((r) => r.provider === 'bedrock' && r.source_url === 'https://aws.amazon.com/bedrock/pricing/'));
+  assert.equal(per1kToPer1m('0.0000350000'), 0.035);
+  assert.equal(per1kToPer1m('0.0288750000'), 28.875);
+});
+
+test('openrouter parser reads the model list: per-token prices, overrides, batch variants', () => {
+  const { rows } = parseOpenRouter(page('openrouter.json'), '2026-11-17');
+  const at = (id) => rows.find((r) => r.model === id);
+  assert.ok(rows.length > 300);
+  assert.deepEqual([at('perplexity/sonar-pro').input, at('perplexity/sonar-pro').output], [3, 15]);
+  const r1 = at('deepseek/deepseek-r1-0528');
+  assert.deepEqual([r1.input, r1.output, r1.cache_read], [0.5, 2.15, 0.35]);
+  const terra = at('openai/gpt-6.1-terra-pro');
+  assert.deepEqual([terra.batch_input, terra.batch_output], [0.5, 2.5]);
+  assert.equal(terra.long_context.threshold_tokens, 271999);
+  assert.deepEqual([terra.long_context.input, terra.long_context.output], [2, 7.5]);
+  // No :free, :batch or router entries, and every price is positive.
+  assert.ok(rows.every((r) => !r.model.includes(':') && r.input > 0 && r.output > 0));
+  assert.ok(!at('openrouter/auto'));
+  assert.equal(perTokenToPer1m('0.000000035'), 0.035);
+  assert.equal(perTokenToPer1m('0'), null);
+  assert.equal(perTokenToPer1m('-1'), null);
+});
+
 test('committed prices.json equals what the parsers produce from the saved pages', () => {
   const fresh = [
     ...parseAnthropic(page('anthropic.md'), 'X').rows,
     ...parseOpenAI(page('openai.md'), 'X').rows,
     ...parseGemini(page('gemini.md'), 'X').rows,
     ...parseDeepSeek(page('deepseek.html'), 'X').rows,
+    ...parseBedrock(page('bedrock.json'), 'X').rows,
+    ...parseOpenRouter(page('openrouter.json'), 'X').rows,
   ].map(({ checked, ...r }) => r);
   const committed = prices.models.filter((m) => m.provider in SOURCES && !isDelisted(m)).map(({ checked, ...r }) => r);
   assert.deepEqual(committed, fresh);
@@ -202,6 +245,9 @@ test('hand-checked rows cite their provider page, come after the parsed rows and
   assert.equal(at('fireworks', 'accounts/fireworks/models/gpt-oss-120b').cache_read, 0.015);
   assert.deepEqual(at('fireworks', 'accounts/fireworks/models/kimi-k3').other_tiers.priority, { input: 3.75, output: 18.75, cache_read: 0.375 });
   assert.deepEqual([at('cohere', 'command-r-plus-08-2024').input, at('cohere', 'command-r-plus-08-2024').output], [2.5, 10]);
+  // Perplexity Agent API rates (2026-11-17).
+  assert.deepEqual([at('perplexity', 'perplexity/sonar').input, at('perplexity', 'perplexity/sonar').output, at('perplexity', 'perplexity/sonar').cache_read], [0.25, 2.5, 0.0625]);
+  assert.deepEqual([at('perplexity', 'perplexity/kimi-k3').input, at('perplexity', 'perplexity/kimi-k3').output], [3, 15]);
 });
 
 test('crate data.rs, crate/prices.json and prices.toml are regenerated from prices.json', () => {

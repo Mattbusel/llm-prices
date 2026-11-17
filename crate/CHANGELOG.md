@@ -3,6 +3,42 @@
 All notable changes to the `llm-prices` crate. Versions follow semver: price-data-only
 updates are patch releases, new API is a minor release.
 
+## [1.6.0] - 2026-11-17
+
+### Added
+
+Third-party host prices: Amazon Bedrock, OpenRouter and Perplexity now have rows of their own,
+so `bedrock/us.deepseek.r1-v1:0`, `openrouter/meta-llama/llama-3.3-70b-instruct` and
+`perplexity/sonar` cost what those hosts charge instead of finding nothing.
+
+- Amazon Bedrock (64 rows): read daily from AWS's own price list (the AWS Price List bulk API
+  offer file for AmazonBedrock, us-east-1), the data https://aws.amazon.com/bedrock/pricing/
+  renders. On-demand input, output and cache-read prices, Batch inference, and the flex and
+  priority service tiers. Model ids come from each model's card in the Bedrock user guide:
+  the in-Region id (`deepseek.r1-v1:0`), the US geo inference profile (`us.deepseek.r1-v1:0`)
+  and the bedrock-mantle id (`openai.gpt-oss-120b`). Global inference profiles bill at their
+  own price and are not aliases. Claude on Bedrock still takes Anthropic's list price.
+- OpenRouter (356 rows): read daily from OpenRouter's model list API
+  (https://openrouter.ai/api/v1/models), keyed by OpenRouter's id. Prompt-length overrides
+  become `long_context`, `:batch` variants the batch price; `:free`, zero-priced and router
+  entries are left out.
+- Perplexity (6 rows, checked by hand): the Agent API rates for the models Perplexity serves
+  itself (`perplexity/sonar`, `perplexity/kimi-k3`, `perplexity/glm-5.3`, ...) from
+  https://docs.perplexity.ai/docs/agent-api/models. New provider `perplexity` (also parses
+  `pplx`), a host like Groq or Fireworks.
+
+Lookup rules for the new rows:
+
+- A provider's own row now wins over its fallback makers: `lookup_provider("openrouter",
+  "x-ai/grok-4.7")` returns OpenRouter's row when OpenRouter lists the model.
+- Without a provider path, Bedrock and OpenRouter rows are only found by their exact id
+  (`deepseek.r1-v1:0`, `meta-llama/llama-3.3-70b-instruct`), so a bare `gpt-4` never takes
+  OpenRouter's `openai/gpt-4` row.
+- A maker's prefix on a model the maker does not sell (`x-ai/grok-4.1-fast`) tries the hosts'
+  rows first and then a platform row with that exact id.
+- A host lists models under another host's name (OpenRouter's `perplexity/sonar-pro`,
+  `amazon/nova-2-lite-v1`); looking those up under the host that lists them finds them.
+
 ## [1.5.1] - 2026-11-17
 
 ### Fixed

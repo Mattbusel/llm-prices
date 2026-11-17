@@ -1863,6 +1863,60 @@
       "retired": "2026-04-04",
       "retired_source": "https://docs.cohere.com/docs/deprecations",
       "note": "Embed tab 'Default' model price in page data, not version-specific (v2 and v3 both served then). Before Embed v3 the 2023-09-26 snapshot showed the default embed price as $0.40 per 1M tokens."
+    },
+    {
+      "provider": "perplexity",
+      "model": "perplexity/sonar-pro",
+      "aliases": [
+        "sonar-pro"
+      ],
+      "input": 3,
+      "output": 15,
+      "cache_read": null,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": null,
+      "source_url": "https://web.archive.org/web/20260903063209/https://docs.perplexity.ai/docs/getting-started/pricing",
+      "source_date": "2026-09-03",
+      "retired": "2026-09-27",
+      "retired_source": "https://docs.perplexity.ai/docs/agent-api/migrate-from-sonar/overview",
+      "note": "Sonar API Pricing table (Token Pricing tab), last snapshot before Sonar Chat Completions support ended on 2026-09-27; the same page charged a request fee per 1,000 requests by search context size (low/medium/high: $6/$10/$14; Pro Search $14/$18/$22), which is not per token and is left out. Synchronous Sonar requests are now reformulated as Agent API requests (Agent API migration guide maps Sonar Pro to the fast effort level)."
+    },
+    {
+      "provider": "perplexity",
+      "model": "perplexity/sonar-reasoning-pro",
+      "aliases": [
+        "sonar-reasoning-pro"
+      ],
+      "input": 2,
+      "output": 8,
+      "cache_read": null,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": null,
+      "source_url": "https://web.archive.org/web/20260903063209/https://docs.perplexity.ai/docs/getting-started/pricing",
+      "source_date": "2026-09-03",
+      "retired": "2026-09-27",
+      "retired_source": "https://docs.perplexity.ai/docs/agent-api/migrate-from-sonar/overview",
+      "note": "Sonar API Pricing table (Token Pricing tab), last snapshot before Sonar Chat Completions support ended on 2026-09-27; the same page charged a request fee per 1,000 requests by search context size (low/medium/high: $6/$10/$14), which is not per token and is left out. The Agent API migration guide maps Sonar Reasoning Pro to the low effort level."
+    },
+    {
+      "provider": "perplexity",
+      "model": "perplexity/sonar-deep-research",
+      "aliases": [
+        "sonar-deep-research"
+      ],
+      "input": 2,
+      "output": 8,
+      "cache_read": null,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": null,
+      "source_url": "https://web.archive.org/web/20260903063209/https://docs.perplexity.ai/docs/getting-started/pricing",
+      "source_date": "2026-09-03",
+      "retired": "2026-09-27",
+      "retired_source": "https://docs.perplexity.ai/docs/agent-api/migrate-from-sonar/overview",
+      "note": "Sonar API Pricing table (Token Pricing tab), last snapshot before Sonar Chat Completions support ended on 2026-09-27. The same row lists citation tokens at $2 per 1M, reasoning tokens at $3 per 1M and search queries at $5 per 1,000, which tokencost has no fields for and are left out; asynchronous Sonar requests (the usual way to run Deep Research) are no longer supported. The migration guide maps it to the high effort level."
     }
   ],
   "redirects": {

@@ -161,6 +161,7 @@ _PREFIX = {
     "groq": "groq/",
     "together": "together_ai/",
     "fireworks": "fireworks_ai/",
+    "openrouter": "openrouter/",
 }
 
 

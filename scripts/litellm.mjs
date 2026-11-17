@@ -21,6 +21,11 @@ const PROVIDER = {
   groq: ['groq', 'groq/'],
   together: ['together_ai', 'together_ai/'],
   fireworks: ['fireworks_ai', 'fireworks_ai/'],
+  // LiteLLM keys Bedrock models by their bare Bedrock id and OpenRouter models as
+  // openrouter/<OpenRouter id>; Perplexity ids already start with perplexity/.
+  bedrock: ['bedrock', ''],
+  openrouter: ['openrouter', 'openrouter/'],
+  perplexity: ['perplexity', ''],
 };
 
 // "2.5" USD per 1M -> 2.5e-6 USD per token, as the shortest float text of the exact quotient.

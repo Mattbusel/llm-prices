@@ -3,7 +3,7 @@
 use core::fmt;
 use core::str::FromStr;
 
-use crate::{all, resolve, Price};
+use crate::{all, carries, resolve, Price};
 
 /// A company that sells model access: a model maker's own API, a cloud platform that resells
 /// it, or a host for open-weight models.
@@ -52,6 +52,8 @@ pub enum Provider {
     Cohere,
     /// OpenRouter (`openrouter`).
     OpenRouter,
+    /// Perplexity's Agent API (`perplexity`; also parses `pplx`).
+    Perplexity,
 }
 
 impl Provider {
@@ -71,6 +73,7 @@ impl Provider {
         Provider::Xai,
         Provider::Cohere,
         Provider::OpenRouter,
+        Provider::Perplexity,
     ];
 
     /// The canonical lowercase name. For providers with rows in the table it is the value of
@@ -91,6 +94,7 @@ impl Provider {
             Provider::Xai => "xai",
             Provider::Cohere => "cohere",
             Provider::OpenRouter => "openrouter",
+            Provider::Perplexity => "perplexity",
         }
     }
 
@@ -129,12 +133,15 @@ impl Provider {
             "xai" | "x-ai" | "grok" => Provider::Xai,
             "cohere" | "cohere-chat" | "cohere-ai" => Provider::Cohere,
             "openrouter" | "open-router" => Provider::OpenRouter,
+            "perplexity" | "perplexity-ai" | "perplexityai" | "pplx" => Provider::Perplexity,
             _ => return None,
         })
     }
 
-    /// The rows this provider sells, in table order. Empty for Vertex, Bedrock, Azure and
-    /// OpenRouter, which have no rows of their own yet (see [`Provider::lookup`]).
+    /// The rows this provider sells, in table order. Bedrock's rows are the models it prices
+    /// itself (Amazon Nova, DeepSeek, Llama, Mistral, Qwen, ...), read from the AWS price list;
+    /// OpenRouter's are its own model list. Empty for Vertex and Azure, which have no rows of
+    /// their own yet (see [`Provider::lookup`]).
     pub fn rows(self) -> impl Iterator<Item = &'static Price> {
         let name = self.as_str();
         all().iter().filter(move |p| p.provider == name)
@@ -194,12 +201,17 @@ impl Provider {
     /// assert!(Provider::Groq.lookup("claude-opus-4-5").is_none());
     /// ```
     pub fn lookup(self, model: &str) -> Option<&'static Price> {
-        if let Some((host, _)) = id_hint(&model.trim().to_ascii_lowercase()) {
+        let name = self.as_str();
+        let lower = model.trim().to_ascii_lowercase();
+        if let Some((host, _)) = id_hint(&lower) {
             if host.is_host() && host != self && !host.fallback_providers().contains(&self) {
-                return None; // the id names another host or platform, which sells at its own price
+                // The id names another host or platform, which sells at its own price. Only
+                // this provider's own ids that start with the same path match (OpenRouter
+                // lists `amazon/nova-2-lite-v1` and `perplexity/sonar-pro` under those names).
+                let prefix = &lower[..=lower.find('/').unwrap_or(0)];
+                return resolve(model, &|p| p.provider == name && carries(p, prefix));
             }
         }
-        let name = self.as_str();
         resolve(model, &|p| p.provider == name).or_else(|| {
             let makers = self.fallback_providers();
             if makers.is_empty() {
@@ -213,11 +225,19 @@ impl Provider {
 impl Provider {
     /// Whether this provider sells other companies' models at its own prices: a cloud
     /// platform (Vertex AI, Bedrock, Azure, OpenRouter) or an open-weight host (Groq,
-    /// Together AI, Fireworks AI). An id that starts with one of these is only priced there.
+    /// Together AI, Fireworks AI, Perplexity). An id that starts with one of these is only
+    /// priced there.
     pub(crate) const fn is_host(self) -> bool {
         matches!(
             self,
-            Provider::Vertex | Provider::Bedrock | Provider::Azure | Provider::OpenRouter | Provider::Groq | Provider::Together | Provider::Fireworks
+            Provider::Vertex
+                | Provider::Bedrock
+                | Provider::Azure
+                | Provider::OpenRouter
+                | Provider::Groq
+                | Provider::Together
+                | Provider::Fireworks
+                | Provider::Perplexity
         )
     }
 }
@@ -232,7 +252,8 @@ pub(crate) fn id_hint(lower: &str) -> Option<(Provider, &str)> {
     lower.split_once('/').and_then(|(head, rest)| Some((Provider::parse(head)?, rest)))
 }
 
-/// Platforms whose rows (none yet) only apply when the caller names the platform.
+/// Platforms that resell other makers' models: their rows (Bedrock's and OpenRouter's) are
+/// only found by exact id unless the caller names the platform.
 pub(crate) fn is_platform(provider: &str) -> bool {
     matches!(provider, "vertex" | "bedrock" | "azure" | "openrouter")
 }
@@ -305,7 +326,8 @@ mod tests {
         for p in all() {
             let kind = p.provider_kind().unwrap_or_else(|| panic!("{} has no Provider", p.provider));
             assert_eq!(kind.as_str(), p.provider);
-            assert!(!is_platform(p.provider), "platform rows would change plain lookup order");
+            // Bedrock and OpenRouter have rows of their own; Vertex and Azure do not yet.
+            assert!(!matches!(p.provider, "vertex" | "azure"), "{}", p.provider);
         }
     }
 
@@ -329,6 +351,8 @@ mod tests {
             ("azure_ai_foundry", Provider::Azure),
             ("GroqCloud", Provider::Groq),
             ("cohere_ai", Provider::Cohere),
+            ("pplx", Provider::Perplexity),
+            ("Perplexity_AI", Provider::Perplexity),
         ] {
             assert_eq!(Provider::parse(name), Some(want), "{name}");
         }

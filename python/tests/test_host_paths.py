@@ -33,13 +33,12 @@ THIRD_PARTY_UNPRICED = [
     # Bedrock, Vertex, Azure, OpenRouter: only the makers whose list price they charge
     "bedrock/deepseek-r1",
     "bedrock/deepseek-chat",
-    "bedrock/us.deepseek.r1-v1:0",
     "bedrock/gpt-4o",
     "vertex_ai/deepseek-chat",
     "vertex_ai/gpt-4o",
     "azure/deepseek-r1",
     "azure/claude-sonnet-4-6",
-    "openrouter/meta-llama/llama-3.3-70b-instruct",
+    "openrouter/acme/not-a-model",
 ]
 
 
@@ -151,3 +150,49 @@ def test_lookup_provider_does_not_cross_hosts():
     # A platform that charges the maker's list price: the maker's row.
     assert lookup_provider("openai", "azure/gpt-4.1").provider == "openai"
     assert lookup_provider("anthropic", "bedrock/anthropic.claude-sonnet-4-20250514-v1:0").provider == "anthropic"
+
+
+@pytest.mark.parametrize(
+    "model,provider,price",
+    [
+        # Bedrock's own price for DeepSeek-R1 (AWS price list, us-east-1), not DeepSeek's.
+        ("bedrock/us.deepseek.r1-v1:0", "bedrock", (1.35, 5.4)),
+        ("bedrock/deepseek.r1-v1:0", "bedrock", (1.35, 5.4)),
+        ("bedrock/amazon.nova-pro-v1:0", "bedrock", (0.8, 3.2)),
+        ("bedrock/meta.llama4-maverick-17b-instruct-v1:0", "bedrock", (0.24, 0.97)),
+        # OpenRouter's own price from its model list.
+        ("openrouter/deepseek/deepseek-r1-0528", "openrouter", (0.5, 2.15)),
+        ("openrouter/perplexity/sonar-pro", "openrouter", (3.0, 15.0)),
+        # Perplexity's Agent API price for the models it serves.
+        ("perplexity/sonar", "perplexity", (0.25, 2.5)),
+        ("perplexity/kimi-k3", "perplexity", (3.0, 15.0)),
+    ],
+)
+def test_host_rows_price_their_own_paths(model, provider, price):
+    p = lookup(model)
+    assert p is not None and p.provider == provider
+    assert (p.input, p.output) == price
+    cost = tc.calculate_cost_by_tokens(1_000_000, model, "input")
+    assert float(cost) == price[0]
+
+
+def test_kiwiq_style_ids():
+    # The ids rcortx/kiwiq passes to tokencost (llm_node.py map_model_to_tokencost_format).
+    assert float(tc.calculate_cost_by_tokens(1_000_000, "bedrock/us.deepseek.r1-v1:0", "output")) == 5.4
+    assert float(tc.calculate_cost_by_tokens(1_000_000, "perplexity/sonar", "input")) == 0.25
+    # Sonar Pro, Sonar Reasoning Pro and Sonar Deep Research left the Sonar API on 2026-09-27;
+    # their last listed prices come from the archived pricing page.
+    assert float(tc.calculate_cost_by_tokens(1_000_000, "perplexity/sonar-pro", "input")) == 3.0
+    assert float(tc.calculate_cost_by_tokens(1_000_000, "perplexity/sonar-deep-research", "output")) == 8.0
+    assert float(tc.calculate_cost_by_tokens(1_000_000, "perplexity/sonar-reasoning-pro", "input")) == 2.0
+
+
+def test_platform_rows_never_answer_a_bare_maker_id():
+    # gpt-4 is a retired OpenAI id; OpenRouter still lists openai/gpt-4, but a bare id only
+    # matches a platform row by its exact id.
+    p = lookup("gpt-4")
+    assert p is None or p.provider == "openai"
+    assert lookup("meta-llama/llama-3.3-70b-instruct").provider == "openrouter"
+    assert lookup("deepseek.r1-v1:0").provider == "bedrock"
+    # A host's row still wins over a platform's for a maker-prefixed open-weight id.
+    assert lookup("openai/gpt-oss-120b").provider == "groq"
