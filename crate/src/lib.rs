@@ -838,10 +838,17 @@ pub(crate) fn resolve(id: &str, keep: &dyn Fn(&Price) -> bool) -> Option<&'stati
 /// - the undated form of a dated id (`claude-sonnet-4-5` finds `claude-sonnet-4-5-20250929`).
 ///
 /// When the id starts with a provider name and a slash (`groq/`, `together_ai/`,
-/// `vertex_ai/`, ...), that provider is tried first, as [`lookup_provider`] does. Otherwise,
-/// and when that finds nothing, the first matching row in table order wins: model makers
-/// come before the hosts that resell open-weight models, and the hosts are ordered Groq,
-/// Together AI, Fireworks AI. Use [`lookup_provider`] whenever you know which provider served
+/// `vertex_ai/`, ...), that provider is tried first, as [`lookup_provider`] does. A host or
+/// platform path (`groq/`, `together_ai/`, `fireworks_ai/`, `accounts/fireworks/models/`,
+/// `bedrock/`, `vertex_ai/`, `azure/`, `openrouter/`) is only priced at that host, or at the
+/// model maker's list price where the platform charges it
+/// ([`Provider::fallback_providers`]); otherwise the result is `None`, never another
+/// provider's row, so `accounts/fireworks/models/deepseek-r1` does not get DeepSeek's own
+/// price. A model maker's prefix (`anthropic/`, `openai/`, ...) on a model that maker does not
+/// sell only matches rows whose own id carries the same prefix (Groq's
+/// `openai/gpt-oss-120b`). Without a provider prefix the first matching row in table order
+/// wins: model makers come before the hosts that resell open-weight models, and the hosts are
+/// ordered Groq, Together AI, Fireworks AI. Use [`lookup_provider`] whenever you know which provider served
 /// the request, since several hosts sell the same open-weight model at different prices.
 ///
 /// A dated id resolves to the base row's price. Providers sometimes price an old snapshot
@@ -856,17 +863,24 @@ pub(crate) fn resolve(id: &str, keep: &dyn Fn(&Price) -> bool) -> Option<&'stati
 /// assert_eq!(lookup("mistral-large-latest").unwrap().model, "mistral-large-4");
 /// assert_eq!(lookup("xai/grok-4.7-latest").unwrap().model, "grok-4.7");
 /// assert_eq!(lookup("vertex_ai/claude-opus-4-1@20250805").unwrap().model, "claude-opus-4-1-20250805");
+/// // Fireworks' price for DeepSeek R1 is not DeepSeek's first-party price.
+/// assert!(lookup("accounts/fireworks/models/deepseek-r1").is_none());
 /// ```
 pub fn lookup(id: &str) -> Option<&'static Price> {
     let lower = id.trim().to_ascii_lowercase();
-    // `accounts/fireworks/...` is Fireworks' own id format.
-    let hint = if lower.starts_with("accounts/fireworks/") {
-        Some((Provider::Fireworks, lower.as_str()))
-    } else {
-        lower.split_once('/').and_then(|(head, rest)| Some((Provider::parse(head)?, rest)))
-    };
-    if let Some(p) = hint.and_then(|(provider, rest)| provider.lookup(rest)) {
-        return Some(p);
+    if let Some((provider, rest)) = provider::id_hint(&lower) {
+        if let Some(p) = provider.lookup(rest) {
+            return Some(p);
+        }
+        if provider.is_host() {
+            // A host or platform path: that host's price or nothing. Its price for a model is
+            // not the model maker's, so falling back to the maker's row would be wrong.
+            return None;
+        }
+        // A model maker's prefix on a model it does not sell (`openai/gpt-oss-120b`) only
+        // matches rows whose own id starts with that prefix, such as a host's open-weight row.
+        let prefix = &lower[..=lower.find('/').unwrap_or(0)];
+        return resolve(&lower, &|p| core::iter::once(p.model).chain(p.aliases.iter().copied()).any(|m| strip_ci(m, prefix).is_some()));
     }
     resolve(&lower, &|p| !provider::is_platform(p.provider)).or_else(|| resolve(&lower, &|p| provider::is_platform(p.provider)))
 }

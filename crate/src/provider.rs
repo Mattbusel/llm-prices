@@ -194,6 +194,11 @@ impl Provider {
     /// assert!(Provider::Groq.lookup("claude-opus-4-5").is_none());
     /// ```
     pub fn lookup(self, model: &str) -> Option<&'static Price> {
+        if let Some((host, _)) = id_hint(&model.trim().to_ascii_lowercase()) {
+            if host.is_host() && host != self && !host.fallback_providers().contains(&self) {
+                return None; // the id names another host or platform, which sells at its own price
+            }
+        }
         let name = self.as_str();
         resolve(model, &|p| p.provider == name).or_else(|| {
             let makers = self.fallback_providers();
@@ -203,6 +208,28 @@ impl Provider {
             resolve(model, &|p| makers.iter().any(|m| m.as_str() == p.provider))
         })
     }
+}
+
+impl Provider {
+    /// Whether this provider sells other companies' models at its own prices: a cloud
+    /// platform (Vertex AI, Bedrock, Azure, OpenRouter) or an open-weight host (Groq,
+    /// Together AI, Fireworks AI). An id that starts with one of these is only priced there.
+    pub(crate) const fn is_host(self) -> bool {
+        matches!(
+            self,
+            Provider::Vertex | Provider::Bedrock | Provider::Azure | Provider::OpenRouter | Provider::Groq | Provider::Together | Provider::Fireworks
+        )
+    }
+}
+
+/// The provider an id (already ASCII-lowercased) names at its start (`groq/...`,
+/// `accounts/fireworks/...`) and the rest of the id.
+pub(crate) fn id_hint(lower: &str) -> Option<(Provider, &str)> {
+    // `accounts/fireworks/...` is Fireworks' own id format.
+    if lower.starts_with("accounts/fireworks/") {
+        return Some((Provider::Fireworks, lower));
+    }
+    lower.split_once('/').and_then(|(head, rest)| Some((Provider::parse(head)?, rest)))
 }
 
 /// Platforms whose rows (none yet) only apply when the caller names the platform.

@@ -433,6 +433,20 @@ const FALLBACKS = {
     openrouter: ['anthropic', 'openai', 'google', 'deepseek', 'mistral', 'xai', 'cohere'],
 };
 const PLATFORMS = new Set(['vertex', 'bedrock', 'azure', 'openrouter']);
+/** Providers that sell other companies' models at their own prices: the cloud platforms and the
+ * open-weight hosts. An id that starts with one of these is only priced at that provider. */
+const HOSTS = new Set(['vertex', 'bedrock', 'azure', 'openrouter', 'groq', 'together', 'fireworks']);
+/** The provider an id (already ASCII-lowercased) names at its start (`groq/...`,
+ * `accounts/fireworks/...`) and the rest of the id. */
+function idHint(lower) {
+    if (lower.startsWith('accounts/fireworks/'))
+        return ['fireworks', lower];
+    const i = lower.indexOf('/');
+    if (i < 0)
+        return null;
+    const p = parseProvider(lower.slice(0, i));
+    return p === null ? null : [p, lower.slice(i + 1)];
+}
 /** Length of `s` in UTF-8 bytes (the Rust crate limits provider names to 24 bytes). */
 function utf8Length(s) {
     let n = 0;
@@ -475,6 +489,10 @@ export function providerRows(provider) {
 export function lookupProvider(provider, model) {
     const p = parseProvider(provider);
     if (p === null)
+        return null;
+    const host = idHint(asciiLower(String(model).trim()))?.[0];
+    // The id names another host or platform, which sells at its own price.
+    if (host !== undefined && HOSTS.has(host) && host !== p && !fallbackProviders(host).includes(p))
         return null;
     const found = resolve(model, (row) => row.provider === p);
     if (found)
@@ -601,27 +619,32 @@ function resolve(id, keep) {
  * and the undated form of a dated id.
  *
  * When the id starts with a provider name and a slash (`groq/`, `together_ai/`, ...), that
- * provider is tried first. Otherwise the first matching row in table order wins: model makers
- * before the hosts that resell open-weight models. Use {@link lookupProvider} whenever you
- * know which provider served the request.
+ * provider is tried first. A host or platform path (`groq/`, `together_ai/`, `fireworks_ai/`,
+ * `accounts/fireworks/models/`, `bedrock/`, `vertex_ai/`, `azure/`, `openrouter/`) is only
+ * priced at that host, or at the model maker's list price where the platform charges it
+ * ({@link fallbackProviders}); otherwise the result is `null`, never another provider's row,
+ * so `accounts/fireworks/models/deepseek-r1` does not get DeepSeek's own price. A model maker's
+ * prefix (`anthropic/`, `openai/`, ...) on a model that maker does not sell only matches rows
+ * whose own id carries the same prefix (Groq's `openai/gpt-oss-120b`). Without a provider
+ * prefix the first matching row in table order wins: model makers before the hosts that resell
+ * open-weight models. Use {@link lookupProvider} whenever you know which provider served the
+ * request.
  */
 export function lookup(model) {
     const lower = asciiLower(String(model).trim());
-    let hint = null;
-    if (lower.startsWith('accounts/fireworks/'))
-        hint = ['fireworks', lower];
-    else {
-        const i = lower.indexOf('/');
-        if (i >= 0) {
-            const p = parseProvider(lower.slice(0, i));
-            if (p !== null)
-                hint = [p, lower.slice(i + 1)];
-        }
-    }
+    const hint = idHint(lower);
     if (hint) {
         const found = lookupProvider(hint[0], hint[1]);
         if (found)
             return found;
+        // A host or platform path: that host's price or nothing. Its price for a model is not the
+        // model maker's, so falling back to the maker's row would be wrong.
+        if (HOSTS.has(hint[0]))
+            return null;
+        // A model maker's prefix on a model it does not sell (`openai/gpt-oss-120b`) only matches
+        // rows whose own id starts with that prefix, such as a host's open-weight row.
+        const prefix = lower.slice(0, lower.indexOf('/') + 1);
+        return resolve(lower, (p) => ids(p).some((m) => m.length >= prefix.length && eqCi(m.slice(0, prefix.length), prefix)));
     }
     return resolve(lower, (p) => !PLATFORMS.has(p.provider)) ?? resolve(lower, (p) => PLATFORMS.has(p.provider));
 }

@@ -112,6 +112,9 @@ func (p Provider) Lookup(model string) (Price, bool) {
 }
 
 func (p Provider) lookupIndex(model string) int {
+	if host, _, ok := idHint(asciiLower(strings.TrimSpace(model))); ok && hosts[host] && host != p && !contains(fallbacks[host], p) {
+		return -1 // the id names another host or platform, which sells at its own price
+	}
 	name := string(p)
 	if i := resolve(model, func(r *Price) bool { return r.Provider == name }); i >= 0 {
 		return i
@@ -132,21 +135,60 @@ func (p Provider) lookupIndex(model string) int {
 
 func lookupIndex(model string) int {
 	lower := asciiLower(strings.TrimSpace(model))
-	if strings.HasPrefix(lower, "accounts/fireworks/") {
-		if i := Fireworks.lookupIndex(lower); i >= 0 {
+	if p, rest, ok := idHint(lower); ok {
+		if i := p.lookupIndex(rest); i >= 0 {
 			return i
 		}
-	} else if head, rest, found := strings.Cut(lower, "/"); found {
-		if p, ok := ParseProvider(head); ok {
-			if i := p.lookupIndex(rest); i >= 0 {
-				return i
-			}
+		if hosts[p] {
+			// A host or platform path: that host's price or nothing. Its price for a model is
+			// not the model maker's, so falling back to the maker's row would be wrong.
+			return -1
 		}
+		// A model maker's prefix on a model it does not sell ("openai/gpt-oss-120b") only
+		// matches rows whose own id starts with that prefix, such as a host's open-weight row.
+		head, _, _ := strings.Cut(lower, "/")
+		prefix := head + "/"
+		return resolve(lower, func(r *Price) bool {
+			for _, m := range ids(r) {
+				if len(m) >= len(prefix) && strings.EqualFold(m[:len(prefix)], prefix) {
+					return true
+				}
+			}
+			return false
+		})
 	}
 	if i := resolve(lower, func(r *Price) bool { return !platforms[r.Provider] }); i >= 0 {
 		return i
 	}
 	return resolve(lower, func(r *Price) bool { return platforms[r.Provider] })
+}
+
+func contains(ps []Provider, p Provider) bool {
+	for _, q := range ps {
+		if q == p {
+			return true
+		}
+	}
+	return false
+}
+
+// hosts sell other companies' models at their own prices: the cloud platforms and the
+// open-weight hosts. An id that starts with one of these is only priced at that provider.
+var hosts = map[Provider]bool{Vertex: true, Bedrock: true, Azure: true, OpenRouter: true, Groq: true, Together: true, Fireworks: true}
+
+// idHint returns the provider an id (already ASCII-lowercased) names at its start
+// ("groq/...", "accounts/fireworks/...") and the rest of the id.
+func idHint(lower string) (Provider, string, bool) {
+	// accounts/fireworks/... is Fireworks' own id format.
+	if strings.HasPrefix(lower, "accounts/fireworks/") {
+		return Fireworks, lower, true
+	}
+	if head, rest, found := strings.Cut(lower, "/"); found {
+		if p, ok := ParseProvider(head); ok {
+			return p, rest, true
+		}
+	}
+	return "", "", false
 }
 
 // -- model ids --------------------------------------------------------------------------------

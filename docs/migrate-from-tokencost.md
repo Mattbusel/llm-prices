@@ -92,7 +92,12 @@ TOKEN_COSTS["gpt-4"]["source"]   # https://web.archive.org/web/20261102160440/ht
   `TOKEN_COSTS` and fetch nothing. New prices arrive with a new package version.
 - **Model ids resolve like `llm_prices.lookup`.** Dated ids (`gpt-4o-2024-08-06`), prefixes
   (`azure/`, `openai/`, `gemini/`), Bedrock ids (`anthropic.claude-sonnet-4-6`,
-  `us.anthropic.claude-...-v1:0`) and Vertex ids reach the right row.
+  `us.anthropic.claude-...-v1:0`) and Vertex ids reach the right row. An id with a
+  third-party host path (`accounts/fireworks/models/`, `together_ai/`, `groq/`, `bedrock/`,
+  `vertex_ai/`, `azure/`, `openrouter/`) is priced at that host's own row, or at the maker's
+  list price only where the platform charges it (Claude on Bedrock and Vertex, OpenAI models
+  on Azure). Otherwise it raises `KeyError` like any unknown model: Fireworks' price for
+  `deepseek-r1` is not DeepSeek's, so the table does not guess it.
 - **Non-OpenAI message counts.** For Gemini, DeepSeek, Mistral and the other non-OpenAI models
   in the table, `count_message_tokens` returns a tiktoken estimate and logs a warning, where
   tokencost raises `KeyError`. For exact numbers, price the usage the API response reports

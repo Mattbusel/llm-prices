@@ -411,3 +411,97 @@ func TestRowsAreCopies(t *testing.T) {
 		t.Error("changing a returned row changed the table")
 	}
 }
+
+// A host or platform path is priced at that host's own row, or not at all: never with the
+// model maker's first-party row ("accounts/fireworks/models/deepseek-r1" is not DeepSeek's
+// $0.30 / $1.20).
+func TestHostPathsNeverTakeTheMakersPrice(t *testing.T) {
+	for _, id := range []string{
+		"accounts/fireworks/models/deepseek-r1",
+		"accounts/fireworks/models/deepseek-chat",
+		"fireworks_ai/accounts/fireworks/models/deepseek-r1",
+		"fireworks_ai/deepseek-chat",
+		"fireworks/gpt-4o",
+		"together_ai/deepseek-chat",
+		"together_ai/deepseek-ai/DeepSeek-R1",
+		"together/claude-sonnet-4-6",
+		"together_ai/openai/gpt-4o",
+		"groq/gpt-4o",
+		"groq/deepseek-chat",
+		"bedrock/deepseek-r1",
+		"bedrock/deepseek-chat",
+		"bedrock/gpt-4o",
+		"vertex_ai/deepseek-chat",
+		"vertex_ai/gpt-4o",
+		"azure/deepseek-r1",
+		"azure/claude-sonnet-4-6",
+		"openrouter/meta-llama/llama-3.3-70b-instruct",
+	} {
+		if p, ok := Lookup(id); ok {
+			t.Errorf("%s resolved to %s/%s", id, p.Provider, p.Model)
+		}
+		if _, ok := Cost(id, 1000, 1000); ok {
+			t.Errorf("Cost(%s) priced it", id)
+		}
+	}
+}
+
+func TestHostPathsResolveToTheHostsOwnRow(t *testing.T) {
+	for _, c := range []struct{ id, provider, model string }{
+		{"accounts/fireworks/models/gpt-oss-120b", "fireworks", "accounts/fireworks/models/gpt-oss-120b"},
+		{"fireworks_ai/accounts/fireworks/models/kimi-k3", "fireworks", "accounts/fireworks/models/kimi-k3"},
+		{"fireworks_ai/deepseek-v4p1-flash", "fireworks", "accounts/fireworks/models/deepseek-v4p1-flash"},
+		{"together_ai/openai/gpt-oss-120b", "together", "openai/gpt-oss-120b"},
+		{"together_ai/moonshotai/Kimi-K3", "together", "moonshotai/Kimi-K3"},
+		{"together/deepseek-ai/DeepSeek-V4.1-Flash", "together", "deepseek-ai/DeepSeek-V4.1-Flash"},
+		{"groq/openai/gpt-oss-120b", "groq", "openai/gpt-oss-120b"},
+		{"groq/qwen/qwen3.8-27b", "groq", "qwen/qwen3.8-27b"},
+	} {
+		p, ok := Lookup(c.id)
+		if !ok || p.Provider != c.provider || p.Model != c.model {
+			t.Errorf("%s: got %s/%s ok=%v", c.id, p.Provider, p.Model, ok)
+		}
+	}
+}
+
+func TestFirstPartyPrefixesStillResolve(t *testing.T) {
+	for _, c := range []struct{ id, provider string }{
+		{"anthropic/claude-sonnet-4-6", "anthropic"},
+		{"openai/gpt-4o", "openai"},
+		{"openai/gpt-4o-2024-11-20", "openai"},
+		{"gemini/gemini-2.5-flash", "google"},
+		{"models/gemini-2.5-flash", "google"},
+		{"deepseek/deepseek-chat", "deepseek"},
+		{"mistral/mistral-large-latest", "mistral"},
+		{"xai/grok-4.7", "xai"},
+		{"bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0", "anthropic"},
+		{"vertex_ai/gemini-2.5-pro", "google"},
+		{"azure/gpt-4o", "openai"},
+		{"openrouter/anthropic/claude-sonnet-4-6", "anthropic"},
+	} {
+		if p, ok := Lookup(c.id); !ok || p.Provider != c.provider {
+			t.Errorf("%s: got %q ok=%v", c.id, p.Provider, ok)
+		}
+	}
+	for _, id := range []string{"anthropic/gpt-4o", "openai/claude-sonnet-4-6", "openai/deepseek-chat", "huggingface/deepseek-r1", "deepseek-ai/DeepSeek-R1", "accounts/fireworks/models/not-a-model"} {
+		if p, ok := Lookup(id); ok {
+			t.Errorf("%s resolved to %s/%s", id, p.Provider, p.Model)
+		}
+	}
+}
+
+func TestLookupProviderDoesNotCrossHosts(t *testing.T) {
+	for _, c := range [][2]string{
+		{"deepseek", "accounts/fireworks/models/deepseek-chat"},
+		{"deepseek", "together_ai/deepseek-chat"},
+		{"groq", "fireworks_ai/accounts/fireworks/models/gpt-oss-120b"},
+		{"openrouter", "groq/openai/gpt-oss-120b"},
+	} {
+		if p, ok := LookupProvider(c[0], c[1]); ok {
+			t.Errorf("%s %s resolved to %s/%s", c[0], c[1], p.Provider, p.Model)
+		}
+	}
+	if p, ok := LookupProvider("openai", "azure/gpt-4.1"); !ok || p.Provider != "openai" {
+		t.Errorf("azure/gpt-4.1 under openai: %q %v", p.Provider, ok)
+	}
+}

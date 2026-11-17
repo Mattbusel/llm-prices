@@ -823,6 +823,9 @@ class Provider(str, Enum):
         True
         """
         name = self.value
+        host = _host_hint(_ascii_lower(model.strip()))
+        if host is not None and host is not self and self not in host.fallback_providers():
+            return None  # the id names another host or platform, which sells at its own price
         found = _resolve(model, lambda p: p.provider == name)
         if found is not None:
             return found
@@ -869,6 +872,29 @@ _FALLBACKS: Dict[Provider, Tuple[Provider, ...]] = {
 }
 
 _PLATFORMS = frozenset({"vertex", "bedrock", "azure", "openrouter"})
+
+#: Providers that sell other companies' models at their own prices: the cloud platforms and
+#: the open-weight hosts. An id that starts with one of these is only priced at that provider.
+_HOSTS = frozenset({Provider.VERTEX, Provider.BEDROCK, Provider.AZURE, Provider.OPENROUTER, Provider.GROQ, Provider.TOGETHER, Provider.FIREWORKS})
+
+
+def _id_hint(lower: str) -> Optional[Tuple[Provider, str]]:
+    """The provider an id names at its start (``groq/...``, ``accounts/fireworks/...``) and
+    the rest of the id, or ``None``."""
+    if lower.startswith("accounts/fireworks/"):
+        return (Provider.FIREWORKS, lower)
+    if "/" in lower:
+        head, rest = lower.split("/", 1)
+        provider = Provider.parse(head)
+        if provider is not None:
+            return (provider, rest)
+    return None
+
+
+def _host_hint(lower: str) -> Optional[Provider]:
+    """The host or platform an id names at its start, or ``None``."""
+    hint = _id_hint(lower)
+    return hint[0] if hint is not None and hint[0] in _HOSTS else None
 
 
 # -- model ids --------------------------------------------------------------------------------
@@ -1002,9 +1028,18 @@ def lookup(model: str) -> Optional[Price]:
     dated id.
 
     When the id starts with a provider name and a slash (``groq/``, ``together_ai/``, ...),
-    that provider is tried first. Otherwise the first matching row in table order wins: model
-    makers before the hosts that resell open-weight models. Use :func:`lookup_provider`
-    whenever you know which provider served the request.
+    that provider is tried first. A host or platform path (``groq/``, ``together_ai/``,
+    ``fireworks_ai/``, ``accounts/fireworks/models/``, ``bedrock/``, ``vertex_ai/``,
+    ``azure/``, ``openrouter/``) is only priced at that host, or at the model maker's list
+    price where the platform charges it (:meth:`Provider.fallback_providers`); otherwise the
+    result is ``None``, never another provider's row. A model maker's prefix
+    (``anthropic/``, ``openai/``, ...) on a model that maker does not sell only matches rows
+    whose own id carries the same prefix (Groq's ``openai/gpt-oss-120b``). Without a provider prefix the first matching row in
+    table order wins: model makers before the hosts that resell open-weight models. Use
+    :func:`lookup_provider` whenever you know which provider served the request.
+
+    >>> lookup("accounts/fireworks/models/deepseek-r1") is None  # Fireworks' price, not DeepSeek's
+    True
 
     >>> lookup("gpt-4o-2024-08-06").model
     'gpt-4o'
@@ -1014,18 +1049,19 @@ def lookup(model: str) -> Optional[Price]:
     True
     """
     lower = _ascii_lower(model.strip())
-    hint: Optional[Tuple[Provider, str]] = None
-    if lower.startswith("accounts/fireworks/"):
-        hint = (Provider.FIREWORKS, lower)
-    elif "/" in lower:
-        head, rest = lower.split("/", 1)
-        provider = Provider.parse(head)
-        if provider is not None:
-            hint = (provider, rest)
+    hint = _id_hint(lower)
     if hint is not None:
         found = hint[0].lookup(hint[1])
         if found is not None:
             return found
+        if hint[0] in _HOSTS:
+            # A host or platform path: that host's price or nothing. Its price for a model is
+            # not the model maker's, so falling back to the maker's row would be wrong.
+            return None
+        # A model maker's prefix on a model it does not sell (``openai/gpt-oss-120b``) only
+        # matches rows whose own id starts with that prefix, such as a host's open-weight row.
+        prefix = lower.split("/", 1)[0] + "/"
+        return _resolve(lower, lambda p: any(_ascii_lower(m).startswith(prefix) for m in _ids(p)))
     return _resolve(lower, lambda p: p.provider not in _PLATFORMS) or _resolve(lower, lambda p: p.provider in _PLATFORMS)
 
 

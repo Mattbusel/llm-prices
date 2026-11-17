@@ -40,9 +40,9 @@ from __future__ import annotations
 import logging
 import re
 from decimal import Decimal
-from typing import Any, Dict, List, Literal, Optional, Pattern, Tuple, Union
+from typing import Any, Dict, FrozenSet, List, Literal, Optional, Pattern, Tuple, Union
 
-from .._core import Price, lookup
+from .._core import Price, Provider, lookup
 from ..litellm import model_cost
 
 __all__ = [
@@ -239,6 +239,41 @@ def strip_ft_model_name(model: str) -> str:
     return model
 
 
+def _path_providers(m: str) -> Optional[FrozenSet[str]]:
+    """The providers whose price a path id such as ``anthropic/claude-3-opus`` or
+    ``bedrock/anthropic.claude-3-haiku`` may take, by the provider names in its path:
+    a model maker's prefix allows that maker, a host or platform allows itself and the makers
+    whose list price it charges (:meth:`Provider.fallback_providers`), narrowed by a maker
+    prefix after it (``openrouter/anthropic/...``). ``None`` when a path segment is not a
+    provider this table knows (``huggingface/``, ``deepseek-ai/``)."""
+    if m.startswith("accounts/fireworks/"):
+        return frozenset({Provider.FIREWORKS.value})
+    allowed: Optional[FrozenSet[str]] = None
+    for head in m.split("/")[:-1]:
+        provider = Provider.GOOGLE if head == "models" else Provider.parse(head)
+        if provider is None:
+            return None
+        own = frozenset({provider.value, *(f.value for f in provider.fallback_providers())})
+        allowed = own if allowed is None else allowed & own
+    return allowed
+
+
+def _bare_key(m: str) -> Optional[str]:
+    """The TOKEN_COSTS key for the last segment of a path id, when every provider in the path
+    sells that model at that price: ``anthropic/claude-3-opus-20240229`` finds the legacy
+    ``claude-3-opus-20240229`` row, while ``accounts/fireworks/models/deepseek-r1`` does not
+    find DeepSeek's own row, since Fireworks charges its own price."""
+    if "/" not in m:
+        return None
+    bare = m.rsplit("/", 1)[1]
+    entry = TOKEN_COSTS.get(bare)
+    allowed = _path_providers(m)
+    if entry is None or not allowed:
+        return None
+    owner = Provider.parse(str(entry.get("litellm_provider") or ""))
+    return bare if owner is not None and owner.value in allowed else None
+
+
 def _resolve(model: str) -> Optional[str]:
     """The TOKEN_COSTS key for ``model``, or ``None``."""
     if model.lower() in TOKEN_COSTS:  # fine-tune prices such as "ft:gpt-3.5-turbo"
@@ -246,13 +281,12 @@ def _resolve(model: str) -> Optional[str]:
     m = strip_ft_model_name(model.lower())
     if m in TOKEN_COSTS:
         return m
-    if m.startswith("bedrock/") and m.split("/", 1)[1] in TOKEN_COSTS:
-        return m.split("/", 1)[1]
     p = lookup(m)
     if p is not None and _key_of(p) in TOKEN_COSTS:
         return _key_of(p)
-    if "/" in m and m.rsplit("/", 1)[1] in TOKEN_COSTS:
-        return m.rsplit("/", 1)[1]
+    bare = _bare_key(m)
+    if bare is not None:
+        return bare
     for regex, entry in MODEL_PRICE_PATTERNS:
         if regex.match(m):
             TOKEN_COSTS[m] = dict(entry)

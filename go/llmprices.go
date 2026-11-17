@@ -264,9 +264,16 @@ func All() []Price {
 
 // Lookup finds a model by id across every provider in the table. See the package doc for
 // the id forms it accepts. When the id starts with a provider name and a slash ("groq/",
-// "together_ai/", ...), that provider is tried first; otherwise the first matching row in
-// table order wins, model makers before the hosts that resell open-weight models. Use
-// LookupProvider whenever you know which provider served the request.
+// "together_ai/", ...), that provider is tried first. A host or platform path ("groq/",
+// "together_ai/", "fireworks_ai/", "accounts/fireworks/models/", "bedrock/", "vertex_ai/",
+// "azure/", "openrouter/") is only priced at that host, or at the model maker's list price
+// where the platform charges it (FallbackProviders); otherwise ok is false, never another
+// provider's row, so "accounts/fireworks/models/deepseek-r1" does not get DeepSeek's own
+// price. A model maker's prefix ("anthropic/", "openai/", ...) on a model that maker does not
+// sell only matches rows whose own id carries the same prefix (Groq's "openai/gpt-oss-120b").
+// Without a provider prefix the first matching row in table order wins, model makers before
+// the hosts that resell open-weight models. Use LookupProvider whenever you know which
+// provider served the request.
 func Lookup(model string) (Price, bool) {
 	i := lookupIndex(model)
 	if i < 0 {

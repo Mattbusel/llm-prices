@@ -3,6 +3,31 @@
 All notable changes to the `llm-prices` crate. Versions follow semver: price-data-only
 updates are patch releases, new API is a minor release.
 
+## [1.5.1] - 2026-11-17
+
+### Fixed
+
+Model ids with a host or platform path are no longer priced with the model maker's
+first-party row. Fireworks, Together AI, Groq, Bedrock, Vertex AI, Azure and OpenRouter charge
+their own prices, yet `fireworks_ai/deepseek-chat` or `together_ai/deepseek-chat` came back
+at DeepSeek's own $0.30 / $1.20 (and, in `llm_prices.compat.tokencost`, so did
+`accounts/fireworks/models/deepseek-r1`). They now find nothing. The rules:
+
+- A host path (`groq/`, `together_ai/`, `together/`, `fireworks_ai/`, `fireworks/`,
+  `accounts/fireworks/models/`) resolves to that host's own row (`groq/openai/gpt-oss-120b`,
+  `accounts/fireworks/models/kimi-k3`) or to nothing.
+- A platform path (`bedrock/`, `vertex_ai/`, `azure/`, `openrouter/`) resolves to the
+  platform's row or the list price of the makers it charges at (Bedrock: Anthropic; Vertex:
+  Google and Anthropic; Azure: OpenAI; OpenRouter: the model makers), as before, and to
+  nothing for anything else (`bedrock/deepseek-r1`, `azure/claude-sonnet-4-6`).
+- A model maker's prefix (`anthropic/`, `openai/`, `gemini/`, `deepseek/`, ...) resolves to
+  that maker's rows, or to a row whose own id carries the same prefix (Groq's
+  `openai/gpt-oss-120b`). `anthropic/gpt-4o` no longer finds OpenAI's row.
+- Looking a model up under a named provider never crosses into another host's path:
+  `lookup_provider("deepseek", "together_ai/deepseek-chat")` finds nothing.
+
+No change to the table.
+
 ## [1.5.0] - 2026-11-17
 
 No change to this package. Version kept in step with the Python package, whose 1.5.0 adds

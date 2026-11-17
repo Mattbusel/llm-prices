@@ -288,3 +288,79 @@ test('legacy DeepSeek names and delisted rows still price', () => {
     assert.equal(p.status, 'retired', id);
   }
 });
+
+// A host or platform path is priced at that host's own row, or not at all: never with the
+// model maker's first-party row (`accounts/fireworks/models/deepseek-r1` is not DeepSeek's
+// $0.30 / $1.20).
+test('host paths never take the maker price', () => {
+  for (const id of [
+    'accounts/fireworks/models/deepseek-r1',
+    'accounts/fireworks/models/deepseek-chat',
+    'fireworks_ai/accounts/fireworks/models/deepseek-r1',
+    'fireworks_ai/deepseek-chat',
+    'fireworks/gpt-4o',
+    'together_ai/deepseek-chat',
+    'together_ai/deepseek-ai/DeepSeek-R1',
+    'together/claude-sonnet-4-6',
+    'together_ai/openai/gpt-4o',
+    'groq/gpt-4o',
+    'groq/deepseek-chat',
+    'bedrock/deepseek-r1',
+    'bedrock/deepseek-chat',
+    'bedrock/gpt-4o',
+    'vertex_ai/deepseek-chat',
+    'vertex_ai/gpt-4o',
+    'azure/deepseek-r1',
+    'azure/claude-sonnet-4-6',
+    'openrouter/meta-llama/llama-3.3-70b-instruct',
+  ]) {
+    const p = lookup(id);
+    assert.equal(p, null, `${id} resolved to ${p?.provider}/${p?.model}`);
+  }
+});
+
+test('host paths resolve to the host own row', () => {
+  for (const [id, provider, model] of [
+    ['accounts/fireworks/models/gpt-oss-120b', 'fireworks', 'accounts/fireworks/models/gpt-oss-120b'],
+    ['fireworks_ai/accounts/fireworks/models/kimi-k3', 'fireworks', 'accounts/fireworks/models/kimi-k3'],
+    ['fireworks_ai/deepseek-v4p1-flash', 'fireworks', 'accounts/fireworks/models/deepseek-v4p1-flash'],
+    ['together_ai/openai/gpt-oss-120b', 'together', 'openai/gpt-oss-120b'],
+    ['together_ai/moonshotai/Kimi-K3', 'together', 'moonshotai/Kimi-K3'],
+    ['together/deepseek-ai/DeepSeek-V4.1-Flash', 'together', 'deepseek-ai/DeepSeek-V4.1-Flash'],
+    ['groq/openai/gpt-oss-120b', 'groq', 'openai/gpt-oss-120b'],
+    ['groq/qwen/qwen3.8-27b', 'groq', 'qwen/qwen3.8-27b'],
+  ]) {
+    const p = lookup(id);
+    assert.deepEqual([p?.provider, p?.model], [provider, model], id);
+  }
+});
+
+test('first-party prefixes still resolve', () => {
+  for (const [id, provider] of [
+    ['anthropic/claude-sonnet-4-6', 'anthropic'],
+    ['openai/gpt-4o', 'openai'],
+    ['openai/gpt-4o-2024-11-20', 'openai'],
+    ['gemini/gemini-2.5-flash', 'google'],
+    ['models/gemini-2.5-flash', 'google'],
+    ['deepseek/deepseek-chat', 'deepseek'],
+    ['mistral/mistral-large-latest', 'mistral'],
+    ['xai/grok-4.7', 'xai'],
+    ['bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0', 'anthropic'],
+    ['vertex_ai/gemini-2.5-pro', 'google'],
+    ['azure/gpt-4o', 'openai'],
+    ['openrouter/anthropic/claude-sonnet-4-6', 'anthropic'],
+  ]) {
+    assert.equal(lookup(id)?.provider, provider, id);
+  }
+  for (const id of ['anthropic/gpt-4o', 'openai/claude-sonnet-4-6', 'openai/deepseek-chat', 'huggingface/deepseek-r1', 'deepseek-ai/DeepSeek-R1', 'accounts/fireworks/models/not-a-model']) {
+    assert.equal(lookup(id), null, id);
+  }
+});
+
+test('lookupProvider does not cross hosts', () => {
+  assert.equal(lookupProvider('deepseek', 'accounts/fireworks/models/deepseek-chat'), null);
+  assert.equal(lookupProvider('deepseek', 'together_ai/deepseek-chat'), null);
+  assert.equal(lookupProvider('groq', 'fireworks_ai/accounts/fireworks/models/gpt-oss-120b'), null);
+  assert.equal(lookupProvider('openrouter', 'groq/openai/gpt-oss-120b'), null);
+  assert.equal(lookupProvider('openai', 'azure/gpt-4.1')?.provider, 'openai');
+});
