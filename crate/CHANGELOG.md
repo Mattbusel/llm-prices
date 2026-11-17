@@ -3,6 +3,18 @@
 All notable changes to the `llm-prices` crate. Versions follow semver: price-data-only
 updates are patch releases, new API is a minor release.
 
+## [1.4.1] - 2026-11-17
+
+### Table (generated 2026-11-17, 146 rows)
+
+Price data only, no API change. Every row re-read from its official page: no standard input
+or output price changed; Mistral rows gain cached-input, Batch and Priority prices, Groq
+gpt-oss rows gain cached-input and Batch prices, xAI rows gain Priority Processing and the US
+endpoint multiplier, Together AI and Fireworks AI rows carry their US-only multipliers as
+`inference_geo`, and notes explain the Claude Sonnet 5, DeepSeek and Gemini 3.6 Flash prices
+other tables disagree on. Details in the
+[repository changelog](https://github.com/Mattbusel/llm-prices/blob/main/CHANGELOG.md#141---2026-11-17).
+
 ## [1.4.0] - 2026-11-16
 
 ### Added

@@ -19,10 +19,15 @@ Rust and Python packages price them.
 | Anthropic | `fast` (fast mode) | https://platform.claude.com/docs/en/about-claude/pricing#fast-mode-pricing |
 | DeepSeek | `offpeak` | https://api-docs.deepseek.com/quick_start/pricing |
 | Fireworks AI | `priority`, `fast` and others per model | https://docs.fireworks.ai/serverless/pricing |
+| Mistral | `priority` (1.75x standard; Batch is 0.5x and in `batch_input`/`batch_output`) | https://docs.mistral.ai/inference/pricing (Standard, Batch and Priority tabs) |
+| xAI | `priority` (Priority Processing, 2x standard on every token type, long context included) | https://docs.x.ai/developers/pricing#priority-processing-pricing |
 
 | Provider | `inference_geo` | Source |
 |---|---|---|
 | Anthropic | `{"us": 1.1}` on Claude 4.6 and later (Opus 4.6+, Sonnet 4.6+, Haiku 5.5, Fable); `null` on earlier models, which reject the parameter | https://platform.claude.com/docs/en/about-claude/pricing#data-residency-pricing |
+| xAI | `{"us": 1.1}` on grok-4.7 and grok-4.6 (the US regional endpoint https://us.api.x.ai/v1) | https://docs.x.ai/developers/pricing#us-regional-endpoint-pricing |
+| Together AI | `{"us": 1.25}` on the four models with a US-only row (Kimi K3, GLM-5.3, GLM-5.3 Flash, DeepSeek V4.1 Flash; us-api.together.ai) | https://docs.together.ai/docs/serverless/models#us-only-inference |
+| Fireworks AI | `{"us": 1.5}` on the models with a "(US)" row (Kimi K3, DeepSeek V4.1 Flash and 1017, GLM 5.3 and GLM 5.3 Flash) | https://docs.fireworks.ai/serverless/pricing |
 
 Both are read by the daily refresh from the pages above, like every other price. The
 Anthropic parser reads the first model version and the multiplier from the sentence on the
@@ -38,6 +43,10 @@ categories"), so a change there shows up in the refresh PR.
 - **OpenAI regional processing.** The pricing page charges a 10% uplift on regional (data
   residency) endpoints for models released on or after 2026-03-05. The page does not list
   release dates, so the row note carries this and `inference_geo` stays `null`.
+- **Mistral regional inference.** The page's "Regional inference" toggle makes standard and
+  batch prices 1.1x but priority 1.85x of standard (not 1.1 x 1.75), so one multiplier on
+  every price would be wrong for priority. The row note carries it and `inference_geo` stays
+  `null`.
 - **Bedrock and Vertex regional endpoints** for Claude have their own prices on AWS and Google
   Cloud pages, which the table does not read.
 

@@ -1,4 +1,4 @@
-<!-- Excerpt of https://developers.openai.com/api/docs/pricing fetched 2026-11-16, kept only for parser tests. -->
+<!-- Excerpt of https://developers.openai.com/api/docs/pricing fetched 2026-11-17, kept only for parser tests. -->
 
 
   

@@ -170,7 +170,7 @@ func TestProviderLookupKeepsHostsApart(t *testing.T) {
 	if groq.Provider != "groq" || together.Provider != "together" || fireworks.Provider != "fireworks" {
 		t.Fatalf("got %q %q %q", groq.Provider, together.Provider, fireworks.Provider)
 	}
-	if groq.CacheRead != nil || together.CacheRead != nil || f(fireworks.CacheRead) != 0.015 {
+	if f(groq.CacheRead) != 0.075 || together.CacheRead != nil || f(fireworks.CacheRead) != 0.015 {
 		t.Error("cache read prices of the gpt-oss-120b hosts")
 	}
 	for _, c := range [][2]string{

@@ -6,6 +6,43 @@ repository as a whole. The packages have their own changelogs:
 The Go module is tagged `go/vX.Y.Z` and listed here.
 The `v1` tag moves to every 1.x release.
 
+## [1.4.1] - 2026-11-17
+
+### Table (generated 2026-11-17, 146 rows)
+
+Every row re-read from its official page on 2026-11-17. No standard input or output price
+changed. Checked against the numbers other price tables carry for the same models:
+
+- `deepseek-flash` (`deepseek-v4-flash`) 0.30 / 1.20 and `deepseek-v4-pro` 1.32 / 3.96 are
+  the peak cache-miss prices on https://api-docs.deepseek.com/quick_start/pricing; off-peak is
+  half (`other_tiers.offpeak`), the cache-hit price is `cache_read`. Tables showing 0.14 / 0.28
+  and 0.435 / 0.87 carry the prices from before the 2026-08-16 adjustment in
+  https://api-docs.deepseek.com/updates.
+- `claude-sonnet-5` 2 / 10: the page says the introductory price is now the standard price and
+  the 3 / 15 increase planned for 2026-09-01 will not happen. The parser now copies the page's
+  footnotes into the row note.
+- `gemini-3.6-flash` 0.75 / 3.75 through 2026-12-31 and 1.50 / 7.50 from 2027-01-01 (already
+  in `scheduled`); there is no context-length tier for this model.
+
+Fixed or added, all from the official pages:
+
+- Mistral (11 rows): `cache_read` (the page's cached-input column, for example Mistral Small 4
+  0.015, Codestral 0.03), `batch_input` / `batch_output` (Batch tab, 0.5x) and
+  `other_tiers.priority` (Priority tab, 1.75x); the note says what the Regional inference
+  toggle costs. Before, these were `null` and the note said the page listed no price.
+- Groq: `cache_read` 0.075 / 0.0375 / 0.0375 on gpt-oss-120b / gpt-oss-20b /
+  gpt-oss-safeguard-20b (https://console.groq.com/docs/prompt-caching, 50% off input) and
+  Batch API prices on gpt-oss-120b (0.075 / 0.30) and gpt-oss-20b (0.0375 / 0.15)
+  (https://console.groq.com/docs/batch, 50% off).
+- xAI (8 rows): `other_tiers.priority` (Priority Processing, 2x, with its long-context prices)
+  and `inference_geo` `{"us": 1.1}` on grok-4.7 and grok-4.6.
+- Together AI: `inference_geo` `{"us": 1.25}` only on the four models the page prices for
+  us-api.together.ai; the other 18 rows said "the US-only endpoint costs 25% more" and now say
+  the page lists no US-only price for them. Notes say the Batch API runs these models at
+  standard rates.
+- Fireworks AI: `inference_geo` `{"us": 1.5}` on the five models with a "(US)" row.
+- DeepSeek notes say `input` is the cache-miss price.
+
 ## [1.4.0] - 2026-11-16
 
 ### Table (generated 2026-11-16, 146 rows)

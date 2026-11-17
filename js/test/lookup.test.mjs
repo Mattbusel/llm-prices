@@ -185,7 +185,7 @@ test('provider lookup keeps hosts apart', () => {
   const together = lookupProvider('together_ai', 'openai/gpt-oss-120b');
   const fireworks = lookupProvider('fireworks', 'accounts/fireworks/models/gpt-oss-120b');
   assert.deepEqual([groq.provider, together.provider, fireworks.provider], ['groq', 'together', 'fireworks']);
-  assert.equal(groq.cache_read, null);
+  assert.equal(groq.cache_read, 0.075);
   assert.equal(fireworks.cache_read, 0.015);
   assert.equal(together.cache_read, null);
   assert.equal(lookupProvider('openai', 'openai/gpt-oss-120b'), null);

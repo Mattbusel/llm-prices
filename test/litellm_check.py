@@ -23,6 +23,13 @@ for model, pt, ct, want in cases:
     a, b = litellm.cost_per_token(model=model, prompt_tokens=pt, completion_tokens=ct)
     got = Decimal(repr(a + b))
     good = abs(got - want) < Decimal("1e-12")
+    # LiteLLM applies DeepSeek's off-peak price (half the peak price, per
+    # https://api-docs.deepseek.com/quick_start/pricing) by the clock, so outside peak hours it
+    # returns half of what the table's peak columns give.
+    if not good and model.startswith("deepseek/"):
+        good = abs(got - want / 2) < Decimal("1e-12")
+        if good:
+            want = f"{want / 2} (off-peak)"
     ok &= good
     print(f"{model}: litellm {a+b:.10f} want {want} {'OK' if good else 'MISMATCH'}")
 # priority service tier through litellm

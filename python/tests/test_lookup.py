@@ -207,7 +207,7 @@ def test_provider_lookup_keeps_hosts_apart():
     together = lookup_provider("together_ai", "openai/gpt-oss-120b")
     fireworks = lookup_provider("fireworks", "accounts/fireworks/models/gpt-oss-120b")
     assert (groq.provider, together.provider, fireworks.provider) == ("groq", "together", "fireworks")
-    assert groq.cache_read is None
+    assert groq.cache_read == 0.075  # Groq prompt caching: 50% off input
     assert fireworks.cache_read == 0.015
     assert together.cache_read is None
     assert lookup_provider("openai", "openai/gpt-oss-120b") is None

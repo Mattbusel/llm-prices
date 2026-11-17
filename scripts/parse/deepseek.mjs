@@ -40,7 +40,7 @@ export function parseDeepSeek(html, checked) {
       source_url: src,
       checked,
       note:
-        `input/output/cache_read are peak-hour prices; other_tiers.offpeak is the off-peak price` +
+        `input is the cache-miss input price and cache_read the cache-hit price; input/output/cache_read are peak-hour prices; other_tiers.offpeak is the off-peak price` +
         (peakHours ? ` (peak hours: ${peakHours[1].trim()})` : '') +
         (i === 0 && legacy ? `; ${legacy[1]} and ${legacy[2]} are retired names now billed at the flash price` : '') +
         (i === 0

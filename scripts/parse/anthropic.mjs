@@ -51,6 +51,17 @@ export function parseAnthropic(md, checked) {
     return v !== null && (v[0] > geoFrom[0] || (v[0] === geoFrom[0] && v[1] >= geoFrom[1]));
   };
 
+  // Footnotes under the main table: "*<sup>3 The $2/$10 ... will not occur.</sup>*". A price
+  // cell that carries <sup>N</sup> gets footnote N copied into its row's note, so promotional,
+  // cancelled or special cache prices are explained next to the number.
+  const footnotes = new Map();
+  for (const m of md.matchAll(/^\*<sup>([0-9]+) (.+?)<\/sup>\*\s*$/gm)) footnotes.set(m[1], m[2].replace(/<[^>]+>/g, '').trim().replace(/\.$/, ''));
+  const cellNotes = (cells) => {
+    const out = [];
+    for (const c of cells) for (const m of c.matchAll(/<sup>([0-9]+)<\/sup>/g)) if (footnotes.has(m[1]) && !out.includes(footnotes.get(m[1]))) out.push(footnotes.get(m[1]));
+    return out;
+  };
+
   const byName = new Map();
   const unknown = [];
   for (const r of main.rows) {
@@ -67,7 +78,8 @@ export function parseAnthropic(md, checked) {
       cache_read: money(r[4], where),
       output: money(r[5], where),
     };
-    const e = byName.get(n.name) ?? { status: n.status };
+    const e = byName.get(n.name) ?? { status: n.status, footnotes: [] };
+    for (const f of cellNotes(r.slice(1))) if (!e.footnotes.includes(f)) e.footnotes.push(f);
     if (n.tier === 'long') e.long = { threshold: n.threshold, ...p };
     else e.base = p;
     byName.set(n.name, e);
@@ -112,6 +124,7 @@ export function parseAnthropic(md, checked) {
       other.fast = fastByName.get(name);
       notes.push('fast mode (other_tiers.fast) is a separate premium tier; cache multipliers apply on top');
     }
+    for (const f of e.footnotes) notes.push(`page footnote: ${f}`);
     if (e.status === 'retired') notes.push('page marks this model retired on the Claude API; still sold on some cloud platforms');
     const geo = geoApplies(name) ? { us: geoMultiplier } : null;
     if (geo) notes.push(`US-only inference (inference_geo "us") is ${geoMultiplier}x on every price (inference_geo field)`);

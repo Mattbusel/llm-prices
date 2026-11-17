@@ -33,7 +33,8 @@
 //!
 //! let groq = lookup_provider("groq", "openai/gpt-oss-120b").unwrap();
 //! let fireworks = lookup_provider(Provider::Fireworks, "accounts/fireworks/models/gpt-oss-120b").unwrap();
-//! assert_eq!(groq.cache_read, None); // Groq lists no cached-input price
+//! assert_eq!(groq.cache_read, Some(0.075)); // 50% off input on Groq
+//! assert_eq!(groq.batch_input, Some(0.075));
 //! assert_eq!(fireworks.cache_read, Some(0.015));
 //! // OpenAI does not sell gpt-oss through its API.
 //! assert!(lookup_provider("openai", "gpt-oss-120b").is_none());
