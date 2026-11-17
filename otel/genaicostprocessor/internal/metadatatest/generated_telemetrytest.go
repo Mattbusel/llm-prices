@@ -24,7 +24,7 @@ func NewSettings(tt *componenttest.Telemetry) processor.Settings {
 func AssertEqualProcessorGenaicostPriceReloadFailures(t *testing.T, tt *componenttest.Telemetry, dps []metricdata.DataPoint[int64], opts ...metricdatatest.Option) {
 	want := metricdata.Metrics{
 		Name:        "otelcol_processor_genaicost_price_reload_failures",
-		Description: "Price table reloads that failed (download, signature or parse); the previous table stays in use. [Alpha]",
+		Description: "Price table reloads that failed (download, signature, parse or a table older than the one in use); the previous table stays in use. [Alpha]",
 		Unit:        "{reload}",
 		Data: metricdata.Sum[int64]{
 			Temporality: metricdata.CumulativeTemporality,

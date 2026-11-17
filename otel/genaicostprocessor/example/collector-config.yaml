@@ -13,6 +13,9 @@ processors:
     # The llm-prices table built into the processor, refreshed from the latest signed release.
     prices_url: release
     reload_interval: 6h
+    # The cost is written as llm_prices.cost.* (the default). In an agent collector next to the
+    # application, attributes: semconv writes gen_ai.usage.cost.* instead (docs/otel.md).
+    # attributes: semconv
   batch:
 
 connectors:
@@ -23,10 +26,10 @@ connectors:
         description: Monetary cost of a single GenAI client operation.
         unit: "{cost}"
         conditions:
-          - span.attributes["gen_ai.usage.cost.amount"] != nil
+          - span.attributes["llm_prices.cost.amount"] != nil
         attributes:
-          - key: gen_ai.usage.cost.currency
-          - key: gen_ai.usage.cost.source
+          - key: llm_prices.cost.currency
+          - key: llm_prices.cost.source
           - key: gen_ai.operation.name
             optional: true
           - key: gen_ai.provider.name
@@ -37,7 +40,7 @@ connectors:
             optional: true
         histogram:
           buckets: [0.001, 0.004, 0.016, 0.064, 0.256, 1.024, 4.096, 16.384, 65.536]
-          value: Double(span.attributes["gen_ai.usage.cost.amount"])
+          value: Double(span.attributes["llm_prices.cost.amount"])
 
 exporters:
   otlphttp:

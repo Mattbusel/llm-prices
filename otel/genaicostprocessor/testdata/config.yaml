@@ -2,6 +2,7 @@ genaicost:
 genaicost/release:
   prices_url: release
   reload_interval: 6h
+  attributes: semconv
   on_unpriced: error_attribute
   breakdown: true
   openinference: true
@@ -23,3 +24,5 @@ genaicost/fast_reload:
   reload_interval: 10s
 genaicost/bad_key:
   public_key: not-base64
+genaicost/bad_attributes:
+  attributes: gen_ai

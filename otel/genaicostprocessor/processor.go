@@ -20,12 +20,24 @@ import (
 
 type costProcessor struct {
 	cfg       *Config
+	names     costNames
 	logger    *zap.Logger
 	telemetry *metadata.TelemetryBuilder
 	source    atomic.Pointer[sourceBox]
 	reloader  *reloader
 	now       func() time.Time
 }
+
+// costNames are the attribute names a cost is written under (Config.Attributes).
+type costNames struct{ amount, currency, source, pricingID, pricingVersion string }
+
+var (
+	semconvNames   = costNames{AttrCostAmount, AttrCostCurrency, AttrCostSource, AttrCostPricingID, AttrCostPricingVersion}
+	llmPricesNames = costNames{
+		AttrLLMPricesCostAmount, AttrLLMPricesCostCurrency, AttrLLMPricesCostSource,
+		AttrLLMPricesCostPricingID, AttrLLMPricesCostPricingVersion,
+	}
+)
 
 // sourceBox lets an interface value live in an atomic.Pointer.
 type sourceBox struct{ s priceSource }
@@ -35,7 +47,10 @@ func newCostProcessor(cfg *Config, set component.TelemetrySettings) (*costProces
 	if err != nil {
 		return nil, err
 	}
-	p := &costProcessor{cfg: cfg, logger: set.Logger, telemetry: tb, now: time.Now}
+	p := &costProcessor{cfg: cfg, names: llmPricesNames, logger: set.Logger, telemetry: tb, now: time.Now}
+	if cfg.Attributes == AttributesSemconv {
+		p.names = semconvNames
+	}
 	if cfg.Source == SourceLLMPrices {
 		p.source.Store(&sourceBox{llmPricesSource{table: llmprices.Default()}})
 	}
@@ -110,10 +125,12 @@ const (
 
 func (p *costProcessor) priceSpan(src priceSource, span ptrace.Span, now time.Time) (outcome, string) {
 	attrs := span.Attributes()
-	if _, ok := attrs.Get(AttrCostAmount); ok {
-		// A cost is already on the span (from the instrumentation or an earlier stage). It is
-		// frozen at recording time, so it is never replaced.
-		return outcomeSkipped, ""
+	for _, k := range []string{AttrCostAmount, AttrLLMPricesCostAmount} {
+		if _, ok := attrs.Get(k); ok {
+			// A cost is already on the span (from the instrumentation or an earlier stage).
+			// It is frozen at recording time, so it is never replaced or added to.
+			return outcomeSkipped, ""
+		}
 	}
 	if p.passThrough(attrs) {
 		return outcomePriced, ""
@@ -206,9 +223,9 @@ func (p *costProcessor) passThrough(attrs pcommon.Map) bool {
 		if amount < 0 || math.IsNaN(amount) || math.IsInf(amount, 0) {
 			continue
 		}
-		attrs.PutDouble(AttrCostAmount, amount)
-		attrs.PutStr(AttrCostCurrency, "USD")
-		attrs.PutStr(AttrCostSource, "provider")
+		attrs.PutDouble(p.names.amount, amount)
+		attrs.PutStr(p.names.currency, "USD")
+		attrs.PutStr(p.names.source, "provider")
 		return true
 	}
 	return false
@@ -225,13 +242,17 @@ func (p *costProcessor) flag(attrs pcommon.Map, reason string) (outcome, string)
 }
 
 func (p *costProcessor) write(attrs pcommon.Map, c priced, src priceSource, tier string, t tokens) {
-	attrs.PutDouble(AttrCostAmount, c.total)
-	attrs.PutStr(AttrCostCurrency, "USD")
-	attrs.PutStr(AttrCostSource, "local")
-	attrs.PutStr(AttrCostPricingID, src.pricingID())
-	attrs.PutStr(AttrCostPricingVersion, src.pricingVersion())
+	attrs.PutDouble(p.names.amount, c.total)
+	attrs.PutStr(p.names.currency, "USD")
+	attrs.PutStr(p.names.source, "local")
+	attrs.PutStr(p.names.pricingID, src.pricingID())
+	attrs.PutStr(p.names.pricingVersion, src.pricingVersion())
 	if tier != "" {
 		attrs.PutStr(AttrPriceTier, tier)
+	}
+	if c.fallback {
+		attrs.PutBool(AttrPriceFallback, true)
+		attrs.PutStr(AttrPriceRow, c.row)
 	}
 	if p.cfg.Breakdown {
 		attrs.PutDouble("llm_prices.cost.input", c.input)

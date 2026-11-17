@@ -42,7 +42,8 @@ The mock usage and the llm-prices rows (USD per 1M tokens) give:
 | claude-sonnet-4-6 | 2,048 uncached, 45,000 cache reads, 3,500 cache writes, 1,024 output | 2,048 x 3 + 45,000 x 0.30 + 3,500 x 3.75 + 1,024 x 15 = $0.048129 |
 
 All 12 spans (3 calls x 4 suites) get exactly these costs from the Python package and from the
-Go processor, in unit tests and in a collector built with ocb from the example manifest (CI job
+Go processor (set to `attributes: semconv`, the names the Python processor writes), in unit
+tests and in a collector built with ocb from the example manifest (CI job
 `otel-collector-e2e`), where the `signal_to_metrics` connector also turns them into a
 `gen_ai.client.operation.cost` histogram with count 12 and sum $0.337656.
 

@@ -16,7 +16,7 @@ receivers:
 
 processors:
   - gomod: go.opentelemetry.io/collector/processor/batchprocessor v0.165.0
-  - gomod: github.com/Mattbusel/llm-prices/otel/genaicostprocessor v0.1.0
+  - gomod: github.com/Mattbusel/llm-prices/otel/genaicostprocessor v0.2.0
 
 connectors:
   - gomod: github.com/open-telemetry/opentelemetry-collector-contrib/connector/signaltometricsconnector v0.165.1

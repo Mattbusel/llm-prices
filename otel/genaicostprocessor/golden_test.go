@@ -53,7 +53,8 @@ func TestGoldenCorpus(t *testing.T) {
 			td := readOTLPJSON(t, filepath.Join(goldenDir, suite.File))
 			cfg := createDefaultConfig()
 			cfg.Breakdown = true
-			cfg.MaxSpanAge = 0 // the corpus was recorded on another day
+			cfg.Attributes = AttributesSemconv // the names the Python processor writes
+			cfg.MaxSpanAge = 0                 // the corpus was recorded on another day
 			p := newTestProcessor(t, cfg)
 			_, err := p.processTraces(context.Background(), td)
 			require.NoError(t, err)

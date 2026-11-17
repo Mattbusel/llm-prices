@@ -36,7 +36,7 @@ from ._processor import COST_BUCKETS, CostPricer, CostSpanExporter, CostSpanProc
 from ._rules import Tokens
 from ._sources import GenAIPricesSource, LiteLLMSource, LLMPricesSource, PriceSource, Priced, Request
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = [
     "COST_BUCKETS",

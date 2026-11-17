@@ -7,6 +7,7 @@ receivers:
 
 processors:
   genaicost:
+    attributes: semconv # the names the Python processor writes and the #443 registry defines
     max_span_age: 0s
 
 exporters:

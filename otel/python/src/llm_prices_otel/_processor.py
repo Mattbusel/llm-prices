@@ -84,7 +84,9 @@ class CostPricer:
     def attributes(self, attrs: Mapping[str, Any]) -> Tuple[Dict[str, Any], Optional[str]]:
         """The attributes to add to a span with attributes ``attrs``, and the unpriced reason
         (``None`` when priced or not a GenAI inference span). Empty when there is nothing to add."""
-        if r.COST_AMOUNT in attrs:
+        if r.COST_AMOUNT in attrs or "llm_prices.cost.amount" in attrs:
+            # A cost already recorded (here or by the Collector processor's default names) is
+            # never replaced or added to.
             return {}, None
         passed = self._pass_through(attrs)
         if passed:
@@ -137,6 +139,9 @@ class CostPricer:
         }
         if tier is not None:
             out[r.PRICE_TIER] = tier
+        if c.fallback:
+            out[r.PRICE_FALLBACK] = True
+            out[r.PRICE_ROW] = c.row
         if self.breakdown:
             out.update({
                 "llm_prices.cost.input": c.input,

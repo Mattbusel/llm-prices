@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "llm-prices-otel"
-version = "0.1.0"
+version = "0.1.1"
 description = "OpenTelemetry span processor that writes gen_ai.usage.cost.* (amount, currency, source, pricing.id, pricing.version) on GenAI spans from OpenLLMetry, OpenInference, Logfire and the GenAI semantic conventions, priced with the llm-prices table."
 readme = { content-type = "text/markdown", text = """
 # llm-prices-otel

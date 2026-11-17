@@ -22,6 +22,9 @@ type priced struct {
 	input, output, cacheRead, cacheWrite, total float64
 	// row is the matched price row, "provider/model".
 	row string
+	// fallback is true when row belongs to another provider than the one that served the
+	// request.
+	fallback bool
 }
 
 // priceSource prices requests from one price table. Implementations are immutable; a reload
@@ -63,14 +66,20 @@ func (s llmPricesSource) price(r request) (priced, string) {
 	if !ok {
 		return priced{}, ReasonUnpricedTier
 	}
-	return costLLMPrices(p, r.tokens, r.batch)
+	c, reason := costLLMPrices(p, r.tokens, r.batch)
+	c.fallback = reason == "" && r.provider != "" && p.Provider != r.provider
+	return c, reason
 }
 
 // costLLMPrices prices token counts with one llm-prices row. Cache writes are billed at the
 // 5-minute write price (the GenAI conventions carry no cache lifetime; it is Anthropic's
 // default), or as uncached input when the row lists no cache-write price at all (providers that
-// do not charge for writes).
+// do not charge for writes). A span with no output tokens is priced on a row with no output
+// price (embedding models): its input, cache reads and batch input are all it costs.
 func costLLMPrices(p llmprices.Price, t tokens, batch bool) (priced, string) {
+	if t.output == 0 {
+		p = zeroMissingOutput(p)
+	}
 	u := llmprices.Usage{Input: t.input, Output: t.output, CacheRead: t.cacheRead, Batch: batch}
 	if t.cacheWrite > 0 {
 		if _, ok := p.CacheWrite["5m"]; ok {
@@ -89,4 +98,28 @@ func costLLMPrices(p llmprices.Price, t tokens, batch bool) (priced, string) {
 		input: c.Input, output: c.Output, cacheRead: c.CacheRead, cacheWrite: c.CacheWrite,
 		total: c.Total, row: p.Provider + "/" + p.Model,
 	}, ""
+}
+
+// zeroMissingOutput returns a copy of p with a zero output price (standard, batch and long
+// context) wherever the row lists an input price but no output price, for pricing a request
+// that produced no output tokens.
+func zeroMissingOutput(p llmprices.Price) llmprices.Price {
+	zero := 0.0
+	if p.Input != nil && p.Output == nil {
+		p.Output = &zero
+	}
+	if p.BatchInput != nil && p.BatchOutput == nil {
+		p.BatchOutput = &zero
+	}
+	if lc := p.LongContext; lc != nil && (lc.Input != nil && lc.Output == nil || lc.BatchInput != nil && lc.BatchOutput == nil) {
+		c := *lc
+		if c.Input != nil && c.Output == nil {
+			c.Output = &zero
+		}
+		if c.BatchInput != nil && c.BatchOutput == nil {
+			c.BatchOutput = &zero
+		}
+		p.LongContext = &c
+	}
+	return p
 }

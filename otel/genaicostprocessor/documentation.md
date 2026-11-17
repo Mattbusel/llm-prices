@@ -8,7 +8,7 @@ The following telemetry is emitted by this component.
 
 ### otelcol_processor_genaicost_price_reload_failures
 
-Price table reloads that failed (download, signature or parse); the previous table stays in use.
+Price table reloads that failed (download, signature, parse or a table older than the one in use); the previous table stays in use.
 
 | Unit | Metric Type | Value Type | Monotonic | Stability |
 | ---- | ----------- | ---------- | --------- | --------- |

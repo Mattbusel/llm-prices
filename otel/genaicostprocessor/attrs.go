@@ -8,9 +8,12 @@ import (
 	"go.opentelemetry.io/collector/pdata/pcommon"
 )
 
-// Attributes the processor writes. The gen_ai.usage.cost.* names are the ones proposed in
+// Cost attribute names. The gen_ai.usage.cost.* names are the ones proposed in
 // open-telemetry/semantic-conventions-genai#443 (amount, currency, source) and #624
-// (pricing.id, pricing.version).
+// (pricing.id, pricing.version); the processor writes them with attributes: semconv. By
+// default it writes the same values under llm_prices.cost.*, because the current #443 text
+// reserves gen_ai.usage.cost.* for a cost computed at recording time and puts collector-side
+// enrichment out of scope.
 const (
 	AttrCostAmount         = "gen_ai.usage.cost.amount"
 	AttrCostCurrency       = "gen_ai.usage.cost.currency"
@@ -18,12 +21,22 @@ const (
 	AttrCostPricingID      = "gen_ai.usage.cost.pricing.id"
 	AttrCostPricingVersion = "gen_ai.usage.cost.pricing.version"
 
+	AttrLLMPricesCostAmount         = "llm_prices.cost.amount"
+	AttrLLMPricesCostCurrency       = "llm_prices.cost.currency"
+	AttrLLMPricesCostSource         = "llm_prices.cost.source"
+	AttrLLMPricesCostPricingID      = "llm_prices.cost.pricing.id"
+	AttrLLMPricesCostPricingVersion = "llm_prices.cost.pricing.version"
+
 	// AttrUnpriced holds the reason a GenAI span with token counts got no cost.
 	AttrUnpriced = "llm_prices.unpriced"
 	// AttrPriceRow is the matched price row, "provider/model" (with breakdown: true).
 	AttrPriceRow = "llm_prices.price.row"
 	// AttrPriceTier is the service tier the span was priced at, when not standard.
 	AttrPriceTier = "llm_prices.price.tier"
+	// AttrPriceFallback is true when the span was priced from a row of another provider than
+	// the one that served it (for example Claude on Bedrock or Vertex AI at Anthropic's list
+	// price). The matched row is then always written as llm_prices.price.row.
+	AttrPriceFallback = "llm_prices.price.fallback"
 
 	attrErrorType = "error.type"
 )
@@ -139,8 +152,14 @@ func str(attrs pcommon.Map, keys []string) (string, bool) {
 	return "", false
 }
 
+// MaxTokens is the largest token count the processor accepts in one attribute. A larger count
+// (or a negative, fractional or non-numeric one) flags the span invalid_usage, so a buggy or
+// hostile span cannot write an absurd cost. It also keeps every sum of counts far from int64
+// overflow.
+const MaxTokens = 1_000_000_000_000
+
 // count reads the first of keys that is set. present is false when none is set; valid is false
-// when the value is not a whole non-negative number.
+// when the value is not a whole number from 0 to MaxTokens.
 func count(attrs pcommon.Map, keys []string) (n int64, present, valid bool) {
 	for _, k := range keys {
 		v, ok := attrs.Get(k)
@@ -149,16 +168,23 @@ func count(attrs pcommon.Map, keys []string) (n int64, present, valid bool) {
 		}
 		switch v.Type() {
 		case pcommon.ValueTypeInt:
-			return v.Int(), true, v.Int() >= 0
+			i := v.Int()
+			if i < 0 || i > MaxTokens {
+				return 0, true, false
+			}
+			return i, true, true
 		case pcommon.ValueTypeDouble:
 			f := v.Double()
-			if f < 0 || f != math.Trunc(f) || f > 1<<53 {
+			if !(f >= 0 && f <= MaxTokens) || f != math.Trunc(f) {
 				return 0, true, false
 			}
 			return int64(f), true, true
 		case pcommon.ValueTypeStr:
 			i, err := strconv.ParseInt(strings.TrimSpace(v.Str()), 10, 64)
-			return i, true, err == nil && i >= 0
+			if err != nil || i < 0 || i > MaxTokens {
+				return 0, true, false
+			}
+			return i, true, true
 		default:
 			return 0, true, false
 		}

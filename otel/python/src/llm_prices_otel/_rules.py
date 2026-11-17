@@ -25,6 +25,9 @@ UNPRICED = "llm_prices.unpriced"
 PRICE_ROW = "llm_prices.price.row"
 #: The service tier a span was priced at, when not standard.
 PRICE_TIER = "llm_prices.price.tier"
+#: True when the span was priced from a row of another provider than the one that served it;
+#: the matched row is then always written as ``llm_prices.price.row``.
+PRICE_FALLBACK = "llm_prices.price.fallback"
 ERROR_TYPE = "error.type"
 
 # Reasons written to llm_prices.unpriced.
@@ -102,8 +105,10 @@ HOST_PROVIDERS = (
 )
 
 _STANDARD_TIERS = frozenset({"", "auto", "default", "standard", "on_demand", "on-demand"})
-_MAX_EXACT = 1 << 53
-_MAX_INT64 = (1 << 63) - 1
+#: The largest token count accepted in one attribute (the Collector processor's MaxTokens). A
+#: larger count, like a negative, fractional or non-numeric one, flags the span invalid_usage,
+#: so a buggy or hostile span cannot write an absurd cost.
+MAX_TOKENS = 1_000_000_000_000
 
 
 def provider_from_host(host: str) -> Optional[str]:
@@ -175,18 +180,24 @@ def _count(attrs: Mapping[str, Any], keys: Sequence[str]) -> Tuple[int, bool, bo
         if isinstance(v, bool):
             return 0, True, False
         if isinstance(v, int):
-            return v, True, 0 <= v <= _MAX_INT64
+            if not 0 <= v <= MAX_TOKENS:
+                return 0, True, False
+            return v, True, True
         if isinstance(v, float):
-            if not math.isfinite(v) or v < 0 or v > _MAX_EXACT or v != math.trunc(v):
+            if not math.isfinite(v) or v < 0 or v > MAX_TOKENS or v != math.trunc(v):
                 return 0, True, False
             return int(v), True, True
         if isinstance(v, str):
             s = v.strip()
             body = s[1:] if s[:1] in "+-" else s
-            if not body.isdigit() or not body.isascii():
+            # 19 digits is the longest int64 (the Go processor's limit); checking the length
+            # first keeps int() off huge digit strings, which raise ValueError past 4300 digits.
+            if not body.isdigit() or not body.isascii() or len(body) > 19:
                 return 0, True, False
             i = int(s)
-            return i, True, 0 <= i <= _MAX_INT64
+            if not 0 <= i <= MAX_TOKENS:
+                return 0, True, False
+            return i, True, True
         return 0, True, False
     return 0, False, True
 

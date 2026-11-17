@@ -4,6 +4,7 @@ cannot price it."""
 
 from __future__ import annotations
 
+import dataclasses
 import hashlib
 import json
 import math
@@ -43,6 +44,9 @@ class Priced:
     cache_write: float = 0.0
     #: The matched price row, ``"provider/model"``.
     row: str = ""
+    #: True when ``row`` belongs to another provider than the one that served the request (for
+    #: example Claude on Bedrock or Vertex AI at Anthropic's list price).
+    fallback: bool = False
 
 
 Result = Union[Priced, str]
@@ -60,10 +64,34 @@ class PriceSource:
         raise NotImplementedError
 
 
+def _zero_missing_output(p: llm_prices.Price) -> llm_prices.Price:
+    """A copy of ``p`` with a zero output price (standard, batch and long context) wherever the
+    row lists an input price but no output price, for a request that produced no output."""
+    changes: Dict[str, Any] = {}
+    if p.input is not None and p.output is None:
+        changes["output"] = 0.0
+    if p.batch_input is not None and p.batch_output is None:
+        changes["batch_output"] = 0.0
+    lc = p.long_context
+    if lc is not None:
+        lc_changes: Dict[str, Any] = {}
+        if lc.input is not None and lc.output is None:
+            lc_changes["output"] = 0.0
+        if lc.batch_input is not None and lc.batch_output is None:
+            lc_changes["batch_output"] = 0.0
+        if lc_changes:
+            changes["long_context"] = dataclasses.replace(lc, **lc_changes)
+    return dataclasses.replace(p, **changes) if changes else p
+
+
 def _cost_llm_prices(p: llm_prices.Price, t: Tokens, batch: bool) -> Result:
     """Cost of token counts at one llm-prices row. Cache writes bill at the 5-minute write price
     (the conventions carry no cache lifetime; it is Anthropic's default), or as uncached input
-    when the row lists no cache-write price at all."""
+    when the row lists no cache-write price at all. A span with no output tokens is priced on a
+    row with no output price (embedding models): its input, cache reads and batch input are all
+    it costs."""
+    if t.output == 0:
+        p = _zero_missing_output(p)
     usage: Dict[str, Any] = {"input": t.input, "output": t.output, "cache_read": t.cache_read, "batch": batch}
     if t.cache_write:
         if "5m" in p.cache_write:
@@ -98,7 +126,10 @@ class LLMPricesSource(PriceSource):
         p = row.tier(request.tier)
         if p is None:
             return r.UNPRICED_TIER
-        return _cost_llm_prices(p, request.tokens, request.batch)
+        c = _cost_llm_prices(p, request.tokens, request.batch)
+        if isinstance(c, Priced) and request.provider is not None and p.provider != request.provider:
+            c = dataclasses.replace(c, fallback=True)
+        return c
 
 
 # -- LiteLLM ---------------------------------------------------------------------------------

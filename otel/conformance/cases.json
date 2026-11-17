@@ -1,5 +1,5 @@
 {
- "description": "Shared conformance cases for the genaicost Collector processor (Go) and llm-prices-otel (Python). Each case is one span: its attributes before processing, the settings that differ from the defaults, and the attributes expected after it. Amounts are compared with a relative tolerance of 1e-12. PRICES_VERSION stands for the version of the llm-prices table in use. JSON integers are int attributes, numbers with a decimal point are double attributes. Cases with only=collector apply to the Collector processor alone.",
+ "description": "Shared conformance cases for the genaicost Collector processor (Go) and llm-prices-otel (Python). Each case is one span: its attributes before processing, the settings that differ from the defaults, and the attributes expected after it. Amounts are compared with a relative tolerance of 1e-12. PRICES_VERSION stands for the version of the llm-prices table in use. JSON integers are int attributes, numbers with a decimal point are double attributes. Cases with only=collector apply to the Collector processor alone. The Collector also runs every case with its default attributes: llm_prices, where the gen_ai.usage.cost.* names read llm_prices.cost.*.",
  "cases": [
   {
    "name": "semconv Anthropic span, input includes cache reads and writes",
@@ -179,7 +179,10 @@
     "gen_ai.usage.cost.source": "local",
     "gen_ai.usage.cost.pricing.id": "llm-prices",
     "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
-   }
+   },
+   "expect_absent": [
+    "llm_prices.price.fallback"
+   ]
   },
   {
    "name": "Groq host",
@@ -196,10 +199,13 @@
     "gen_ai.usage.cost.source": "local",
     "gen_ai.usage.cost.pricing.id": "llm-prices",
     "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
-   }
+   },
+   "expect_absent": [
+    "llm_prices.price.fallback"
+   ]
   },
   {
-   "name": "Claude on Vertex AI takes the Anthropic list price",
+   "name": "Claude on Vertex AI takes the Anthropic list price, marked as a fallback",
    "attributes": {
     "gen_ai.provider.name": "gcp.vertex_ai",
     "gen_ai.request.model": "claude-sonnet-4-6",
@@ -211,11 +217,13 @@
     "gen_ai.usage.cost.currency": "USD",
     "gen_ai.usage.cost.source": "local",
     "gen_ai.usage.cost.pricing.id": "llm-prices",
-    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION",
+    "llm_prices.price.fallback": true,
+    "llm_prices.price.row": "anthropic/claude-sonnet-4-6"
    }
   },
   {
-   "name": "Bedrock inference profile id",
+   "name": "Bedrock inference profile id, marked as a fallback to the Anthropic row",
    "attributes": {
     "gen_ai.provider.name": "aws.bedrock",
     "gen_ai.request.model": "us.anthropic.claude-sonnet-4-20250514-v1:0",
@@ -227,7 +235,9 @@
     "gen_ai.usage.cost.currency": "USD",
     "gen_ai.usage.cost.source": "local",
     "gen_ai.usage.cost.pricing.id": "llm-prices",
-    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION",
+    "llm_prices.price.fallback": true,
+    "llm_prices.price.row": "anthropic/claude-sonnet-4-20250514"
    }
   },
   {
@@ -475,6 +485,111 @@
     "llm.cost.completion_details.reasoning": 0.012,
     "llm.cost.completion_details.output": 0.004
    }
+  },
+  {
+   "name": "embeddings span: a row with no output price is priced on its input",
+   "attributes": {
+    "gen_ai.operation.name": "embeddings",
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "text-embedding-3-small",
+    "gen_ai.usage.input_tokens": 1000
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 2e-05,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   },
+   "expect_absent": [
+    "llm_prices.price.fallback"
+   ]
+  },
+  {
+   "name": "embeddings span with an explicit zero output count",
+   "attributes": {
+    "gen_ai.operation.name": "embeddings",
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "text-embedding-3-large",
+    "gen_ai.usage.input_tokens": 2500,
+    "gen_ai.usage.output_tokens": 0
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 0.000325,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "output tokens on a row with no output price",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "text-embedding-3-small",
+    "gen_ai.usage.input_tokens": 1000,
+    "gen_ai.usage.output_tokens": 5
+   },
+   "expect_unpriced": "missing_rate"
+  },
+  {
+   "name": "token count above the 1e12 ceiling",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "gpt-4o",
+    "gen_ai.usage.input_tokens": 1000000000001,
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "invalid_usage"
+  },
+  {
+   "name": "token count at the 1e12 ceiling is priced",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "gpt-4o",
+    "gen_ai.usage.input_tokens": 1000000000000,
+    "gen_ai.usage.output_tokens": 0
+   },
+   "expect": {
+    "gen_ai.usage.cost.amount": 2500000.0,
+    "gen_ai.usage.cost.currency": "USD",
+    "gen_ai.usage.cost.source": "local",
+    "gen_ai.usage.cost.pricing.id": "llm-prices",
+    "gen_ai.usage.cost.pricing.version": "PRICES_VERSION"
+   }
+  },
+  {
+   "name": "cache counts that would overflow when added",
+   "attributes": {
+    "gen_ai.provider.name": "anthropic",
+    "gen_ai.request.model": "claude-sonnet-4-6",
+    "gen_ai.usage.input_tokens": 10,
+    "gen_ai.usage.output_tokens": 10,
+    "gen_ai.usage.cache_read.input_tokens": 4611686018427387913,
+    "gen_ai.usage.cache_write.input_tokens": 4611686018427387913
+   },
+   "expect_unpriced": "invalid_usage"
+  },
+  {
+   "name": "reasoning count that would overflow when added to output",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "o3",
+    "gen_ai.usage.input_tokens": 10,
+    "gen_ai.usage.output_tokens": 10,
+    "gen_ai.usage.reasoning.output_tokens": 9223372036854775807
+   },
+   "expect_unpriced": "invalid_usage"
+  },
+  {
+   "name": "token count as a 20-digit string",
+   "attributes": {
+    "gen_ai.provider.name": "openai",
+    "gen_ai.request.model": "gpt-4o",
+    "gen_ai.usage.input_tokens": "99999999999999999999",
+    "gen_ai.usage.output_tokens": 10
+   },
+   "expect_unpriced": "invalid_usage"
   },
   {
    "name": "stale span (collector only: ended longer ago than max_span_age)",

@@ -6,6 +6,41 @@ repository as a whole. The packages have their own changelogs:
 The Go module is tagged `go/vX.Y.Z` and listed here.
 The `v1` tag moves to every 1.x release.
 
+## [1.7.1] - 2026-11-17
+
+Fixes to the OpenTelemetry pricing stage ([docs/otel.md](docs/otel.md)). No price changed and
+no package other than the two below changed; the table is the 1.7.0 table
+(`sha256:e8eed72ddf88c237f1ed8b7ed791495a375620c8166f36b8c554db4e5b616f87`).
+
+`otel/genaicostprocessor` v0.2.0 (Go module, tag `otel/genaicostprocessor/v0.2.0`):
+
+- **Changed: the cost is written as `llm_prices.cost.*` by default.** The current text of
+  semantic-conventions-genai#443 reserves `gen_ai.usage.cost.*` for a cost computed at recording
+  time and puts collector-side enrichment out of scope, so the Collector processor no longer
+  writes those names unless it is set to `attributes: semconv` (meant for an agent collector next
+  to the application). The default names are `llm_prices.cost.amount`, `.currency`, `.source`,
+  `.pricing.id` and `.pricing.version`, with the same values. The example
+  `collector-config.yaml` derives the cost histogram from `llm_prices.cost.amount`. A span that
+  already carries either cost attribute is left alone.
+- Fixed: embedding spans are priced (see llm-prices-otel 0.1.1 below; the same rule).
+- Fixed: token counts above 10^12 flag `invalid_usage`. Before, counts near the int64 limit
+  could wrap when cache or reasoning counts were added and produce an absurd cost, and Go and
+  Python disagreed on them.
+- Added: `llm_prices.price.fallback = true` and `llm_prices.price.row` on a span priced from
+  another provider's row (Claude on Bedrock or Vertex AI at Anthropic's list price).
+- Added: hot reload rejects a signed table whose `generated` date is older than the table in use
+  (the built-in one included), so an older signed release served at the URL cannot roll prices
+  back. It counts as a reload failure.
+
+`llm-prices-otel` 0.1.1 (`otel/python`): embedding spans priced, the 10^12 token-count ceiling,
+digit strings longer than 19 characters flagged `invalid_usage` instead of raising, and the
+fallback flag ([changelog](otel/python/CHANGELOG.md)). Until it is on PyPI it installs from this
+tag: `pip install "llm-prices-otel @ git+https://github.com/Mattbusel/llm-prices@v1.7.1#subdirectory=otel/python"`.
+
+Docs: the conformance cases are now 38 (37 shared, `stale_span` Collector-only; the Collector
+runs each a second time with its default names), and the Logfire note says that
+`CostSpanProcessor` prices only the spans it passes on, not Logfire's own export.
+
 ## [1.7.0] - 2026-11-17
 
 ### Added

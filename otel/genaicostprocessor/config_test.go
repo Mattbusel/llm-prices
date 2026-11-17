@@ -28,12 +28,14 @@ func TestLoadConfig(t *testing.T) {
 	require.NoError(t, def.Validate())
 	require.Equal(t, createDefaultConfig(), def)
 	require.Equal(t, "", def.tableURL(), "the embedded table only")
+	require.Equal(t, AttributesLLMPrices, def.Attributes, "semconv names are opt-in for a collector")
 
 	rel := load("release")
 	require.NoError(t, rel.Validate())
 	require.Equal(t, DefaultLLMPricesURL, rel.tableURL())
 	require.Equal(t, 6*time.Hour, rel.ReloadInterval)
 	require.Equal(t, UnpricedErrorAttribute, rel.OnUnpriced)
+	require.Equal(t, AttributesSemconv, rel.Attributes)
 	require.True(t, rel.Breakdown && rel.OpenInference)
 	require.Len(t, rel.publicKey(), 32)
 
@@ -45,7 +47,7 @@ func TestLoadConfig(t *testing.T) {
 	require.Equal(t, time.Duration(0), lite.MaxSpanAge)
 	require.Equal(t, DefaultLiteLLMURL, (&Config{Source: SourceLiteLLM}).tableURL())
 
-	for _, name := range []string{"bad_source", "bad_unpriced", "reload_without_url", "fast_reload", "bad_key"} {
+	for _, name := range []string{"bad_source", "bad_unpriced", "reload_without_url", "fast_reload", "bad_key", "bad_attributes"} {
 		require.Error(t, load(name).Validate(), name)
 	}
 }

@@ -27,6 +27,18 @@ const (
 	UnpricedErrorAttribute = "error_attribute"
 )
 
+// Which attribute names the cost is written under.
+const (
+	// AttributesLLMPrices (the default) writes llm_prices.cost.amount, .currency, .source,
+	// .pricing.id and .pricing.version.
+	AttributesLLMPrices = "llm_prices"
+	// AttributesSemconv writes gen_ai.usage.cost.amount, .currency and .source
+	// (semantic-conventions-genai#443) and .pricing.id and .pricing.version (#624). The #443
+	// text reserves these for a cost computed at recording time; use it for an agent collector
+	// next to the application, where spans are priced as they are exported.
+	AttributesSemconv = "semconv"
+)
+
 // Values of the token-count interpretation settings.
 const (
 	modeAuto  = "auto"
@@ -70,6 +82,10 @@ type Config struct {
 	// SkipSignature loads an llm-prices table without checking a signature (your own fork
 	// or a local file). Ignored for litellm, whose tables are not signed.
 	SkipSignature bool `mapstructure:"skip_signature"`
+
+	// Attributes is the set of names the cost is written under: "llm_prices" (default,
+	// llm_prices.cost.*) or "semconv" (gen_ai.usage.cost.*). See AttributesSemconv.
+	Attributes string `mapstructure:"attributes"`
 
 	// OnUnpriced is "flag" (default) or "error_attribute". A span is never given a zero cost
 	// because a price is missing.
@@ -116,6 +132,7 @@ var _ confmap.Validator = (*Config)(nil)
 func createDefaultConfig() *Config {
 	return &Config{
 		Source:                       SourceLLMPrices,
+		Attributes:                   AttributesLLMPrices,
 		DownloadTimeout:              30 * time.Second,
 		OnUnpriced:                   UnpricedFlag,
 		InputTokensIncludeCache:      modeAuto,
@@ -132,6 +149,11 @@ func (c *Config) Validate() error {
 	case SourceLLMPrices, SourceLiteLLM:
 	default:
 		errs = append(errs, fmt.Errorf("source %q: want %q or %q", c.Source, SourceLLMPrices, SourceLiteLLM))
+	}
+	switch c.Attributes {
+	case AttributesLLMPrices, AttributesSemconv:
+	default:
+		errs = append(errs, fmt.Errorf("attributes %q: want %q or %q", c.Attributes, AttributesLLMPrices, AttributesSemconv))
 	}
 	switch c.OnUnpriced {
 	case UnpricedFlag, UnpricedErrorAttribute:

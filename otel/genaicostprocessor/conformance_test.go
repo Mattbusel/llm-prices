@@ -94,65 +94,106 @@ func newTestProcessor(t *testing.T, cfg *Config) *costProcessor {
 	return p
 }
 
+// llmPricesName maps a gen_ai.usage.cost.* name in a case to the name the processor writes
+// with attributes: llm_prices (the default).
+func llmPricesName(k string) string {
+	if rest, ok := strings.CutPrefix(k, "gen_ai.usage.cost."); ok {
+		return "llm_prices.cost." + rest
+	}
+	return k
+}
+
+// The cases are written with the semantic-convention names the Python processor writes. The
+// Collector runs each case twice: with attributes: semconv, compared as written, and with the
+// default attributes: llm_prices, where the same values must appear under llm_prices.cost.*
+// and no gen_ai.usage.cost.* attribute may be added.
 func TestConformanceCases(t *testing.T) {
 	now := time.Date(2026, 11, 17, 12, 0, 0, 0, time.UTC)
 	for _, c := range loadCases(t) {
-		t.Run(c.Name, func(t *testing.T) {
-			p := newTestProcessor(t, configFor(t, c.Config))
-			p.now = func() time.Time { return now }
+		for _, mode := range []string{AttributesSemconv, AttributesLLMPrices} {
+			t.Run(c.Name+"/"+mode, func(t *testing.T) {
+				runCase(t, c, mode, now)
+			})
+		}
+	}
+}
 
-			td := ptrace.NewTraces()
-			span := td.ResourceSpans().AppendEmpty().ScopeSpans().AppendEmpty().Spans().AppendEmpty()
-			span.SetName("chat")
-			end := now.Add(-time.Duration(c.EndAgeSeconds * float64(time.Second)))
-			span.SetStartTimestamp(pcommon.NewTimestampFromTime(end.Add(-time.Second)))
-			span.SetEndTimestamp(pcommon.NewTimestampFromTime(end))
-			for k, raw := range c.Attributes {
-				putJSON(t, span.Attributes(), k, raw)
-			}
-			before := map[string]any{}
-			for k, v := range span.Attributes().All() {
-				before[k] = v.AsRaw()
-			}
+func runCase(t *testing.T, c conformanceCase, mode string, now time.Time) {
+	t.Helper()
+	overrides := map[string]any{"attributes": mode}
+	for k, v := range c.Config {
+		overrides[k] = v
+	}
+	name := func(k string) string { return k }
+	if mode == AttributesLLMPrices {
+		name = llmPricesName
+	}
+	p := newTestProcessor(t, configFor(t, overrides))
+	p.now = func() time.Time { return now }
 
-			_, err := p.processTraces(context.Background(), td)
-			require.NoError(t, err)
-			after := span.Attributes()
+	td := ptrace.NewTraces()
+	span := td.ResourceSpans().AppendEmpty().ScopeSpans().AppendEmpty().Spans().AppendEmpty()
+	span.SetName("chat")
+	end := now.Add(-time.Duration(c.EndAgeSeconds * float64(time.Second)))
+	span.SetStartTimestamp(pcommon.NewTimestampFromTime(end.Add(-time.Second)))
+	span.SetEndTimestamp(pcommon.NewTimestampFromTime(end))
+	for k, raw := range c.Attributes {
+		putJSON(t, span.Attributes(), k, raw)
+	}
+	before := map[string]any{}
+	for k, v := range span.Attributes().All() {
+		before[k] = v.AsRaw()
+	}
 
-			if c.ExpectSame {
-				require.Equal(t, before, after.AsRaw())
-				return
+	_, err := p.processTraces(context.Background(), td)
+	require.NoError(t, err)
+	after := span.Attributes()
+
+	if c.ExpectSame {
+		require.Equal(t, before, after.AsRaw())
+		return
+	}
+	if c.ExpectUnpriced != "" {
+		v, ok := after.Get(AttrUnpriced)
+		require.True(t, ok, "no %s", AttrUnpriced)
+		require.Equal(t, c.ExpectUnpriced, v.Str())
+		for _, k := range []string{AttrCostAmount, AttrLLMPricesCostAmount} {
+			_, has := after.Get(k)
+			require.False(t, has, "an unpriced span got a cost")
+		}
+	}
+	if mode == AttributesLLMPrices {
+		for k := range after.All() {
+			if _, had := before[k]; !had {
+				require.False(t, strings.HasPrefix(k, "gen_ai."), "llm_prices mode added %s", k)
 			}
-			if c.ExpectUnpriced != "" {
-				v, ok := after.Get(AttrUnpriced)
-				require.True(t, ok, "no %s", AttrUnpriced)
-				require.Equal(t, c.ExpectUnpriced, v.Str())
-				_, has := after.Get(AttrCostAmount)
-				require.False(t, has, "an unpriced span got a cost")
+		}
+	}
+	for k, raw := range c.Expect {
+		k := name(k)
+		got, ok := after.Get(k)
+		require.True(t, ok, "missing %s; attributes: %v", k, after.AsRaw())
+		var want any
+		require.NoError(t, json.Unmarshal(raw, &want))
+		switch w := want.(type) {
+		case float64:
+			require.Equal(t, pcommon.ValueTypeDouble, got.Type(), k)
+			require.InEpsilon(t, w, got.Double(), 1e-12, k)
+		case string:
+			if w == "PRICES_VERSION" {
+				w = llmprices.PricesVersion
 			}
-			for k, raw := range c.Expect {
-				got, ok := after.Get(k)
-				require.True(t, ok, "missing %s; attributes: %v", k, after.AsRaw())
-				var want any
-				require.NoError(t, json.Unmarshal(raw, &want))
-				switch w := want.(type) {
-				case float64:
-					require.Equal(t, pcommon.ValueTypeDouble, got.Type(), k)
-					require.InEpsilon(t, w, got.Double(), 1e-12, k)
-				case string:
-					if w == "PRICES_VERSION" {
-						w = llmprices.PricesVersion
-					}
-					require.Equal(t, w, got.Str(), k)
-				default:
-					t.Fatalf("%s: unsupported expectation %s", k, raw)
-				}
-			}
-			for _, k := range c.ExpectAbsent {
-				_, ok := after.Get(k)
-				require.False(t, ok, "unexpected %s", k)
-			}
-		})
+			require.Equal(t, w, got.Str(), k)
+		case bool:
+			require.Equal(t, pcommon.ValueTypeBool, got.Type(), k)
+			require.Equal(t, w, got.Bool(), k)
+		default:
+			t.Fatalf("%s: unsupported expectation %s", k, raw)
+		}
+	}
+	for _, k := range c.ExpectAbsent {
+		_, ok := after.Get(name(k))
+		require.False(t, ok, "unexpected %s", k)
 	}
 }
 

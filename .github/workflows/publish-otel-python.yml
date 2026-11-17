@@ -1,6 +1,6 @@
 name: publish otel python
 # Publishes otel/python to PyPI as `llm-prices-otel` when a tag otel-py-v<version> is pushed, for
-# example otel-py-v0.1.0. The tag must match otel/python/pyproject.toml and __version__.
+# example otel-py-v0.1.1. The tag must match otel/python/pyproject.toml and __version__.
 #
 # Uses PyPI trusted publishing (no API token): on pypi.org, a (pending) trusted publisher for
 # project llm-prices-otel, this repository, workflow publish-otel-python.yml, environment pypi.

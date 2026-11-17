@@ -35,14 +35,15 @@ type reloader struct {
 	telemetry *metadata.TelemetryBuilder
 	client    *http.Client
 
-	mu      sync.Mutex
-	version string // version of the installed table
-	cancel  context.CancelFunc
-	done    chan struct{}
+	mu        sync.Mutex
+	version   string // version of the installed table
+	generated string // generated date of the installed llm-prices table ("" when unknown)
+	cancel    context.CancelFunc
+	done      chan struct{}
 }
 
 func newReloader(cfg *Config, u string, logger *zap.Logger, install func(priceSource), tb *metadata.TelemetryBuilder) *reloader {
-	return &reloader{
+	r := &reloader{
 		cfg:       cfg,
 		url:       u,
 		key:       cfg.publicKey(),
@@ -51,6 +52,11 @@ func newReloader(cfg *Config, u string, logger *zap.Logger, install func(priceSo
 		telemetry: tb,
 		client:    &http.Client{Timeout: cfg.DownloadTimeout},
 	}
+	if cfg.Source == SourceLLMPrices {
+		// The embedded table serves until a load succeeds; nothing older replaces it.
+		r.generated = llmprices.Default().Generated()
+	}
+	return r
 }
 
 // start loads the table once. When required is true a failed first load is an error; otherwise
@@ -98,7 +104,9 @@ func (r *reloader) stop() {
 }
 
 // reload fetches, verifies and parses the table, and installs it when its version differs from
-// the one in use.
+// the one in use. A signed llm-prices table generated before the table in use (the embedded one
+// included) is rejected: a signature covers only the table's bytes, so without this check an
+// older signed release served at the URL could roll prices back.
 func (r *reloader) reload(ctx context.Context) (err error) {
 	defer func() {
 		if err != nil {
@@ -127,8 +135,18 @@ func (r *reloader) reload(ctx context.Context) (err error) {
 	if src.pricingVersion() == r.version {
 		return nil
 	}
+	generated := ""
+	if lp, ok := src.(llmPricesSource); ok {
+		generated = lp.table.Generated()
+		if r.key != nil && r.generated != "" && generated < r.generated {
+			return fmt.Errorf("table generated %q is older than the table in use (generated %q); not installed", generated, r.generated)
+		}
+	}
 	r.install(src)
 	r.version = src.pricingVersion()
+	if generated != "" {
+		r.generated = generated
+	}
 	r.telemetry.ProcessorGenaicostPriceReloads.Add(context.Background(), 1)
 	r.logger.Info("genaicost: price table loaded",
 		zap.String("url", r.url), zap.String("pricing.id", src.pricingID()), zap.String("pricing.version", src.pricingVersion()))

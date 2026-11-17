@@ -6,6 +6,7 @@ receivers:
 
 processors:
   genaicost:
+    attributes: semconv # the names the Python processor writes and the #443 registry defines
     breakdown: true
     max_span_age: 0s
 

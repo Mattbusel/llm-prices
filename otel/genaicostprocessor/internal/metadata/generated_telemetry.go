@@ -63,7 +63,7 @@ func NewTelemetryBuilder(settings component.TelemetrySettings, options ...Teleme
 	var err, errs error
 	builder.ProcessorGenaicostPriceReloadFailures, err = builder.meter.Int64Counter(
 		"otelcol_processor_genaicost_price_reload_failures",
-		metric.WithDescription("Price table reloads that failed (download, signature or parse); the previous table stays in use. [Alpha]"),
+		metric.WithDescription("Price table reloads that failed (download, signature, parse or a table older than the one in use); the previous table stays in use. [Alpha]"),
 		metric.WithUnit("{reload}"),
 	)
 	errs = errors.Join(errs, err)

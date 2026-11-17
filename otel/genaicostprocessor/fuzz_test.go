@@ -6,6 +6,7 @@ import (
 	"testing"
 	"time"
 
+	llmprices "github.com/Mattbusel/llm-prices/go"
 	"go.opentelemetry.io/collector/component"
 	"go.opentelemetry.io/collector/component/componenttest"
 	"go.opentelemetry.io/collector/pdata/pcommon"
@@ -14,11 +15,15 @@ import (
 
 // FuzzPriceSpan feeds arbitrary attribute values (span attributes are untrusted: any
 // instrumentation, any version) through the processor. It must never panic, never write a
-// negative, NaN or infinite cost, and never write both a cost and an unpriced flag.
+// negative, NaN or infinite cost, never a cost above maxFuzzCost (token counts are capped at
+// MaxTokens), and never write both a cost and an unpriced flag.
 func FuzzPriceSpan(f *testing.F) {
 	f.Add("anthropic", "claude-sonnet-4-6", "", int64(50548), int64(1024), int64(45000), int64(3500), int64(0), 0.0, "1000", false, "")
 	f.Add("openai", "gpt-4o-2024-08-06", "openrouter.ai", int64(-1), int64(10), int64(0), int64(0), int64(5), 10.5, "x", true, "flex")
 	f.Add("gcp.gemini", "gemini-2.5-pro", "", int64(300000), int64(1000), int64(0), int64(0), int64(0), math.Inf(1), "", false, "priority")
+	f.Add("anthropic", "claude-sonnet-4-6", "", int64(10), int64(10), int64(math.MaxInt64/2+10), int64(math.MaxInt64/2+10), int64(0), 0.0, "", false, "")
+	f.Add("openai", "o3", "", int64(10), int64(10), int64(0), int64(0), int64(math.MaxInt64), 0.0, "", false, "")
+	f.Add("openai", "gpt-4o", "", int64(MaxTokens), int64(MaxTokens), int64(0), int64(0), int64(0), 1e12, "1000000000000", true, "")
 	f.Fuzz(func(t *testing.T, provider, model, host string, in, out, read, write, reasoning int64, dbl float64, str string, batch bool, tier string) {
 		p, err := newCostProcessor(createDefaultConfig(), noopTelemetry())
 		if err != nil {
@@ -46,26 +51,57 @@ func FuzzPriceSpan(f *testing.F) {
 		if _, err := p.processTraces(context.Background(), td); err != nil {
 			t.Fatal(err)
 		}
-		amount, priced := a.Get(AttrCostAmount)
+		amount, priced := a.Get(AttrLLMPricesCostAmount)
 		_, flagged := a.Get(AttrUnpriced)
 		if priced && flagged {
 			t.Fatal("both a cost and an unpriced flag")
 		}
 		if priced {
 			v := amount.Double()
-			if math.IsNaN(v) || math.IsInf(v, 0) || v < 0 {
+			if math.IsNaN(v) || math.IsInf(v, 0) || v < 0 || v > maxFuzzCost {
 				t.Fatalf("bad cost %v", v)
 			}
 		}
 		for k, v := range a.All() {
-			if v.Type() == pcommon.ValueTypeDouble && (k == AttrCostAmount || len(k) > 8 && (k[:8] == "llm.cost" || k[:9] == "llm_price")) {
-				if f := v.Double(); math.IsNaN(f) || math.IsInf(f, 0) || f < -1e-12 {
+			if v.Type() == pcommon.ValueTypeDouble && k != "llm.token_count.prompt" && (len(k) > 8 && (k[:8] == "llm.cost" || k[:9] == "llm_price")) {
+				if f := v.Double(); math.IsNaN(f) || math.IsInf(f, 0) || f < -1e-12 || f > maxFuzzCost {
 					t.Fatalf("%s = %v", k, f)
 				}
 			}
 		}
 	})
 }
+
+// maxFuzzCost bounds any cost the processor can write: MaxTokens of each of the five counts at
+// the table's highest rate.
+var maxFuzzCost = func() float64 {
+	top := 0.0
+	for _, p := range llmprices.All() {
+		for _, r := range []*float64{p.Input, p.Output, p.CacheRead, p.BatchInput, p.BatchOutput} {
+			if r != nil && *r > top {
+				top = *r
+			}
+		}
+		for _, r := range p.CacheWrite {
+			top = max(top, r)
+		}
+		if l := p.LongContext; l != nil {
+			for _, r := range []*float64{l.Input, l.Output, l.CacheRead, l.BatchInput, l.BatchOutput} {
+				if r != nil && *r > top {
+					top = *r
+				}
+			}
+		}
+		for _, tp := range p.Tiers {
+			for _, r := range []*float64{tp.Input, tp.Output, tp.CacheRead, tp.BatchInput, tp.BatchOutput} {
+				if r != nil && *r > top {
+					top = *r
+				}
+			}
+		}
+	}
+	return 6 * MaxTokens * top / 1e6
+}()
 
 func FuzzParseLiteLLM(f *testing.F) {
 	f.Add([]byte(`{"gpt-x": {"litellm_provider": "openai", "input_cost_per_token": 1e-6, "output_cost_per_token": 2e-6, "input_cost_per_token_above_1k_tokens": 3e-6}}`))

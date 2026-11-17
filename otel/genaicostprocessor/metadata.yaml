@@ -1,6 +1,6 @@
 type: genaicost
 display_name: GenAI cost processor
-description: Prices GenAI inference spans from their token counts and writes gen_ai.usage.cost.* with the price table's id and version.
+description: Prices GenAI inference spans from their token counts and writes the cost with the price table's id and version (llm_prices.cost.* by default, gen_ai.usage.cost.* with attributes semconv).
 
 status:
   class: processor
@@ -18,7 +18,7 @@ telemetry:
     processor_genaicost_price_reload_failures:
       enabled: true
       stability: alpha
-      description: Price table reloads that failed (download, signature or parse); the previous table stays in use.
+      description: Price table reloads that failed (download, signature, parse or a table older than the one in use); the previous table stays in use.
       unit: "{reload}"
       sum:
         value_type: int

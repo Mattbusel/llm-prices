@@ -86,3 +86,25 @@ def test_string_int_and_whole_double_counts_agree(model, i, o):
     a, _ = p.attributes({**base, "gen_ai.usage.input_tokens": i, "gen_ai.usage.output_tokens": o})
     b, _ = p.attributes({**base, "gen_ai.usage.input_tokens": str(i), "gen_ai.usage.output_tokens": float(o)})
     assert a == b
+
+
+@pytest.mark.parametrize("digits", [20, 4301, 5000])
+def test_huge_digit_strings_are_invalid_usage(digits):
+    # int() raises ValueError on digit strings past 4300 characters; the count must be flagged
+    # invalid_usage before that, as the Go processor flags it.
+    attrs = {"gen_ai.provider.name": "openai", "gen_ai.request.model": "gpt-4o", "gen_ai.usage.input_tokens": "9" * digits, "gen_ai.usage.output_tokens": 10}
+    added, reason = CostPricer().attributes(attrs)
+    assert reason == "invalid_usage" and added == {"llm_prices.unpriced": "invalid_usage"}
+
+
+@settings(max_examples=1500, deadline=None)
+@given(st.dictionaries(st.sampled_from(r.INPUT_KEYS[:1] + r.OUTPUT_KEYS[:1] + r.CACHE_READ_KEYS[:1] + r.CACHE_WRITE_KEYS[:1] + r.REASONING_KEYS[:1]), st.integers(min_value=0, max_value=2**64), min_size=1), st.sampled_from(["gpt-4o", "claude-sonnet-4-6", "o3", "gemini-2.5-pro"]))
+def test_counts_above_the_ceiling_are_invalid_and_costs_stay_bounded(counts, model):
+    attrs = {"gen_ai.request.model": model, "gen_ai.usage.input_tokens": 10, "gen_ai.usage.output_tokens": 10, **counts}
+    added, reason = CostPricer().attributes(attrs)
+    if any(v > r.MAX_TOKENS for k, v in attrs.items() if k.startswith("gen_ai.usage.")):
+        assert reason == "invalid_usage", (counts, added)
+    else:
+        amount = added.get("gen_ai.usage.cost.amount")
+        # Five counts of at most MAX_TOKENS at well under $1,000 per 1M tokens.
+        assert amount is None or amount <= 5 * r.MAX_TOKENS * 1000 / 1e6

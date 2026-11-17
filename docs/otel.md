@@ -5,12 +5,12 @@ Two components put the cost of every LLM call on its span, with no change to the
 | Component | Where it runs | Install |
 |---|---|---|
 | `genaicost` processor | OpenTelemetry Collector (traces pipeline) | `github.com/Mattbusel/llm-prices/otel/genaicostprocessor` in an [ocb](https://opentelemetry.io/docs/collector/custom-collector/) manifest |
-| `llm-prices-otel` | Python process, as a `SpanProcessor` | `pip install llm-prices-otel` |
+| `llm-prices-otel` | Python process, as a `SpanProcessor` | from the `v1.7.1` tag until it is on PyPI (see Python) |
 
 Both read the token counts that OpenLLMetry, OpenInference, Logfire, rig and the
 [GenAI semantic conventions](https://github.com/open-telemetry/semantic-conventions-genai) put on
-a span, price them with the [llm-prices](../prices.json) table (or a LiteLLM or genai-prices
-table), and write:
+a span, price them with the [llm-prices](../prices.json) table (or a LiteLLM table; in Python
+also genai-prices), and write:
 
 | Attribute | Value |
 |---|---|
@@ -28,17 +28,23 @@ yet: the names follow the proposals as of 2026-11-17 and may change with them. T
 package also records the `gen_ai.client.operation.cost` histogram from #443; in the Collector,
 the `signal_to_metrics` connector derives it from the priced spans (configuration below).
 
-The same 30 conformance cases ([otel/conformance/cases.json](../otel/conformance/cases.json)) and
-the same golden corpus run against both components in CI, so a span gets the same attributes
-from either.
+The Python processor writes these names. The Collector processor writes the same values under
+`llm_prices.cost.amount`, `.currency`, `.source`, `.pricing.id` and `.pricing.version` unless it is
+set to `attributes: semconv`, because the current #443 text reserves `gen_ai.usage.cost.*` for a
+cost computed at recording time (see [Recording time and the #443 text](#recording-time-and-the-443-text)).
+
+The conformance cases ([otel/conformance/cases.json](../otel/conformance/cases.json)) and the
+golden corpus run against both components in CI, so a span gets the same cost from either:
+37 cases run against both, and one more (`stale_span`) against the Collector alone, which also
+runs every case a second time with its default `llm_prices.cost.*` names.
 
 ## Python
 
 ```sh
-pip install llm-prices-otel
-# or straight from the repository:
-pip install "llm-prices-otel @ git+https://github.com/Mattbusel/llm-prices#subdirectory=otel/python"
+pip install "llm-prices-otel @ git+https://github.com/Mattbusel/llm-prices@v1.7.1#subdirectory=otel/python"
 ```
+
+The package is not on PyPI yet; once it is, this becomes `pip install llm-prices-otel`.
 
 ```python
 from opentelemetry.sdk.trace import TracerProvider
@@ -53,7 +59,11 @@ provider.add_span_processor(CostSpanProcessor(BatchSpanProcessor(OTLPSpanExporte
 `CostSpanProcessor` wraps the processors it should feed: when a span ends it prices it and hands
 those processors a copy with the cost attributes (an ended span cannot be changed in place).
 `CostSpanExporter(exporter)` does the same at the exporter, for setups where that is easier.
-With Logfire, pass it in `logfire.configure(additional_span_processors=[CostSpanProcessor(...)])`.
+`CostSpanProcessor` adds the cost only to the copy it hands the processors it wraps; other span
+processors on the same provider see the span without it. With Logfire, which exports through its
+own processors, `logfire.configure(additional_span_processors=[CostSpanProcessor(BatchSpanProcessor(exporter))])`
+puts the cost on the spans sent to `exporter`, not on the spans Logfire itself sends. To get
+costs into Logfire's own export, run the `genaicost` Collector processor on that pipeline instead.
 
 Keyword arguments (all optional):
 
@@ -65,7 +75,7 @@ Keyword arguments (all optional):
 | `output_tokens_include_reasoning` | `"auto"` | see Token counts |
 | `batch_attribute` | `"llm_prices.batch"` | boolean span attribute that marks a Batch API request; `None` turns it off |
 | `reported_cost_attributes` | `()` | attributes holding a USD cost from the response, written as `source=provider` |
-| `breakdown` | `False` | also write `llm_prices.cost.{input,output,cache_read,cache_write}` and `llm_prices.price.row` |
+| `breakdown` | `False` | also write `llm_prices.cost.{input,output,cache_read,cache_write}` and `llm_prices.price.row` (the row is always written when it is a fallback, see Pricing rules) |
 | `openinference` | `False` | also write OpenInference's `llm.cost.*` attributes |
 | `record_metric` / `meter_provider` | `True` / global | the `gen_ai.client.operation.cost` histogram |
 
@@ -92,10 +102,11 @@ cost histogram. CI builds that manifest with ocb 0.165.0 on every push.
 | Setting | Default | Meaning |
 |---|---|---|
 | `source` | `llm-prices` | or `litellm` |
+| `attributes` | `llm_prices` | `llm_prices` writes the cost as `llm_prices.cost.*`; `semconv` writes `gen_ai.usage.cost.*` (see below) |
 | `prices_url` | (built-in table) | `release`, an `https://` URL, a `file://` URL or a path. For `litellm` it defaults to LiteLLM's map on GitHub |
 | `reload_interval` | `0` (load once) | how often `prices_url` is fetched again (1m or more) |
 | `public_key` | the llm-prices release key | base64 Ed25519 key the table must be signed with (`prices_url` + `.sig`) |
-| `skip_signature` | `false` | load an unsigned llm-prices table (your own fork, a local file) |
+| `skip_signature` | `false` | load an unsigned llm-prices table (your own fork, a local file); the generated-date check below then does not apply |
 | `download_timeout` | `30s` | per fetch |
 | `on_unpriced` | `flag` | or `error_attribute` |
 | `input_tokens_include_cache` | `auto` | `auto`, `true`, `false` |
@@ -106,9 +117,11 @@ cost histogram. CI builds that manifest with ocb 0.165.0 on every push.
 | `max_span_age` | `15m` | spans that ended longer ago are flagged `stale_span`, not priced against today's table; `0` turns the check off |
 
 Hot reload: the processor fetches `prices_url`, checks the Ed25519 signature in `prices_url.sig`,
-parses the table and swaps it in atomically when its version differs. A failed fetch, a bad
-signature or a table that does not parse keeps the table in use and counts
-`processor_genaicost_price_reload_failures`. For `llm-prices` the built-in table serves until a
+parses the table and swaps it in atomically when its version differs. A signed table whose
+`generated` date is older than the table in use (the built-in one included) is rejected: the
+signature covers only the table's bytes, so this keeps an older signed release served at the URL
+from rolling prices back. A failed fetch, a bad signature, an older table or a table that does
+not parse keeps the table in use and counts `processor_genaicost_price_reload_failures`. For `llm-prices` the built-in table serves until a
 load succeeds; for `litellm`, which has no built-in table, the collector does not start without
 one. Internal metrics: `processor_genaicost_spans_priced`,
 `processor_genaicost_spans_unpriced{reason}`, `processor_genaicost_price_reloads`,
@@ -123,14 +136,21 @@ time, in the process that recorded the span. The Collector processor prices a sp
 through the pipeline, normally seconds after the call, and writes `pricing.version` so the table
 is named; `max_span_age` (15 minutes by default) refuses spans old enough that the table may
 have changed since. Whether a collector stage close to the application counts as recording time
-is a question for the #443 review; until it is settled, run it in the agent or gateway collector
-next to the applications, not in a backend that replays old data.
+is a question for the #443 review. Until it is settled the Collector processor writes its own
+names by default (`llm_prices.cost.amount` and the rest), so it never puts a collector-computed
+cost under the names #443 reserves. `attributes: semconv` writes `gen_ai.usage.cost.*` instead;
+use it only in an agent collector next to the applications (a sidecar or node agent that
+receives spans as they are exported), never in a gateway or backend that replays old data.
+
+The example `collector-config.yaml` uses the default names, and its cost histogram reads
+`llm_prices.cost.amount`.
 
 ## Pricing rules
 
 **Which spans.** A span is priced when it carries a token count (input or output). Spans without
 one (agent, tool and workflow spans) are left alone. A span that already has
-`gen_ai.usage.cost.amount` is never changed: a cost is frozen when it is recorded.
+`gen_ai.usage.cost.amount` (or `llm_prices.cost.amount`) is never changed: a cost is frozen when
+it is recorded.
 
 **Model.** `gen_ai.response.model`, then `gen_ai.request.model`, then OpenInference's
 `llm.model_name`. The first id the table prices wins, so a dated response model
@@ -144,6 +164,17 @@ including the conventions' dotted names (`gcp.vertex_ai`, `aws.bedrock`, `azure.
 rather than priced at someone else's list price. With no provider at all the model id alone is
 looked up.
 
+**Cloud-hosted models.** A model served by a cloud platform the table has no row for (Claude on
+Bedrock or Vertex AI, OpenAI models on Azure) is priced at the model maker's own list price. The
+span then gets `llm_prices.price.fallback = true` and the matched row in `llm_prices.price.row`
+(for example `anthropic/claude-sonnet-4-20250514`), so the approximation is visible. The cloud's
+own bill can differ: regional and data-zone endpoints on these platforms are priced above the
+global list price, and committed-use discounts are not in any public table.
+
+**Embeddings.** A span with no output tokens (embeddings) is priced on its input, cache reads
+and batch input, also on rows that list no output price. Output tokens on a row with no output
+price flag `missing_rate`.
+
 **Token counts.** Read from the conventions' names first, then OpenLLMetry's older names, then
 OpenInference's:
 
@@ -156,7 +187,8 @@ OpenInference's:
 | reasoning | `gen_ai.usage.reasoning.output_tokens`, `gen_ai.usage.reasoning_tokens`, `llm.token_count.completion_details.reasoning` |
 
 Integers, whole doubles and digit strings are accepted (rig's spans carry counts as strings);
-anything else, or a negative count, flags `invalid_usage`. The conventions say the input count
+anything else, a negative count, or a count above 10^12 tokens flags `invalid_usage`, so a buggy
+or hostile span cannot write an absurd cost into a summed dashboard. The conventions say the input count
 includes cache reads and writes and the output count includes reasoning tokens; with `auto`
 that is assumed unless the cache counts are larger than the input count (an instrumentation that
 reports Anthropic's uncached `input_tokens`), or the reasoning count is larger than the output

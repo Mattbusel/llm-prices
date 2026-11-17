@@ -28,8 +28,8 @@ import (
 	"github.com/Mattbusel/llm-prices/otel/genaicostprocessor/internal/metadatatest"
 )
 
-// A one-row table: "test-model" at $1 / $2 per 1M tokens.
-const tinyTable = `{"generated": "2026-11-17", "models": [{"provider": "openai", "model": "test-model", "aliases": [], "status": "listed", "input": 1, "output": 2}]}`
+// A one-row table: "test-model" at $1 / $2 per 1M tokens, generated after the embedded table.
+const tinyTable = `{"generated": "2099-01-01", "models": [{"provider": "openai", "model": "test-model", "aliases": [], "status": "listed", "input": 1, "output": 2}]}`
 
 type signer struct {
 	pub  string
@@ -110,9 +110,9 @@ func TestSignedTableIsLoadedAndUsed(t *testing.T) {
 	_, err = p.processTraces(context.Background(), td)
 	require.NoError(t, err)
 	a := firstAttrs(td)
-	amount, _ := a.Get(AttrCostAmount)
+	amount, _ := a.Get(AttrLLMPricesCostAmount)
 	require.InEpsilon(t, 3.0, amount.Double(), 1e-12)
-	version, _ := a.Get(AttrCostPricingVersion)
+	version, _ := a.Get(AttrLLMPricesCostPricingVersion)
 	require.Equal(t, llmprices.Version([]byte(tinyTable)), version.Str())
 
 	metadatatest.AssertEqualProcessorGenaicostPriceReloads(t, tel, []metricdata.DataPoint[int64]{{Value: 1}}, metricdatatest.IgnoreTimestamp())
@@ -182,12 +182,55 @@ func TestHotReloadReplacesTheTable(t *testing.T) {
 	td := span("test-model", 1_000_000, 0)
 	_, err := p.processTraces(context.Background(), td)
 	require.NoError(t, err)
-	amount, _ := firstAttrs(td).Get(AttrCostAmount)
+	amount, _ := firstAttrs(td).Get(AttrLLMPricesCostAmount)
 	require.InEpsilon(t, 4.0, amount.Double(), 1e-12)
 
 	// The same table again is not a reload.
 	require.NoError(t, p.reloader.reload(context.Background()))
 	require.Equal(t, after, p.source.Load().s.pricingVersion())
+}
+
+func TestOlderSignedTableIsNotInstalled(t *testing.T) {
+	s := newSigner(t)
+	srv := newTableServer(t, []byte(tinyTable), s.sign([]byte(tinyTable)))
+	cfg := createDefaultConfig()
+	cfg.PricesURL = srv.URL + "/prices.json"
+	cfg.PublicKey = s.pub
+	tel := componenttest.NewTelemetry()
+	t.Cleanup(func() { require.NoError(t, tel.Shutdown(context.Background())) })
+	p, err := newCostProcessor(cfg, metadatatest.NewSettings(tel).TelemetrySettings)
+	require.NoError(t, err)
+	t.Cleanup(func() { _ = p.shutdown(context.Background()) })
+	require.NoError(t, p.start(context.Background(), componenttest.NewNopHost()))
+	current := p.source.Load().s.pricingVersion()
+	require.Equal(t, llmprices.Version([]byte(tinyTable)), current)
+
+	// An older release, correctly signed, served where the newer one was: a rollback.
+	older := strings.Replace(strings.Replace(tinyTable, "2099-01-01", "2098-12-31", 1), `"input": 1`, `"input": 0.5`, 1)
+	b, sig := []byte(older), s.sign([]byte(older))
+	srv.body.Store(&b)
+	srv.sig.Store(&sig)
+	require.ErrorContains(t, p.reloader.reload(context.Background()), "older than the table in use")
+	require.Equal(t, current, p.source.Load().s.pricingVersion())
+	metadatatest.AssertEqualProcessorGenaicostPriceReloadFailures(t, tel, []metricdata.DataPoint[int64]{{Value: 1}}, metricdatatest.IgnoreTimestamp())
+
+	// A signed table generated before the embedded one never replaces it.
+	ancient := strings.Replace(tinyTable, "2099-01-01", "2020-01-01", 1)
+	srv2 := newTableServer(t, []byte(ancient), s.sign([]byte(ancient)))
+	cfg2 := createDefaultConfig()
+	cfg2.PricesURL = srv2.URL + "/prices.json"
+	cfg2.PublicKey = s.pub
+	p2 := newTestProcessor(t, cfg2)
+	require.NoError(t, p2.start(context.Background(), componenttest.NewNopHost()))
+	require.Equal(t, llmprices.PricesVersion, p2.source.Load().s.pricingVersion())
+
+	// Unsigned tables (skip_signature: your own file) are installed as given.
+	cfg3 := createDefaultConfig()
+	cfg3.PricesURL = srv2.URL + "/prices.json"
+	cfg3.SkipSignature = true
+	p3 := newTestProcessor(t, cfg3)
+	require.NoError(t, p3.start(context.Background(), componenttest.NewNopHost()))
+	require.Equal(t, llmprices.Version([]byte(ancient)), p3.source.Load().s.pricingVersion())
 }
 
 func TestBackgroundReloadStopsOnShutdown(t *testing.T) {
@@ -222,9 +265,9 @@ func TestLiteLLMSourceFromFile(t *testing.T) {
 	_, err := p.processTraces(context.Background(), td)
 	require.NoError(t, err)
 	a := firstAttrs(td)
-	amount, _ := a.Get(AttrCostAmount)
+	amount, _ := a.Get(AttrLLMPricesCostAmount)
 	require.InEpsilon(t, 0.003, amount.Double(), 1e-12)
-	id, _ := a.Get(AttrCostPricingID)
+	id, _ := a.Get(AttrLLMPricesCostPricingID)
 	require.Equal(t, "litellm.model_cost_map", id.Str())
 
 	// litellm has no embedded table: a failed first load stops the collector from starting.
