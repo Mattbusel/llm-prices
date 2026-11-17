@@ -185,6 +185,8 @@ def test_kiwiq_style_ids():
     assert float(tc.calculate_cost_by_tokens(1_000_000, "perplexity/sonar-pro", "input")) == 3.0
     assert float(tc.calculate_cost_by_tokens(1_000_000, "perplexity/sonar-deep-research", "output")) == 8.0
     assert float(tc.calculate_cost_by_tokens(1_000_000, "perplexity/sonar-reasoning-pro", "input")) == 2.0
+    # Sonar Reasoning was removed on 2025-12-15; its last listed price was $1 / $5.
+    assert float(tc.calculate_cost_by_tokens(1_000_000, "perplexity/sonar-reasoning", "output")) == 5.0
 
 
 def test_platform_rows_never_answer_a_bare_maker_id():

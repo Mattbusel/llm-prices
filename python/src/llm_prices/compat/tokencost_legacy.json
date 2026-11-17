@@ -1917,6 +1917,24 @@
       "retired": "2026-09-27",
       "retired_source": "https://docs.perplexity.ai/docs/agent-api/migrate-from-sonar/overview",
       "note": "Sonar API Pricing table (Token Pricing tab), last snapshot before Sonar Chat Completions support ended on 2026-09-27. The same row lists citation tokens at $2 per 1M, reasoning tokens at $3 per 1M and search queries at $5 per 1,000, which tokencost has no fields for and are left out; asynchronous Sonar requests (the usual way to run Deep Research) are no longer supported. The migration guide maps it to the high effort level."
+    },
+    {
+      "provider": "perplexity",
+      "model": "perplexity/sonar-reasoning",
+      "aliases": [
+        "sonar-reasoning"
+      ],
+      "input": 1,
+      "output": 5,
+      "cache_read": null,
+      "batch_input": null,
+      "batch_output": null,
+      "long_context": null,
+      "source_url": "https://web.archive.org/web/20251205052458/https://docs.perplexity.ai/getting-started/pricing",
+      "source_date": "2025-12-05",
+      "retired": "2025-12-15",
+      "retired_source": "https://docs.perplexity.ai/docs/resources/changelog",
+      "note": "Sonar API Pricing table (Token Pricing tab), last snapshot before the model was removed; the changelog says sonar-reasoning was deprecated and removed from the API on 2025-12-15 and points to sonar-reasoning-pro. The page's per-request fee by search context size is not per token and is left out."
     }
   ],
   "redirects": {

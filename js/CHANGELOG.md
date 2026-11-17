@@ -3,6 +3,15 @@
 All notable changes to the `@mattbusel/llm-prices` npm package. Versions follow the Rust
 crate's: price-data-only updates are patch releases, new API is a minor release.
 
+## [1.6.1] - 2026-11-17
+
+### Added
+
+`llm_prices.compat.tokencost` prices `perplexity/sonar-reasoning` (and `sonar-reasoning`) at its
+last listed $1 / $5 per 1M tokens (archived pricing page of 2025-12-05; Perplexity removed the
+model on 2025-12-15), as tokencost 0.1.26 did. No change to the table, the crate, the npm package
+or the Go module; they move to 1.6.1 only to keep the versions in step.
+
 ## [1.6.0] - 2026-11-17
 
 ### Added
