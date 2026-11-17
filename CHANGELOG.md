@@ -6,6 +6,49 @@ repository as a whole. The packages have their own changelogs:
 The Go module is tagged `go/vX.Y.Z` and listed here.
 The `v1` tag moves to every 1.x release.
 
+## [1.4.0] - 2026-11-16
+
+### Table (generated 2026-11-16, 146 rows)
+
+Anthropic, OpenAI, Google and DeepSeek rows re-read from their pricing pages on 2026-11-16. No
+price changed. New data, all read from the official pages:
+
+- `inference_geo` on every row: `{"us": 1.1}` on Claude 4.6 and later (Opus 4.6 to 5.5,
+  Sonnet 4.6 to 5.5, Haiku 5.5, Fable 5 to 5.2), from "Data residency pricing" on
+  https://platform.claude.com/docs/en/about-claude/pricing; `null` elsewhere. Earlier Claude
+  rows now say the page rejects the parameter for them, instead of a note on every row.
+- Gemini `other_tiers.flex` and `other_tiers.priority` carry their own `long_context` prices
+  (Gemini 2.5 Pro: flex 1.25 / 7.5, priority 4.5 / 27 above 200k tokens; Gemini 3.1 Pro
+  Preview: flex 2 / 9, priority 7.2 / 32.4), from the Flex and Priority tabs of
+  https://ai.google.dev/gemini-api/docs/pricing.
+- Anthropic Priority Tier has no row: it is a capacity commitment with no per-token price, and
+  https://platform.claude.com/docs/en/api/service-tiers says commitments are no longer sold.
+  See [docs/tiers.md](docs/tiers.md).
+
+### litellm.json (new)
+
+- `litellm.json`: the table in LiteLLM's `model_prices_and_context_window.json` schema (USD per
+  token, `*_batches`, `*_flex`, `*_priority`, `*_above_200k_tokens` keys, plus `source` and
+  `llm_prices_checked` on every entry). Generated with the other files, committed by the daily
+  refresh, served by jsDelivr. CI registers it with LiteLLM and checks `cost_per_token`
+  against the table. Docs: [docs/litellm.md](docs/litellm.md).
+
+### Action (drift check)
+
+- Prices of a flex or priority tier above a long-context threshold are accepted (for example
+  LiteLLM's `input_cost_per_token_above_200k_tokens_priority`). Before, they were compared
+  with the standard long-context price and reported as drift.
+
+### Examples (new)
+
+- `examples/python` (one call, cache-aware cost, budget check, service tiers, tokencost
+  migration, LiteLLM), `examples/go` (one call, cache-aware cost, budget check; `go test`
+  checks the output) and `crate/examples` (`budget_check`, `tiers`). CI runs all of them.
+
+### Go module 0.1.1
+
+- `go/prices.json` carries the 2026-11-16 table. No API change.
+
 ## [Go 0.1.0] - 2026-11-15
 
 ### Go module (new)

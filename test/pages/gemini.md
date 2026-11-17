@@ -1,4 +1,4 @@
-<!-- Excerpt of https://ai.google.dev/gemini-api/docs/pricing fetched 2026-11-15, kept only for parser tests. -->
+<!-- Excerpt of https://ai.google.dev/gemini-api/docs/pricing fetched 2026-11-16, kept only for parser tests. -->
 
 ## Gemini 4 Carbon  {% id="gemini-4-carbon" %}
 

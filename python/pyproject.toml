@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "llm-prices"
-version = "1.3.0"
+version = "1.4.0"
 description = "Dated, source-cited LLM API prices (Anthropic, OpenAI, Gemini, DeepSeek, Mistral, xAI, Groq, Together, Fireworks, Cohere) per 1M tokens, with provider-aware model-id lookup and exact decimal costs. Zero dependencies."
 readme = { content-type = "text/markdown", text = """
 # llm-prices
@@ -27,14 +27,24 @@ p.cost_usage(usage).total                 # 0.048129 (float)
 p.cost_usage(usage, exact=True).total     # Decimal('0.048129')
 ```
 
-`cost_usage` prices prompt-cache reads, cache writes by lifetime, batch discounts and the
-long-context switch. Source and docs: https://github.com/Mattbusel/llm-prices
+`cost_usage` prices prompt-cache reads, cache writes by lifetime, batch discounts, the
+long-context switch, service tiers (`tier="flex"`, `"priority"`, `"fast"`) and data residency
+(`inference_geo="us"`).
+
+Moving from tokencost is one import line, same functions and signatures:
+
+```python
+from llm_prices.compat.tokencost import calculate_prompt_cost, calculate_completion_cost
+```
+
+`llm_prices.litellm.model_cost()` is the table in LiteLLM's model_prices_and_context_window.json
+schema, for `litellm.register_model`. Source and docs: https://github.com/Mattbusel/llm-prices
 """ }
 requires-python = ">=3.9"
 license = "MIT"
 license-files = ["LICENSE"]
 authors = [{ name = "Matthew Busel" }]
-keywords = ["llm", "pricing", "anthropic", "openai", "gemini", "tokens", "cost"]
+keywords = ["llm", "pricing", "anthropic", "openai", "gemini", "tokens", "cost", "tokencost", "litellm"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Intended Audience :: Developers",
@@ -42,15 +52,26 @@ classifiers = [
     "Programming Language :: Python :: 3",
     "Programming Language :: Python :: 3 :: Only",
     "Topic :: Software Development :: Libraries",
+    "Topic :: Office/Business :: Financial",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Typing :: Typed",
 ]
 dependencies = []
+
+[project.optional-dependencies]
+# Token counting in llm_prices.compat.tokencost (pricing token counts needs nothing).
+tokencost = ["tiktoken>=0.7"]
 
 [project.urls]
 Homepage = "https://github.com/Mattbusel/llm-prices"
 Source = "https://github.com/Mattbusel/llm-prices/tree/main/python"
 Changelog = "https://github.com/Mattbusel/llm-prices/blob/main/python/CHANGELOG.md"
 Issues = "https://github.com/Mattbusel/llm-prices/issues"
+Documentation = "https://github.com/Mattbusel/llm-prices/blob/main/docs/python.md"
 
 [tool.hatch.build.targets.wheel]
 packages = ["src/llm_prices"]

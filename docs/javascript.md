@@ -5,7 +5,7 @@ access. Install it straight from GitHub (no npm registry account needed):
 
 ```sh
 npm i github:Mattbusel/llm-prices#v1        # moves with every 1.x release
-npm i github:Mattbusel/llm-prices#v1.3.0    # pinned
+npm i github:Mattbusel/llm-prices#v1.4.0    # pinned
 ```
 
 ```js

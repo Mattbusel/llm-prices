@@ -283,3 +283,22 @@ test('a YAML list item with a threshold key is a tier', () => {
   assert.ok(findings.length >= 2);
   assert.ok(findings.every((f) => f.ok), JSON.stringify(findings.filter((f) => !f.ok)));
 });
+
+test('flex and priority prices above a long-context threshold are not drift (LiteLLM map keys)', () => {
+  const text = JSON.stringify(
+    {
+      'gemini/gemini-2.5-pro': {
+        input_cost_per_token: 1.25e-6,
+        input_cost_per_token_above_200k_tokens: 2.5e-6,
+        input_cost_per_token_above_200k_tokens_priority: 4.5e-6,
+        output_cost_per_token_above_200k_tokens_priority: 2.7e-5,
+        input_cost_per_token_above_200k_tokens_flex: 1.25e-6,
+      },
+    },
+    null,
+    2,
+  );
+  const { findings } = scanText('model_prices.json', text, index);
+  assert.ok(findings.length >= 4, `found ${findings.length}`);
+  assert.deepEqual(findings.filter((f) => !f.ok), []);
+});

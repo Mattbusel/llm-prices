@@ -30,6 +30,27 @@ export function parseAnthropic(md, checked) {
   const fastStart = md.indexOf('### Fast mode pricing');
   const fast = all.find((t) => t.start > fastStart && t.header[1] === 'Input' && t.header[2] === 'Output');
 
+  // "### Data residency pricing": "For Claude 4.6 and later models, specifying US-only
+  // inference through the `inference_geo` parameter incurs a 1.1x multiplier on all token
+  // pricing categories". Read the first version and the multiplier from the page.
+  const geoStart = md.indexOf('### Data residency pricing');
+  if (geoStart < 0) throw new ParseError('anthropic: data residency pricing section not found');
+  const geoEnd = md.indexOf('\n### ', geoStart + 5);
+  const geoText = md.slice(geoStart, geoEnd > 0 ? geoEnd : undefined);
+  const geoMatch = geoText.match(/For Claude ([0-9]+)\.([0-9]+) and later models, specifying US-only inference through the `inference_geo` parameter incurs a ([0-9.]+)x multiplier on all token pricing categories/);
+  if (!geoMatch) throw new ParseError('anthropic: data residency multiplier not readable');
+  const geoFrom = [Number(geoMatch[1]), Number(geoMatch[2])];
+  const geoMultiplier = Number(geoMatch[3]);
+  // "Claude Opus 4.6" -> [4, 6], "Claude Fable 5" -> [5, 0].
+  const versionOf = (name) => {
+    const v = name.match(/([0-9]+)(?:\.([0-9]+))?\s*$/);
+    return v ? [Number(v[1]), Number(v[2] ?? 0)] : null;
+  };
+  const geoApplies = (name) => {
+    const v = versionOf(name);
+    return v !== null && (v[0] > geoFrom[0] || (v[0] === geoFrom[0] && v[1] >= geoFrom[1]));
+  };
+
   const byName = new Map();
   const unknown = [];
   for (const r of main.rows) {
@@ -92,7 +113,9 @@ export function parseAnthropic(md, checked) {
       notes.push('fast mode (other_tiers.fast) is a separate premium tier; cache multipliers apply on top');
     }
     if (e.status === 'retired') notes.push('page marks this model retired on the Claude API; still sold on some cloud platforms');
-    notes.push('US-only inference (inference_geo "us") is 1.1x on Claude 4.6 and later');
+    const geo = geoApplies(name) ? { us: geoMultiplier } : null;
+    if (geo) notes.push(`US-only inference (inference_geo "us") is ${geoMultiplier}x on every price (inference_geo field)`);
+    else notes.push('the page says this model does not take the inference_geo parameter (data residency) and always uses standard pricing');
     rows.push(
       row({
         provider: 'anthropic',
@@ -103,6 +126,7 @@ export function parseAnthropic(md, checked) {
         ...e.base,
         long_context,
         other_tiers: other,
+        inference_geo: geo,
         source_url: src,
         checked,
         note: notes.join('; '),

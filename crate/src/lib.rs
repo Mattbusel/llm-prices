@@ -438,6 +438,101 @@ impl Price {
         data::EXACT.get(i)
     }
 
+    /// The index of this row in [`all`], found by provider and model id.
+    fn index(&self) -> Option<usize> {
+        data::PRICES.iter().position(|p| p.provider == self.provider && p.model == self.model)
+    }
+
+    /// The prices of one other service tier of this model (`"flex"`, `"priority"`, `"fast"`,
+    /// `"ultrafast"`, `"offpeak"`, ...), as a [`Price`] with the same provider and model.
+    /// `"standard"` returns the table row itself. `None` when the provider's page lists no
+    /// such tier for the model, or when this `Price` is not a row of the table.
+    ///
+    /// Tier prices follow the rules of [`cost_usage`](Self::cost_usage): a tier that lists no
+    /// cache-read price bills cache reads as its input, and tiers have no batch prices.
+    /// Gemini's Flex and Priority tiers carry their own long-context prices.
+    ///
+    /// ```
+    /// use llm_prices::{lookup, Usage};
+    ///
+    /// let pro = lookup("gemini-2.5-pro").unwrap();
+    /// let priority = pro.tier("priority").unwrap();
+    /// assert_eq!(priority.input, Some(2.25));
+    /// assert_eq!(priority.long_context.unwrap().output, Some(27.0));
+    ///
+    /// let u = Usage { input: 1_000, output: 1_000, ..Default::default() };
+    /// let fast = lookup("claude-opus-5-5").unwrap().tier("fast").unwrap();
+    /// assert!((fast.cost_usage(&u).unwrap().total - 0.048).abs() < 1e-12);
+    /// assert!(pro.tier("fast").is_none());
+    /// ```
+    pub fn tier(&self, name: &str) -> Option<&'static Price> {
+        let i = self.index()?;
+        if name == "standard" {
+            return data::PRICES.get(i);
+        }
+        data::TIERS.iter().find(|(row, n, _)| *row == i && *n == name).map(|(_, _, p)| p)
+    }
+
+    /// The names of the other service tiers [`tier`](Self::tier) can return for this model.
+    ///
+    /// ```
+    /// let names: Vec<&str> = llm_prices::lookup("gemini-2.5-flash").unwrap().tiers().collect();
+    /// assert_eq!(names, ["flex", "priority"]);
+    /// ```
+    pub fn tiers(&self) -> impl Iterator<Item = &'static str> {
+        let i = self.index();
+        data::TIERS.iter().filter(move |(row, _, _)| Some(*row) == i).map(|(_, n, _)| *n)
+    }
+
+    /// The data residency multiplier for `geo` on this model, applied to every price (tiers
+    /// and long-context prices included): `Some(1.1)` for `"us"` on Claude 4.6 and later
+    /// (`inference_geo: "us"`). `Some(1.0)` for `"global"`. `None` when the table lists no
+    /// multiplier for `geo` on this model (Anthropic models before Claude 4.6 reject the
+    /// parameter).
+    ///
+    /// ```
+    /// use llm_prices::lookup;
+    ///
+    /// assert_eq!(lookup("claude-sonnet-4-6").unwrap().inference_geo("us"), Some(1.1));
+    /// assert_eq!(lookup("claude-haiku-4-5").unwrap().inference_geo("us"), None);
+    /// ```
+    pub fn inference_geo(&self, geo: &str) -> Option<f64> {
+        self.inference_geo_str(geo)?.parse().ok()
+    }
+
+    /// [`inference_geo`](Self::inference_geo) as the decimal text in `prices.json`.
+    pub fn inference_geo_str(&self, geo: &str) -> Option<&'static str> {
+        if geo == "global" {
+            return Some("1");
+        }
+        let i = self.index()?;
+        data::INFERENCE_GEO.iter().find(|(row, g, _)| *row == i && *g == geo).map(|(_, _, m)| *m)
+    }
+
+    /// [`cost_usage`](Self::cost_usage) with the data residency multiplier for `geo`
+    /// applied to every component. `None` when `cost_usage` is `None` or the table lists no
+    /// multiplier for `geo` on this model.
+    ///
+    /// ```
+    /// use llm_prices::{lookup, Usage};
+    ///
+    /// let u = Usage { input: 1_000_000, output: 100_000, ..Default::default() };
+    /// let c = lookup("claude-sonnet-4-6").unwrap().cost_usage_geo(&u, "us").unwrap();
+    /// assert!((c.total - 4.95).abs() < 1e-9); // (3.00 + 1.50) x 1.1
+    /// ```
+    pub fn cost_usage_geo(&self, usage: &Usage, geo: &str) -> Option<CostBreakdown> {
+        let m = self.inference_geo(geo)?;
+        let c = self.cost_usage(usage)?;
+        Some(CostBreakdown {
+            input: c.input * m,
+            output: c.output * m,
+            cache_read: c.cache_read * m,
+            cache_write: c.cache_write * m,
+            total: c.total * m,
+            long_context: c.long_context,
+        })
+    }
+
     /// [`Price::provider`] as a [`Provider`]. `None` only for a `Price` built by hand with a
     /// provider name this crate does not know.
     pub fn provider_kind(&self) -> Option<Provider> {

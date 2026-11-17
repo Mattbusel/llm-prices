@@ -3,6 +3,37 @@
 All notable changes to the `llm-prices` crate. Versions follow semver: price-data-only
 updates are patch releases, new API is a minor release.
 
+## [1.4.0] - 2026-11-16
+
+### Added
+
+- Service tiers: `Price::tier(name)` returns the prices of `"flex"`, `"priority"`, `"fast"`,
+  `"ultrafast"`, `"offpeak"` and the other tiers a provider's page lists, as a
+  `&'static Price` (Gemini's Flex and Priority tiers with their own long-context prices).
+  `Price::tiers()` lists the names. `tier("standard")` is the row itself.
+- Data residency: `Price::inference_geo(geo)` and `inference_geo_str(geo)` return the
+  multiplier the table lists (`Some(1.1)` for `"us"` on Claude 4.6 and later, `None` for
+  earlier Claude models, `Some(1.0)` for `"global"`). `Price::cost_usage_geo(&usage, geo)`
+  and, with `rust_decimal`, `Price::cost_usage_decimal_geo(&usage, geo)` apply it.
+- Examples: `budget_check` (refuse a call whose worst case breaks a budget) and `tiers`.
+
+### Table (generated 2026-11-16, 146 rows)
+
+Anthropic, OpenAI, Google and DeepSeek rows re-read from their pricing pages on 2026-11-16. No
+price changed. New data, all read from the official pages:
+
+- `inference_geo` on every row: `{"us": 1.1}` on Claude 4.6 and later (Opus 4.6 to 5.5,
+  Sonnet 4.6 to 5.5, Haiku 5.5, Fable 5 to 5.2), from "Data residency pricing" on
+  https://platform.claude.com/docs/en/about-claude/pricing; `null` elsewhere. Earlier Claude
+  rows now say the page rejects the parameter for them, instead of a note on every row.
+- Gemini `other_tiers.flex` and `other_tiers.priority` carry their own `long_context` prices
+  (Gemini 2.5 Pro: flex 1.25 / 7.5, priority 4.5 / 27 above 200k tokens; Gemini 3.1 Pro
+  Preview: flex 2 / 9, priority 7.2 / 32.4), from the Flex and Priority tabs of
+  https://ai.google.dev/gemini-api/docs/pricing.
+- Anthropic Priority Tier has no row: it is a capacity commitment with no per-token price, and
+  https://platform.claude.com/docs/en/api/service-tiers says commitments are no longer sold.
+  See [docs/tiers.md](https://github.com/Mattbusel/llm-prices/blob/main/docs/tiers.md).
+
 ## [1.3.0] - 2026-11-15
 
 ### Added

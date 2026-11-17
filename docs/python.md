@@ -96,3 +96,10 @@ When a model leaves a provider's pricing page, the daily refresh keeps its last 
 with `status == "retired"` and a note that says since when the page no longer lists it
 (`gpt-3.5-turbo`, `o1`, `gpt-4o-2024-05-13`, `claude-3-5-haiku-20241022`, ...). Code that still
 calls those ids, or prices old logs, gets the price the provider last published.
+
+## See also
+
+- [Service tiers and data residency](tiers.md): `Price.tier("flex")`, `cost_usage(..., tier=..., inference_geo="us")`.
+- [Moving from tokencost](migrate-from-tokencost.md): `llm_prices.compat.tokencost`, same functions and signatures.
+- [litellm.json](litellm.md): the table in LiteLLM's format, `llm_prices.litellm.model_cost()`.
+- Runnable examples: [examples/python](../examples/python).

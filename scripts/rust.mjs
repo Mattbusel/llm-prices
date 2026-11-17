@@ -63,6 +63,31 @@ export function toRust(doc) {
   out.push(
     '];',
     '',
+    '/// Other service tiers by row index in `PRICES`: (row, tier name, prices).',
+    'pub(crate) static TIERS: &[(usize, &str, Price)] = &[',
+  );
+  doc.models.forEach((m, i) => {
+    for (const [name, t] of Object.entries(m.other_tiers ?? {})) {
+      const lc = t.long_context
+        ? `Some(LongContext { threshold_tokens: ${t.long_context.threshold_tokens}, input: ${f(t.long_context.input)}, output: ${f(t.long_context.output)}, cache_read: ${f(t.long_context.cache_read)}, cache_write: ${cw(t.long_context.cache_write)}, batch_input: None, batch_output: None })`
+        : 'None';
+      out.push(
+        `    (${i}, ${str(name)}, Price { provider: ${str(m.provider)}, model: ${str(m.model)}, aliases: &[${m.aliases.map(str).join(', ')}], status: ${str(m.status)}, input: ${f(t.input)}, output: ${f(t.output)}, cache_read: ${f(t.cache_read)}, cache_write: ${cw(t.cache_write)}, batch_input: None, batch_output: None, long_context: ${lc}, source_url: ${str(m.source_url)}, checked: ${str(m.checked)} }),`,
+      );
+    }
+  });
+  out.push(
+    '];',
+    '',
+    '/// Data residency multipliers by row index in `PRICES`: (row, parameter value, multiplier text).',
+    'pub(crate) static INFERENCE_GEO: &[(usize, &str, &str)] = &[',
+  );
+  doc.models.forEach((m, i) => {
+    for (const [geo, v] of Object.entries(m.inference_geo ?? {})) out.push(`    (${i}, ${str(geo)}, ${str(dec(v))}),`);
+  });
+  out.push(
+    '];',
+    '',
     '/// The prices of each row of `PRICES`, in the same order, as the decimal text in prices.json.',
     'pub(crate) static EXACT: &[ExactRow] = &[',
   );

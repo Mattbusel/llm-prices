@@ -271,10 +271,20 @@ class Price:
     name: Optional[str] = None
     #: Notes from the table (tiers, conditions, why a price is missing).
     note: Optional[str] = None
+    #: Other service tiers the page prices, by name (``"flex"``, ``"priority"``, ``"fast"``,
+    #: ``"ultrafast"``, ``"offpeak"``, ...), each a :class:`Price` with its own long-context
+    #: prices where the page lists them. Use :meth:`tier` to read one.
+    tiers: Mapping[str, "Price"] = field(default_factory=dict, hash=False, repr=False)
+    #: Data residency multipliers on every price of the row, keyed by the provider's
+    #: parameter value: ``{"us": 1.1}`` on Claude 4.6 and later (``inference_geo: "us"``).
+    #: Empty when the page lists none for the model.
+    inference_geo: Mapping[str, float] = field(default_factory=dict, hash=False)
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "aliases", tuple(self.aliases))
         object.__setattr__(self, "cache_write", MappingProxyType(dict(self.cache_write)))
+        object.__setattr__(self, "tiers", MappingProxyType(dict(self.tiers)))
+        object.__setattr__(self, "inference_geo", MappingProxyType(dict(self.inference_geo)))
 
     def __hash__(self) -> int:
         return hash((self.provider, self.model, self.input, self.output, self.cache_read, _hashable(self.cache_write)))
@@ -346,6 +356,50 @@ class Price:
         value = self.rate(rate, ttl)
         return None if value is None else value / _M
 
+    # -- tiers and data residency -------------------------------------------------------------
+
+    def tier(self, name: Optional[str]) -> Optional["Price"]:
+        """The prices of one service tier as a :class:`Price` (same provider and model), or
+        ``self`` for ``None`` and ``"standard"``. ``None`` when the page lists no such tier
+        for the model.
+
+        Tier prices follow the same cost rules as the row: a tier that lists no cache-read
+        price bills cache reads as its input, and tiers have no batch prices.
+
+        >>> p = lookup("gemini-2.5-pro")
+        >>> sorted(p.tiers)
+        ['flex', 'priority']
+        >>> pri = p.tier("priority")
+        >>> pri.input, pri.output, pri.long_context.input
+        (2.25, 18.0, 4.5)
+        >>> lookup("claude-opus-5-5").tier("fast").output
+        40.0
+        """
+        if name is None or name == "standard":
+            return self
+        return self.tiers.get(name)
+
+    def with_inference_geo(self, geo: Optional[str]) -> Optional["Price"]:
+        """This row with every price multiplied by the data residency multiplier for
+        ``geo`` (tiers and long-context prices included). ``self`` for ``None`` and
+        ``"global"``. ``None`` when the table lists no multiplier for ``geo`` on this model
+        (Anthropic: models before Claude 4.6 reject the parameter).
+
+        The products are exact decimals, so ``3 x 1.1`` is ``3.3``, not ``3.3000000000000003``.
+
+        >>> us = lookup("claude-sonnet-4-6").with_inference_geo("us")
+        >>> us.input, us.output, us.cache_read
+        (3.3, 16.5, 0.33)
+        >>> lookup("claude-haiku-4-5").with_inference_geo("us") is None
+        True
+        """
+        if geo is None or geo == "global":
+            return self
+        m = self.inference_geo.get(geo)
+        if m is None:
+            return None
+        return _scaled(self, _dec(m), f'inference_geo "{geo}" ({m}x)')
+
     def provider_kind(self) -> Optional["Provider"]:
         """:attr:`provider` as a :class:`Provider`. ``None`` only for a hand-built ``Price``
         with a provider name the package does not know."""
@@ -379,16 +433,34 @@ class Price:
         return self.cost(input_tokens, output_tokens, exact=True)
 
     @overload
-    def cost_usage(self, usage: UsageLike, *, exact: Literal[False] = ...) -> Optional[CostBreakdown]: ...
+    def cost_usage(self, usage: UsageLike, *, exact: Literal[False] = ..., tier: Optional[str] = ..., inference_geo: Optional[str] = ...) -> Optional[CostBreakdown]: ...
     @overload
-    def cost_usage(self, usage: UsageLike, *, exact: Literal[True]) -> Optional[DecimalCostBreakdown]: ...
+    def cost_usage(self, usage: UsageLike, *, exact: Literal[True], tier: Optional[str] = ..., inference_geo: Optional[str] = ...) -> Optional[DecimalCostBreakdown]: ...
 
-    def cost_usage(self, usage: UsageLike, *, exact: bool = False) -> Union[CostBreakdown, DecimalCostBreakdown, None]:
+    def cost_usage(
+        self,
+        usage: UsageLike,
+        *,
+        exact: bool = False,
+        tier: Optional[str] = None,
+        inference_geo: Optional[str] = None,
+    ) -> Union[CostBreakdown, DecimalCostBreakdown, None]:
         """Cost in USD of one response from its token counts, split by token kind.
 
         ``usage`` is a :class:`Usage` or a mapping of its fields (``{"input": 10, ...}``).
         ``exact=True`` returns a :class:`DecimalCostBreakdown` (see
-        :meth:`cost_usage_decimal`).
+        :meth:`cost_usage_decimal`). ``tier`` prices the request at a service tier
+        (:meth:`tier`, for example ``"flex"`` or ``"priority"``) and ``inference_geo`` applies
+        a data residency multiplier (:meth:`with_inference_geo`); either returns ``None`` when
+        the table has no such tier or multiplier for the model.
+
+        >>> u = Usage(input=300_000, output=1_000)
+        >>> lookup("gemini-2.5-pro").cost_usage(u, tier="priority", exact=True).total
+        Decimal('1.377')
+        >>> fast_us = lookup("claude-opus-5-5").cost_usage(
+        ...     Usage(input=1_000, output=1_000), tier="fast", inference_geo="us", exact=True)
+        >>> fast_us.total
+        Decimal('0.0528')
 
         Rules (the Rust crate's ``Price::cost_usage``):
 
@@ -411,6 +483,14 @@ class Price:
         >>> round(c.total, 9)
         0.048129
         """
+        if tier is not None or inference_geo is not None:
+            base = self.tier(tier)
+            priced = None if base is None else base.with_inference_geo(inference_geo)
+            if priced is None:
+                return None
+            if exact:
+                return priced.cost_usage_decimal(usage)
+            return priced.cost_usage(usage)
         if exact:
             return self.cost_usage_decimal(usage)
         u = _as_usage(usage)
@@ -530,6 +610,47 @@ class Price:
         return self, False
 
 
+def _times(v: Optional[float], m: Optional[Decimal]) -> Optional[float]:
+    d = _dec(v)
+    return None if d is None or m is None else float(_normalize(_EXACT.multiply(d, m)))
+
+
+def _scaled(p: Price, m: Optional[Decimal], what: str) -> Price:
+    """``p`` with every price times ``m``, tiers and long context included."""
+    lc = p.long_context
+    new_lc = None
+    if lc is not None:
+        new_lc = LongContext(
+            threshold_tokens=lc.threshold_tokens,
+            input=_times(lc.input, m),
+            output=_times(lc.output, m),
+            cache_read=_times(lc.cache_read, m),
+            cache_write={k: float(_times(v, m) or 0.0) for k, v in lc.cache_write.items()},
+            batch_input=_times(lc.batch_input, m),
+            batch_output=_times(lc.batch_output, m),
+        )
+    return Price(
+        provider=p.provider,
+        model=p.model,
+        aliases=p.aliases,
+        status=p.status,
+        input=_times(p.input, m),
+        output=_times(p.output, m),
+        cache_read=_times(p.cache_read, m),
+        cache_write={k: float(_times(v, m) or 0.0) for k, v in p.cache_write.items()},
+        batch_input=_times(p.batch_input, m),
+        batch_output=_times(p.batch_output, m),
+        long_context=new_lc,
+        source_url=p.source_url,
+        checked=p.checked,
+        name=p.name,
+        note=what if p.note is None else f"{what}; {p.note}",
+        tiers={k: _scaled(t, m, what) for k, t in p.tiers.items()},
+        # The multiplier is applied; applying it again would bill it twice.
+        inference_geo={},
+    )
+
+
 @dataclass(frozen=True)
 class _Text:
     """The exact decimal text of one tier of a table row."""
@@ -575,6 +696,22 @@ def _build() -> Tuple[Tuple[Price, ...], Dict[Tuple[str, str], Tuple[_Text, Opti
     for r in _data.ROWS:
         lc_raw = r["long_context"]
         lc = None if lc_raw is None else LongContext(threshold_tokens=lc_raw["threshold_tokens"], **_tier_numbers(lc_raw))
+        tiers: Dict[str, Price] = {}
+        for tname, t in r["tiers"].items():
+            t_lc = t["long_context"]
+            tiers[tname] = Price(
+                provider=r["provider"],
+                model=r["model"],
+                aliases=r["aliases"],
+                status=r["status"],
+                long_context=None if t_lc is None else LongContext(threshold_tokens=t_lc["threshold_tokens"], **_tier_numbers(t_lc)),
+                source_url=r["source_url"],
+                checked=r["checked"],
+                name=r["name"],
+                note=f"{tname} tier",
+                inference_geo={k: float(v) for k, v in r["inference_geo"].items()},
+                **_tier_numbers(t),
+            )
         rows.append(
             Price(
                 provider=r["provider"],
@@ -586,6 +723,8 @@ def _build() -> Tuple[Tuple[Price, ...], Dict[Tuple[str, str], Tuple[_Text, Opti
                 checked=r["checked"],
                 name=r["name"],
                 note=r["note"],
+                tiers=tiers,
+                inference_geo={k: float(v) for k, v in r["inference_geo"].items()},
                 **_tier_numbers(r),
             )
         )

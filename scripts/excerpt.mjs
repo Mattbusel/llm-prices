@@ -13,7 +13,7 @@ function between(text, start, end) {
 
 export function excerpt(provider, text, date) {
   if (provider === 'anthropic') {
-    return note('https://platform.claude.com/docs/en/about-claude/pricing', date) + between(text, '## Model pricing', '## Cloud platform pricing') + between(text, '### Fast mode pricing', '### Tool use pricing');
+    return note('https://platform.claude.com/docs/en/about-claude/pricing', date) + between(text, '## Model pricing', '## Cloud platform pricing') + between(text, '### Data residency pricing', '### Tool use pricing');
   }
   if (provider === 'openai') {
     // The Flagship and Specialized sections, each up to the next top-level label.

@@ -52,6 +52,22 @@ export function packageRows(doc) {
   }));
 }
 
+// The Python rows also carry the other tiers (flex, priority, fast, offpeak, ...) with their
+// own long-context prices, and the data residency multipliers.
+function pythonRows(doc) {
+  const base = packageRows(doc);
+  return doc.models.map((m, i) => ({
+    ...base[i],
+    tiers: Object.fromEntries(
+      Object.entries(m.other_tiers ?? {}).map(([name, t]) => [
+        name,
+        { ...tier(t), long_context: t.long_context ? { threshold_tokens: t.long_context.threshold_tokens, ...tier(t.long_context) } : null },
+      ]),
+    ),
+    inference_geo: Object.fromEntries(Object.entries(m.inference_geo ?? {}).map(([k, v]) => [k, dec(v)])),
+  }));
+}
+
 // A JS value as a Python literal. JSON string escapes are all valid Python escapes.
 function py(v) {
   if (v === null || v === undefined) return 'None';
@@ -82,7 +98,7 @@ export function toPython(doc) {
     '',
     'ROWS: Tuple[Dict[str, Any], ...] = (',
   ];
-  for (const row of packageRows(doc)) out.push(`    ${py(row)},`);
+  for (const row of pythonRows(doc)) out.push(`    ${py(row)},`);
   out.push(')', '');
   return out.join('\n');
 }

@@ -253,3 +253,37 @@ fn legacy_deepseek_names_and_delisted_rows_still_price() {
         assert_eq!(p.status, "retired", "{id}");
     }
 }
+
+#[test]
+fn tiers_and_inference_geo() {
+    use llm_prices::{lookup, Usage};
+
+    // Gemini 2.5 Pro, ai.google.dev/gemini-api/docs/pricing (checked 2026-11-16).
+    let pro = lookup("gemini-2.5-pro").unwrap();
+    let flex = pro.tier("flex").unwrap();
+    assert_eq!((flex.input, flex.output, flex.cache_read), (Some(0.625), Some(5.0), Some(0.125)));
+    let flex_lc = flex.long_context.unwrap();
+    assert_eq!((flex_lc.threshold_tokens, flex_lc.input, flex_lc.output), (200_000, Some(1.25), Some(7.5)));
+    let pri = pro.tier("priority").unwrap();
+    let u = Usage { input: 300_000, output: 1_000, ..Default::default() };
+    assert!((pri.cost_usage(&u).unwrap().total - 1.377).abs() < 1e-12);
+    assert!(core::ptr::eq(pro.tier("standard").unwrap(), pro));
+    assert!(pro.tier("ultrafast").is_none());
+
+    // OpenAI tiers come through too.
+    assert_eq!(lookup("gpt-4o").unwrap().tier("fast").unwrap().input, Some(4.25));
+
+    // Claude data residency: 1.1x on 4.6 and later, none before.
+    for id in ["claude-opus-4-6", "claude-sonnet-4-6", "claude-haiku-5-5", "claude-fable-5-2", "claude-opus-5-5"] {
+        assert_eq!(lookup(id).unwrap().inference_geo("us"), Some(1.1), "{id}");
+    }
+    for id in ["claude-opus-4-5", "claude-haiku-4-5", "claude-sonnet-4-5"] {
+        assert_eq!(lookup(id).unwrap().inference_geo("us"), None, "{id}");
+    }
+    assert_eq!(lookup("gpt-4o").unwrap().inference_geo("us"), None);
+    assert_eq!(lookup("claude-haiku-4-5").unwrap().inference_geo("global"), Some(1.0));
+    let u = Usage { input: 150_000, output: 10, ..Default::default() };
+    let c = lookup("claude-haiku-5-5").unwrap().cost_usage_geo(&u, "us").unwrap();
+    assert!(c.long_context);
+    assert!((c.total - 0.075025 * 1.1).abs() < 1e-12);
+}

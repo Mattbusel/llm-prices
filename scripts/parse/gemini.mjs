@@ -156,7 +156,19 @@ export function parseGemini(md, checked) {
     const other = {};
     for (const t of ['Flex', 'Priority']) {
       const x = tierTable(s, t);
-      if (x && x.input && x.output) other[t.toLowerCase()] = { input: x.input.now, output: x.output.now, cache_read: x.cache?.now ?? null };
+      if (!x || !x.input || !x.output) continue;
+      const tier = { input: x.input.now, output: x.output.now, cache_read: x.cache?.now ?? null };
+      // The Flex and Priority tabs have their own prices for prompts over the threshold.
+      if (x.input.threshold && x.input.long != null) {
+        tier.long_context = {
+          threshold_tokens: x.input.threshold,
+          applies_when: `prompt over ${x.input.threshold / 1000}k tokens`,
+          input: x.input.long,
+          output: x.output.long,
+          cache_read: x.cache?.long ?? null,
+        };
+      }
+      other[t.toLowerCase()] = tier;
     }
     rows.push(
       row({

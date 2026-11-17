@@ -281,7 +281,9 @@ function acceptable(row, field) {
     return vals;
   };
   const standard = pick([row, row.long_context]);
-  const out = [...standard, ...pick([...(row.scheduled || []), ...Object.values(row.other_tiers || {})])];
+  // Other tiers (flex, priority, fast, ...) count with their own long-context prices.
+  const tiers = Object.values(row.other_tiers || {});
+  const out = [...standard, ...pick([...(row.scheduled || []), ...tiers, ...tiers.map((t) => t.long_context)])];
   // Regional / data-residency endpoints are 1.1x the standard prices on Anthropic and OpenAI.
   if (row.provider === 'anthropic' || row.provider === 'openai') for (const v of standard) out.push(Math.round(v * 1.1 * 1e9) / 1e9);
   return out;
@@ -411,7 +413,11 @@ function inSpan(spans, line, col) {
 
 /** The prices that apply above the row's long-context threshold, shaped as a row, or null. */
 function tierRow(row) {
-  return row.long_context ? { provider: row.provider, model: row.model, ...row.long_context } : null;
+  if (!row.long_context) return null;
+  // Flex, priority and other tiers have their own prices above the threshold (Gemini).
+  const other = {};
+  for (const [name, t] of Object.entries(row.other_tiers || {})) if (t && t.long_context) other[name] = t.long_context;
+  return { provider: row.provider, model: row.model, ...row.long_context, other_tiers: other };
 }
 
 /** Lines inside Rust #[cfg(test)] items. */

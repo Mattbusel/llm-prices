@@ -143,6 +143,33 @@ impl Price {
             long_context: lc,
         })
     }
+
+    /// [`cost_usage_decimal`](Self::cost_usage_decimal) with the data residency multiplier
+    /// for `geo` ([`Price::inference_geo_str`]) applied to every component, in exact
+    /// decimals. `None` when `cost_usage_decimal` is `None` or the table lists no multiplier
+    /// for `geo` on this model.
+    ///
+    /// ```
+    /// use llm_prices::{lookup, Usage};
+    /// use rust_decimal::Decimal;
+    ///
+    /// let u = Usage { input: 1_000_000, output: 100_000, ..Default::default() };
+    /// let c = lookup("claude-sonnet-4-6").unwrap().cost_usage_decimal_geo(&u, "us").unwrap();
+    /// assert_eq!(c.total, Decimal::new(495, 2)); // (3.00 + 1.50) x 1.1
+    /// ```
+    pub fn cost_usage_decimal_geo(&self, usage: &Usage, geo: &str) -> Option<DecimalCostBreakdown> {
+        let m = Decimal::from_str(self.inference_geo_str(geo)?).ok()?;
+        let c = self.cost_usage_decimal(usage)?;
+        let x = |v: Decimal| v.checked_mul(m).map(|d| d.normalize());
+        Some(DecimalCostBreakdown {
+            input: x(c.input)?,
+            output: x(c.output)?,
+            cache_read: x(c.cache_read)?,
+            cache_write: x(c.cache_write)?,
+            total: x(c.total)?,
+            long_context: c.long_context,
+        })
+    }
 }
 
 #[cfg(test)]

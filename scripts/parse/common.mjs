@@ -70,6 +70,9 @@ export function row(r) {
   o.batch_output = r.batch_output ?? null;
   o.long_context = r.long_context ?? null;
   o.other_tiers = r.other_tiers && Object.keys(r.other_tiers).length ? r.other_tiers : null;
+  // Multipliers on every price of the row (tiers and long context included) for a data
+  // residency option, keyed by the provider's parameter value, for example { us: 1.1 }.
+  o.inference_geo = r.inference_geo && Object.keys(r.inference_geo).length ? r.inference_geo : null;
   o.scheduled = r.scheduled && r.scheduled.length ? r.scheduled : null;
   o.source_url = r.source_url;
   o.checked = r.checked;

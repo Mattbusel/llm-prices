@@ -69,6 +69,10 @@ jobs:
         run: |
           python -m pip install mypy
           python -m mypy --strict src/llm_prices
+      - name: tokencost compat with token counting (tiktoken installed)
+        run: |
+          python -m pip install tiktoken
+          python -m pytest tests/test_tokencost_compat.py
 
   js:
     strategy:
@@ -142,3 +146,43 @@ jobs:
       - name: gofmt
         if: matrix.os == 'ubuntu-latest'
         run: test -z "$(gofmt -l .)"
+
+  examples:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - uses: actions/setup-go@v6
+        with:
+          go-version: stable
+      - name: Rust examples
+        working-directory: crate
+        run: |
+          cargo run --example cost
+          cargo run --example budget_check
+          cargo run --example tiers
+      - name: Python examples (against the package in this checkout)
+        env:
+          PYTHONPATH: python/src
+        run: |
+          python -m pip install tiktoken litellm
+          for f in examples/python/*.py; do echo "== $f"; python "$f"; done
+      - name: Go examples
+        working-directory: examples/go
+        run: |
+          go vet ./...
+          go test ./...
+
+  litellm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: '3.13'
+      - name: LiteLLM loads litellm.json and prices calls with it
+        run: |
+          python -m pip install litellm
+          python test/litellm_check.py litellm.json
