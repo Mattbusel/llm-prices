@@ -150,6 +150,8 @@ let usd = llm_prices::lookup("claude-haiku-5-5").unwrap().cost(150_000, 2_000); 
 
 Zero dependencies; the table is compiled in. Source in [crate/](crate/).
 
+Adding llm-prices to another project (Python, Rust, JavaScript or Go), including as an optional extra or feature: [docs/integrate.md](docs/integrate.md).
+
 ## Other price tables
 
 [LiteLLM's model_prices_and_context_window.json](https://github.com/BerriAI/litellm/blob/main/model_prices_and_context_window.json) and [models.dev](https://models.dev) both cover far more models and providers than this repo; use them when coverage matters most. This repo is narrower on purpose. What it adds:

@@ -1,4 +1,4 @@
-<!-- Excerpt of https://platform.claude.com/docs/en/about-claude/pricing fetched 2026-11-17, kept only for parser tests. -->
+<!-- Excerpt of https://platform.claude.com/docs/en/about-claude/pricing fetched 2026-11-18, kept only for parser tests. -->
 ## Model pricing
 
 The following table shows pricing for all Claude models:

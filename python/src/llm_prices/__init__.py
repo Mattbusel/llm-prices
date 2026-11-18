@@ -2,8 +2,9 @@
 
 The same table as the Rust crate ``llm-prices``, generated from
 `prices.json <https://github.com/Mattbusel/llm-prices/blob/main/prices.json>`_: Anthropic,
-OpenAI, Google Gemini and DeepSeek (re-read from their pricing pages every day) plus Mistral,
-xAI, Cohere, Groq, Together AI and Fireworks AI. Every row carries the provider's official
+OpenAI, Google Gemini, DeepSeek, Amazon Bedrock and OpenRouter (re-read from their pricing
+pages or price APIs every day) plus Mistral, xAI, Cohere, Groq, Together AI, Fireworks AI and
+Perplexity. Every row carries the provider's official
 pricing page and the date the price was read from it. Prices are USD per 1M tokens.
 
 >>> import llm_prices
@@ -43,7 +44,7 @@ from ._core import (
 #: by ``from llm_prices import *``, where it would hide the builtin ``all``.
 all = all_prices
 
-__version__ = "1.7.0"
+__version__ = "1.7.2"
 
 __all__ = [
     "GENERATED",

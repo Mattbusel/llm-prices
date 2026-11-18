@@ -1,12 +1,20 @@
 import { SOURCES } from '../meta.mjs';
 import { ParseError, money, row, tables } from './common.mjs';
 
+// Each tier's table heading. The page has used both "#### Batch" / "#### Flex" and
+// "### Batch pricing data" / "### Flex pricing data" (2026-11-17); both spellings are read.
+// "Ultrafast promotion" is the rate in force now for the models it lists, and "Ultrafast list"
+// the rate the page announces for later (see ULTRAFAST_LIST_FROM below).
 const TIER_HEADINGS = [
   ['### Standard pricing data', 'standard'],
   ['#### Batch', 'batch'],
+  ['### Batch pricing data', 'batch'],
   ['#### Flex', 'flex'],
+  ['### Flex pricing data', 'flex'],
   ['### Fast pricing data', 'fast'],
   ['### Ultrafast pricing data', 'ultrafast'],
+  ['### Ultrafast promotion pricing data', 'ultrafast'],
+  ['### Ultrafast list pricing data', 'ultrafast_list'],
 ];
 
 function cleanId(cell) {
@@ -59,6 +67,15 @@ function readTable(t, tier, out) {
   }
 }
 
+const MONTHS = ['january', 'february', 'march', 'april', 'may', 'june', 'july', 'august', 'september', 'october', 'november', 'december'];
+
+function isoDate(text) {
+  const m = text.match(/^([A-Za-z]+) ([0-9]{1,2}), ([0-9]{4})$/);
+  const mi = m ? MONTHS.indexOf(m[1].toLowerCase()) : -1;
+  if (mi < 0) throw new ParseError(`openai: unreadable date "${text}"`);
+  return `${m[3]}-${String(mi + 1).padStart(2, '0')}-${m[2].padStart(2, '0')}`;
+}
+
 function cw(p) {
   if (!p || (p.cache_write_30m == null && p.cache_write_12h == null)) return null;
   return { '30m': p.cache_write_30m, '12h': p.cache_write_12h };
@@ -102,6 +119,10 @@ export function parseOpenAI(md, checked) {
   const thr = md.match(/Short context:\s*≤\s*([0-9]+)K input tokens/);
   if (!thr) throw new ParseError('openai: short/long context threshold sentence not found');
   const threshold = Number(thr[1]) * 1000;
+  // "... Ultrafast costs 3 times the Standard rate through February 28, 2027, and 6 times the
+  // Standard rate starting March 1, 2027": the date the Ultrafast list table takes over.
+  const ulFrom = md.match(/Ultrafast costs[^.]*?starting ([A-Z][a-z]+ [0-9]{1,2}, [0-9]{4})/);
+  const ultrafastListFrom = ulFrom ? isoDate(ulFrom[1]) : null;
 
   const models = {};
   let order = [];
@@ -173,6 +194,13 @@ export function parseOpenAI(md, checked) {
       if (m[tier]) other[tier] = { input: m[tier].input, output: m[tier].output, cache_read: m[tier].cache_read };
     }
     if (b && b.cache_read != null) notes.push(`batch cached input ${b.cache_read}`);
+    const ul = m.ultrafast_list;
+    if (ul) {
+      if (!ultrafastListFrom) throw new ParseError(`openai: ${id} has an Ultrafast list price but the page names no start date`);
+      notes.push(
+        `ultrafast is the promotional rate; from ${ultrafastListFrom} the page lists ultrafast at input ${ul.input}, output ${ul.output}, cached input ${ul.cache_read}`,
+      );
+    }
     notes.push('regional processing (data residency) adds 10% for models released on or after 2026-03-05');
     rows.push(
       row({

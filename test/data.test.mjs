@@ -148,6 +148,30 @@ test('openai parser reads short and long context, batch, flex and fast', () => {
   assert.ok(!rows.some((r) => r.model === 'omni-moderation-latest'), 'free rows are skipped');
 });
 
+test('openai parser reads both tier heading spellings and the Ultrafast promotion and list tables', () => {
+  // 2026-11-17: "#### Batch" / "#### Flex" became "### Batch pricing data" / "### Flex pricing data".
+  // Missing them nulled every OpenAI batch and flex price.
+  const md = page('openai.md');
+  assert.match(md, /^### Batch pricing data$/m);
+  const old = md.replace('### Batch pricing data', '#### Batch').replace('### Flex pricing data', '#### Flex');
+  for (const text of [md, old]) {
+    const { rows } = parseOpenAI(text, 'X');
+    const sol = rows.find((r) => r.model === 'gpt-6.1-sol');
+    assert.deepEqual([sol.batch_input, sol.batch_output], [1, 5]);
+    assert.deepEqual([sol.long_context.batch_input, sol.long_context.batch_output], [2, 7.5]);
+    assert.deepEqual(sol.other_tiers.flex, { input: 1, output: 5, cache_read: 0.05 });
+    assert.deepEqual([rows.find((r) => r.model === 'gpt-4o').batch_input, rows.find((r) => r.model === 'gpt-4o').batch_output], [1.25, 5]);
+  }
+  const { rows } = parseOpenAI(md, 'X');
+  const astra = rows.find((r) => r.model === 'gpt-6.2-astra');
+  assert.deepEqual([astra.input, astra.output, astra.cache_read, astra.batch_input, astra.batch_output], [8, 40, 0.4, 4, 20]);
+  // The promotion table is the Ultrafast price in force; the list price goes in the note with its date.
+  assert.deepEqual(astra.other_tiers.ultrafast, { input: 24, output: 120, cache_read: 1.2 });
+  assert.match(astra.note, /from 2027-03-01 the page lists ultrafast at input 48, output 240, cached input 2\.4/);
+  assert.deepEqual(rows.find((r) => r.model === 'gpt-6-astra').other_tiers.ultrafast, { input: 60, output: 300, cache_read: 6 });
+  assert.throws(() => parseOpenAI(md.replace(/starting March 1, 2027/, 'later'), 'X'), /names no start date/);
+});
+
 test('gemini parser reads promos, tiers and the 200k threshold', () => {
   const { rows } = parseGemini(page('gemini.md'), '2026-10-23');
   const argon = rows.find((r) => r.model === 'gemini-4-argon');

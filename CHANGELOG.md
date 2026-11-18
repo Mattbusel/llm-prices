@@ -6,6 +6,42 @@ repository as a whole. The packages have their own changelogs:
 The Go module is tagged `go/vX.Y.Z` and listed here.
 The `v1` tag moves to every 1.x release.
 
+## [1.7.2] - 2026-11-18
+
+Price update and an OpenAI parser fix. Crate, Python package, npm package, root module and Go
+module `go/v0.3.1` move to the new table `sha256:16750e481602ea77ca061b5f6d84e951017347c6d2d8e28f8bf4c6b3538ce048`.
+
+### Changed: prices (table `sha256:16750e481602ea77ca061b5f6d84e951017347c6d2d8e28f8bf4c6b3538ce048`)
+
+- OpenAI: new rows `gpt-6.2-astra` ($8 input / $40 output / $0.40 cached input per 1M tokens),
+  `gpt-6.2-sol` ($2 / $10 / $0.10) and `gpt-6.2-astra-law` ($8 / $40 / $0.40), each with its
+  long-context prices; Astra and Sol also have batch, fast and ultrafast. `gpt-6-rosalind` dropped to $10 / $50 / $1
+  (long context $20 / $75 / $2). `gpt-6-astra-law` gained its long-context row ($20 / $75 / $2).
+- OpenRouter: rows for `openai/gpt-6.2-astra`, `-astra-pro`, `-sol` and `-sol-pro`, and the
+  price changes OpenRouter's model API now reports (for example `~openai/gpt-astra-latest`
+  $10 / $50 to $8 / $40).
+
+### Fixed
+
+- OpenAI batch and flex prices are kept. The OpenAI page renamed its "Batch" and "Flex" table
+  headings to "Batch pricing data" and "Flex pricing data" on 2026-11-17; the parser missed
+  them, and the refresh pull request of that day would have set every OpenAI `batch_input`,
+  `batch_output` and flex tier to null. Both spellings are read now.
+- OpenAI Ultrafast: for models with a promotional Ultrafast rate (GPT-6.2 Astra and Sol), the
+  promotion table is the `ultrafast` tier in force, and the note gives the list price the page
+  announces from 2027-03-01.
+
+### Docs
+
+- [docs/integrate.md](docs/integrate.md): for maintainers adding llm-prices to another project.
+  The calls to use in each language, a 5-line example, replacing a hand-written price table,
+  keeping llm-prices optional (Python extra, Cargo feature, optional JS import), what it adds
+  to a dependency tree, and the version policy.
+- [examples/python/optional_pricing.py](examples/python/optional_pricing.py): the optional
+  dependency pattern, runnable.
+- The crate README (the crates.io page) and the crate and Python module docs list all thirteen
+  providers; they still named four.
+
 ## [1.7.1] - 2026-11-17
 
 Fixes to the OpenTelemetry pricing stage ([docs/otel.md](docs/otel.md)). No price changed and

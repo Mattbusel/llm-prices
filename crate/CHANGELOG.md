@@ -3,6 +3,32 @@
 All notable changes to the `llm-prices` crate. Versions follow semver: price-data-only
 updates are patch releases, new API is a minor release.
 
+## [1.7.2] - 2026-11-18
+
+### Changed: prices (table `sha256:16750e481602ea77ca061b5f6d84e951017347c6d2d8e28f8bf4c6b3538ce048`)
+
+- OpenAI: new rows `gpt-6.2-astra` ($8 input / $40 output / $0.40 cached input per 1M tokens),
+  `gpt-6.2-sol` ($2 / $10 / $0.10) and `gpt-6.2-astra-law` ($8 / $40 / $0.40), each with its
+  long-context prices; Astra and Sol also have batch, fast and ultrafast. `gpt-6-rosalind` dropped to $10 / $50 / $1
+  (long context $20 / $75 / $2). `gpt-6-astra-law` gained its long-context row ($20 / $75 / $2).
+- OpenRouter: rows for `openai/gpt-6.2-astra`, `-astra-pro`, `-sol` and `-sol-pro`, and the
+  price changes OpenRouter's model API now reports (for example `~openai/gpt-astra-latest`
+  $10 / $50 to $8 / $40).
+
+### Fixed
+
+- OpenAI batch and flex prices are kept. The OpenAI page renamed its "Batch" and "Flex" table
+  headings to "Batch pricing data" and "Flex pricing data" on 2026-11-17; the parser missed
+  them, and the refresh pull request of that day would have set every OpenAI `batch_input`,
+  `batch_output` and flex tier to null. Both spellings are read now.
+- OpenAI Ultrafast: for models with a promotional Ultrafast rate (GPT-6.2 Astra and Sol), the
+  promotion table is the `ultrafast` tier in force, and the note gives the list price the page
+  announces from 2027-03-01.
+
+### Docs
+
+The crate README lists every provider the table covers, the features, the MSRV and the version policy, and links [docs/integrate.md](https://github.com/Mattbusel/llm-prices/blob/main/docs/integrate.md): the calls to use from another project and how to put llm-prices behind an optional feature.
+
 ## [1.7.0] - 2026-11-17
 
 ### Added

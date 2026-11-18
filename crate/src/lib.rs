@@ -1,8 +1,10 @@
 //! Dated, source-cited LLM API prices with no required dependencies and no network access.
 //!
-//! The table covers Anthropic, OpenAI, Google Gemini and DeepSeek (re-read from their pricing
-//! pages every day) plus Mistral, xAI, Cohere, Groq, Together AI and Fireworks AI (read by
-//! hand; each row's [`Price::checked`] date says when). Every row carries the provider's
+//! The table covers Anthropic, OpenAI, Google Gemini, DeepSeek, Amazon Bedrock and OpenRouter
+//! (re-read from their pricing pages or price APIs every day) plus Mistral, xAI, Cohere, Groq,
+//! Together AI, Fireworks AI and Perplexity (read by hand; each row's [`Price::checked`] date
+//! says when). To use it from another crate, including behind an optional feature, see
+//! [docs/integrate.md](https://github.com/Mattbusel/llm-prices/blob/main/docs/integrate.md). Every row carries the provider's
 //! official pricing page and the date the price was read from it. Prices are USD per 1 million
 //! tokens. The table is generated from
 //! [`prices.json`](https://github.com/Mattbusel/llm-prices/blob/main/prices.json).
