@@ -5,7 +5,7 @@
 //
 //   node scripts/update.mjs                  fetch live pages
 //   node scripts/update.mjs --pages DIR      read saved pages (anthropic.md, openai.md, gemini.md, deepseek.html,
-//                                           bedrock.json, openrouter.json)
+//                                           bedrock.json, bedrock-anthropic.json, openrouter.json)
 //   node scripts/update.mjs --force          rewrite files even when only dates changed
 //
 // Exit codes: 0 no price change, 10 prices changed (files rewritten), 2 fetch or parse failure.
@@ -19,7 +19,7 @@ import { parseAnthropic } from './parse/anthropic.mjs';
 import { parseOpenAI } from './parse/openai.mjs';
 import { parseGemini } from './parse/gemini.mjs';
 import { parseDeepSeek } from './parse/deepseek.mjs';
-import { parseBedrock } from './parse/bedrock.mjs';
+import { parseBedrock, parseBedrockAnthropic } from './parse/bedrock.mjs';
 import { parseOpenRouter } from './parse/openrouter.mjs';
 import { generatedFiles } from './outputs.mjs';
 import { excerpt } from './excerpt.mjs';
@@ -32,18 +32,37 @@ const force = args.includes('--force');
 const today = process.env.LLM_PRICES_TODAY || new Date().toISOString().slice(0, 10);
 const summaryFile = process.env.SUMMARY_FILE || join(root, 'update-summary.md');
 
+// [provider, saved page file(s), parse(pages, date, context)]. Bedrock reads two AWS price
+// lists: AmazonBedrock (the models Bedrock prices itself) and AmazonBedrockFoundationModels
+// (Claude, with global and regional prices); its Claude rows take long-context thresholds from
+// the Anthropic rows parsed before them.
 const PROVIDERS = [
-  ['anthropic', 'anthropic.md', parseAnthropic],
-  ['openai', 'openai.md', parseOpenAI],
-  ['google', 'gemini.md', parseGemini],
-  ['deepseek', 'deepseek.html', parseDeepSeek],
-  ['bedrock', 'bedrock.json', parseBedrock],
-  ['openrouter', 'openrouter.json', parseOpenRouter],
+  ['anthropic', ['anthropic.md'], ([t], d) => parseAnthropic(t, d)],
+  ['openai', ['openai.md'], ([t], d) => parseOpenAI(t, d)],
+  ['google', ['gemini.md'], ([t], d) => parseGemini(t, d)],
+  ['deepseek', ['deepseek.html'], ([t], d) => parseDeepSeek(t, d)],
+  ['bedrock', ['bedrock.json', 'bedrock-anthropic.json'], ([t, claude], d, ctx) => {
+    const own = parseBedrock(t, d);
+    const anthropic = parseBedrockAnthropic(claude, d, ctx.anthropicRows());
+    return { rows: [...own.rows, ...anthropic.rows].sort((a, b) => (a.model < b.model ? -1 : a.model > b.model ? 1 : 0)), unknown: [...own.unknown, ...anthropic.unknown] };
+  }],
+  ['openrouter', ['openrouter.json'], ([t], d) => parseOpenRouter(t, d)],
 ];
+
+// The URL each saved page file is fetched from.
+function fetchUrl(provider, file) {
+  if (file === 'bedrock-anthropic.json') return SOURCES.bedrock.fetchAnthropic;
+  return SOURCES[provider].fetch;
+}
+
+// The excerpt kind for a saved page file (see excerpt.mjs).
+function excerptKind(provider, file) {
+  return file === 'bedrock-anthropic.json' ? 'bedrock-anthropic' : provider;
+}
 
 async function load(provider, file) {
   if (pagesDir) return readFileSync(join(pagesDir, file), 'utf8');
-  const url = SOURCES[provider].fetch;
+  const url = fetchUrl(provider, file);
   let last;
   for (let attempt = 1; attempt <= 3; attempt++) {
     try {
@@ -73,11 +92,21 @@ async function main() {
   const unknownNames = [];
   const fresh = [];
   const pages = {};
-  for (const [provider, file, parse] of PROVIDERS) {
+  const path = join(root, 'prices.json');
+  const old = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : { models: [] };
+  const ctx = {
+    // This run's Anthropic rows, or the previous ones when Anthropic's page failed.
+    anthropicRows: () => {
+      const now = fresh.filter((m) => m.provider === 'anthropic');
+      return now.length ? now : old.models.filter((m) => m.provider === 'anthropic');
+    },
+  };
+  for (const [provider, files, parse] of PROVIDERS) {
     try {
-      const page = await load(provider, file);
-      const { rows, unknown } = parse(page, today);
-      if (!pagesDir) pages[file] = excerpt(provider, page, today);
+      const texts = [];
+      for (const file of files) texts.push(await load(provider, file));
+      const { rows, unknown } = parse(texts, today, ctx);
+      if (!pagesDir) files.forEach((file, i) => (pages[file] = excerpt(excerptKind(provider, file), texts[i], today)));
       fresh.push(...rows);
       for (const u of unknown) unknownNames.push(`${provider}: "${u}"`);
     } catch (e) {
@@ -85,8 +114,6 @@ async function main() {
     }
   }
 
-  const path = join(root, 'prices.json');
-  const old = existsSync(path) ? JSON.parse(readFileSync(path, 'utf8')) : { models: [] };
   const oldBy = new Map(old.models.map((m) => [`${m.provider}/${m.model}`, m]));
 
   // Previous rows for a provider whose page failed; previous rows a page no longer lists,

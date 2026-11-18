@@ -47,8 +47,9 @@ categories"), so a change there shows up in the refresh PR.
   batch prices 1.1x but priority 1.85x of standard (not 1.1 x 1.75), so one multiplier on
   every price would be wrong for priority. The row note carries it and `inference_geo` stays
   `null`.
-- **Bedrock and Vertex regional endpoints** for Claude have their own prices on AWS and Google
-  Cloud pages, which the table does not read.
+- **Vertex AI regional endpoints** for Claude have their own prices on Google Cloud's page,
+  which the table does not read. Claude on Bedrock has its own rows since 1.8.0, one for
+  regional endpoints and one for the global profile ([hosts.md](hosts.md)).
 
 ## Python
 

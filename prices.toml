@@ -2121,6 +2121,316 @@ cache_read = 0.35
 
 [[models]]
 provider = "bedrock"
+model = "anthropic.claude-fable-5"
+name = "Claude Fable 5 (regional)"
+aliases = ["us.anthropic.claude-fable-5"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 11.0
+output = 55.0
+cache_read = 1.1
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Fable 5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-fable-5.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 13.75
+1h = 22.0
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-fable-5-1"
+name = "Claude Fable 5.1 (regional)"
+aliases = ["us.anthropic.claude-fable-5-1"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 11.0
+output = 55.0
+cache_read = 0.275
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Fable 5.1\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-fable-5-1.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 13.75
+1h = 22.0
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-fable-5-2"
+name = "Claude Fable 5.2 (regional)"
+aliases = ["us.anthropic.claude-fable-5-2"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 8.8
+output = 44.0
+cache_read = 0.22
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Fable 5.2\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-fable-5-2.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 11.0
+1h = 17.6
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-haiku-4-5-20251001-v1:0"
+name = "Claude Haiku 4.5 (regional)"
+aliases = ["anthropic.claude-haiku-4-5", "au.anthropic.claude-haiku-4-5-20251001-v1:0", "eu.anthropic.claude-haiku-4-5-20251001-v1:0", "jp.anthropic.claude-haiku-4-5-20251001-v1:0", "us.anthropic.claude-haiku-4-5-20251001-v1:0"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 1.1
+output = 5.5
+cache_read = 0.11
+batch_input = 0.55
+batch_output = 2.75
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., eu., jp., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Haiku 4.5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-4-5.html"
+[models.cache_write]
+5m = 1.375
+1h = 2.2
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-haiku-5-5"
+name = "Claude Haiku 5.5 (regional)"
+aliases = ["au.anthropic.claude-haiku-5-5", "ca.anthropic.claude-haiku-5-5", "eu.anthropic.claude-haiku-5-5", "jp.anthropic.claude-haiku-5-5", "us.anthropic.claude-haiku-5-5"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 0.11
+output = 0.55
+cache_read = 0.011
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., ca., eu., jp., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Haiku 5.5\"); long-context threshold from the Anthropic row of the same model; model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-5-5.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 0.1375
+1h = 0.22
+[models.long_context]
+threshold_tokens = 100000
+applies_when = "prompt (all input tokens incl. cache reads and writes) is over threshold_tokens"
+input = 0.55
+output = 2.75
+cache_read = 0.055
+[models.long_context.cache_write]
+5m = 0.6875
+1h = 1.1
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-opus-4-1-20250805-v1:0"
+name = "Claude Opus 4.1 (regional)"
+aliases = ["us.anthropic.claude-opus-4-1-20250805-v1:0"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 15.0
+output = 75.0
+cache_read = 1.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 4.1\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-1.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 18.75
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-opus-4-5-20251101-v1:0"
+name = "Claude Opus 4.5 (regional)"
+aliases = ["eu.anthropic.claude-opus-4-5-20251101-v1:0", "us.anthropic.claude-opus-4-5-20251101-v1:0"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 5.5
+output = 27.5
+cache_read = 0.55
+batch_input = 2.75
+batch_output = 13.75
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (eu., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 4.5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-5.html"
+[models.cache_write]
+5m = 6.875
+1h = 11.0
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-opus-4-6-v1"
+name = "Claude Opus 4.6 (regional)"
+aliases = ["au.anthropic.claude-opus-4-6-v1", "eu.anthropic.claude-opus-4-6-v1", "us.anthropic.claude-opus-4-6-v1"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 5.5
+output = 27.5
+cache_read = 0.55
+batch_input = 2.75
+batch_output = 13.75
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., eu., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 4.6\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-6.html"
+[models.cache_write]
+5m = 6.875
+1h = 11.0
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-opus-4-7"
+name = "Claude Opus 4.7 (regional)"
+aliases = ["au.anthropic.claude-opus-4-7", "eu.anthropic.claude-opus-4-7", "jp.anthropic.claude-opus-4-7", "us.anthropic.claude-opus-4-7"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 5.5
+output = 27.5
+cache_read = 0.55
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., eu., jp., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 4.7\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-7.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 6.875
+1h = 11.0
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-opus-4-8"
+name = "Claude Opus 4.8 (regional)"
+aliases = ["au.anthropic.claude-opus-4-8", "eu.anthropic.claude-opus-4-8", "jp.anthropic.claude-opus-4-8", "us.anthropic.claude-opus-4-8"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 5.5
+output = 27.5
+cache_read = 0.55
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., eu., jp., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 4.8\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-8.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 6.875
+1h = 11.0
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-opus-5"
+name = "Claude Opus 5 (regional)"
+aliases = ["au.anthropic.claude-opus-5", "eu.anthropic.claude-opus-5", "us.anthropic.claude-opus-5"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 5.5
+output = 27.5
+cache_read = 0.55
+batch_input = 2.75
+batch_output = 13.75
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., eu., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-5.html"
+[models.cache_write]
+5m = 6.875
+1h = 11.0
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-opus-5-5"
+name = "Claude Opus 5.5 (regional)"
+aliases = ["au.anthropic.claude-opus-5-5", "eu.anthropic.claude-opus-5-5", "jp.anthropic.claude-opus-5-5", "us.anthropic.claude-opus-5-5"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 4.4
+output = 22.0
+cache_read = 0.22
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., eu., jp., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 5.5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-5-5.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 5.5
+1h = 8.8
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-sonnet-4-20250514-v1:0"
+name = "Claude Sonnet 4 (regional)"
+aliases = ["apac.anthropic.claude-sonnet-4-20250514-v1:0", "eu.anthropic.claude-sonnet-4-20250514-v1:0", "us.anthropic.claude-sonnet-4-20250514-v1:0"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 3.0
+output = 15.0
+cache_read = 0.3
+batch_input = 1.5
+batch_output = 7.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (apac., eu., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Sonnet 4\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4.html"
+[models.cache_write]
+5m = 3.75
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-sonnet-4-5-20250929-v1:0"
+name = "Claude Sonnet 4.5 (regional)"
+aliases = ["au.anthropic.claude-sonnet-4-5-20250929-v1:0", "eu.anthropic.claude-sonnet-4-5-20250929-v1:0", "jp.anthropic.claude-sonnet-4-5-20250929-v1:0", "us.anthropic.claude-sonnet-4-5-20250929-v1:0"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 3.3
+output = 16.5
+cache_read = 0.33
+batch_input = 1.65
+batch_output = 8.25
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., eu., jp., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Sonnet 4.5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-5.html"
+[models.cache_write]
+5m = 4.125
+1h = 6.6
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-sonnet-4-6"
+name = "Claude Sonnet 4.6 (regional)"
+aliases = ["au.anthropic.claude-sonnet-4-6", "eu.anthropic.claude-sonnet-4-6", "jp.anthropic.claude-sonnet-4-6", "us.anthropic.claude-sonnet-4-6"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 3.3
+output = 16.5
+cache_read = 0.33
+batch_input = 1.65
+batch_output = 8.25
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., eu., jp., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Sonnet 4.6\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-6.html"
+[models.cache_write]
+5m = 4.125
+1h = 6.6
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-sonnet-5"
+name = "Claude Sonnet 5 (regional)"
+aliases = ["au.anthropic.claude-sonnet-5", "eu.anthropic.claude-sonnet-5", "us.anthropic.claude-sonnet-5"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 2.2
+output = 11.0
+cache_read = 0.22
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., eu., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Sonnet 5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 2.75
+1h = 4.4
+
+[[models]]
+provider = "bedrock"
+model = "anthropic.claude-sonnet-5-5"
+name = "Claude Sonnet 5.5 (regional)"
+aliases = ["au.anthropic.claude-sonnet-5-5", "ca.anthropic.claude-sonnet-5-5", "eu.anthropic.claude-sonnet-5-5", "us.anthropic.claude-sonnet-5-5"]
+status = "listed"
+unit = "USD per 1M tokens"
+input = 2.2
+output = 11.0
+cache_read = 0.11
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for regional endpoints: the in-Region id and the geographic inference profiles (au., ca., eu., us.), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Sonnet 5.5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 2.75
+1h = 4.4
+
+[[models]]
+provider = "bedrock"
 model = "deepseek.r1-v1:0"
 name = "DeepSeek-R1"
 aliases = ["us.deepseek.r1-v1:0"]
@@ -2175,6 +2485,300 @@ output = 0.925
 [models.other_tiers.priority]
 input = 1.085
 output = 3.2375
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-fable-5"
+name = "Claude Fable 5 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 10.0
+output = 50.0
+cache_read = 1.0
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-fable-5), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Fable 5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-fable-5.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 12.5
+1h = 20.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-fable-5-1"
+name = "Claude Fable 5.1 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 10.0
+output = 50.0
+cache_read = 0.25
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-fable-5-1), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Fable 5.1\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-fable-5-1.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 12.5
+1h = 20.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-fable-5-2"
+name = "Claude Fable 5.2 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 8.0
+output = 40.0
+cache_read = 0.2
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-fable-5-2), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Fable 5.2\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-fable-5-2.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 10.0
+1h = 16.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-haiku-4-5-20251001-v1:0"
+name = "Claude Haiku 4.5 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 1.0
+output = 5.0
+cache_read = 0.1
+batch_input = 0.5
+batch_output = 2.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-haiku-4-5-20251001-v1:0), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Haiku 4.5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-4-5.html"
+[models.cache_write]
+5m = 1.25
+1h = 2.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-haiku-5-5"
+name = "Claude Haiku 5.5 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 0.1
+output = 0.5
+cache_read = 0.01
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-haiku-5-5), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Haiku 5.5\"); long-context threshold from the Anthropic row of the same model; model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-haiku-5-5.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 0.125
+1h = 0.2
+[models.long_context]
+threshold_tokens = 100000
+applies_when = "prompt (all input tokens incl. cache reads and writes) is over threshold_tokens"
+input = 0.5
+output = 2.5
+cache_read = 0.05
+[models.long_context.cache_write]
+5m = 0.625
+1h = 1.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-opus-4-5-20251101-v1:0"
+name = "Claude Opus 4.5 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 5.0
+output = 25.0
+cache_read = 0.5
+batch_input = 2.5
+batch_output = 12.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-opus-4-5-20251101-v1:0), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 4.5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-5.html"
+[models.cache_write]
+5m = 6.25
+1h = 10.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-opus-4-6-v1"
+name = "Claude Opus 4.6 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 5.0
+output = 25.0
+cache_read = 0.5
+batch_input = 2.5
+batch_output = 12.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-opus-4-6-v1), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 4.6\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-6.html"
+[models.cache_write]
+5m = 6.25
+1h = 10.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-opus-4-7"
+name = "Claude Opus 4.7 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 5.0
+output = 25.0
+cache_read = 0.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-opus-4-7), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 4.7\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-7.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 6.25
+1h = 10.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-opus-4-8"
+name = "Claude Opus 4.8 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 5.0
+output = 25.0
+cache_read = 0.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-opus-4-8), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 4.8\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-4-8.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 6.25
+1h = 10.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-opus-5"
+name = "Claude Opus 5 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 5.0
+output = 25.0
+cache_read = 0.5
+batch_input = 2.5
+batch_output = 12.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-opus-5), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-5.html"
+[models.cache_write]
+5m = 6.25
+1h = 10.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-opus-5-5"
+name = "Claude Opus 5.5 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 4.0
+output = 20.0
+cache_read = 0.2
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-opus-5-5), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Opus 5.5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-opus-5-5.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 5.0
+1h = 8.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-sonnet-4-20250514-v1:0"
+name = "Claude Sonnet 4 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 3.0
+output = 15.0
+cache_read = 0.3
+batch_input = 1.5
+batch_output = 7.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-sonnet-4-20250514-v1:0), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Sonnet 4\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4.html"
+[models.cache_write]
+5m = 3.75
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-sonnet-4-5-20250929-v1:0"
+name = "Claude Sonnet 4.5 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 3.0
+output = 15.0
+cache_read = 0.3
+batch_input = 1.5
+batch_output = 7.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-sonnet-4-5-20250929-v1:0), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Sonnet 4.5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-5.html"
+[models.cache_write]
+5m = 3.75
+1h = 6.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-sonnet-4-6"
+name = "Claude Sonnet 4.6 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 3.0
+output = 15.0
+cache_read = 0.3
+batch_input = 1.5
+batch_output = 7.5
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-sonnet-4-6), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Sonnet 4.6\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-4-6.html"
+[models.cache_write]
+5m = 3.75
+1h = 6.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-sonnet-5"
+name = "Claude Sonnet 5 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 2.0
+output = 10.0
+cache_read = 0.2
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-sonnet-5), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Sonnet 5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 2.5
+1h = 4.0
+
+[[models]]
+provider = "bedrock"
+model = "global.anthropic.claude-sonnet-5-5"
+name = "Claude Sonnet 5.5 (global)"
+aliases = []
+status = "listed"
+unit = "USD per 1M tokens"
+input = 2.0
+output = 10.0
+cache_read = 0.1
+source_url = "https://aws.amazon.com/bedrock/pricing/"
+checked = "2026-11-18"
+note = "Amazon Bedrock's price for the global cross-Region inference profile (global.anthropic.claude-sonnet-5-5), from the AWS Price List API (AmazonBedrockFoundationModels offer, us-east-1, price list name \"Claude Sonnet 5.5\"); model ids from https://docs.aws.amazon.com/bedrock/latest/userguide/model-card-anthropic-claude-sonnet-5-5.html; null means the page lists no price: batch_input, batch_output"
+[models.cache_write]
+5m = 2.5
+1h = 4.0
 
 [[models]]
 provider = "bedrock"
@@ -3940,12 +4544,11 @@ name = "DeepSeek: R1 0528"
 aliases = []
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.5
-output = 2.15
-cache_read = 0.35
+input = 0.571
+output = 2.286
 source_url = "https://openrouter.ai/deepseek/deepseek-r1-0528"
 checked = "2026-11-18"
-note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
+note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: cache_read, batch_input, batch_output"
 
 [[models]]
 provider = "openrouter"
@@ -4066,9 +4669,9 @@ name = "DeepSeek: DeepSeek V4.1 Flash"
 aliases = ["deepseek/deepseek-v4.1-flash-20260910"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.051
-output = 0.567
-cache_read = 0.018
+input = 0.0507
+output = 0.2028
+cache_read = 0.001014
 batch_input = 0.112
 batch_output = 0.336
 source_url = "https://openrouter.ai/deepseek/deepseek-v4.1-flash"
@@ -4583,9 +5186,9 @@ name = "Google: Gemma 4 26B A4B "
 aliases = ["google/gemma-4-26b-a4b-it-20260403"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.0765
-output = 0.255
-cache_read = 0.0425
+input = 0.09
+output = 0.3
+cache_read = 0.05
 source_url = "https://openrouter.ai/google/gemma-4-26b-a4b-it"
 checked = "2026-11-18"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -5082,9 +5685,9 @@ name = "MiniMax: MiniMax M3.1 Flash"
 aliases = ["minimax/minimax-m3.1-flash-20261019"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.15
-output = 0.6
-cache_read = 0.015
+input = 0.075
+output = 0.3
+cache_read = 0.0075
 source_url = "https://openrouter.ai/minimax/minimax-m3.1-flash"
 checked = "2026-11-18"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -5467,9 +6070,9 @@ name = "MoonshotAI: Kimi K2.7 Code"
 aliases = ["moonshotai/kimi-k2.7-code-20260612"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.7
+input = 0.6
 output = 3.75
-cache_read = 0.17
+cache_read = 0.18
 source_url = "https://openrouter.ai/moonshotai/kimi-k2.7-code"
 checked = "2026-11-18"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -7732,9 +8335,9 @@ name = "Tencent: Hy3"
 aliases = ["tencent/hy3-20260706"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.132
-output = 0.528
-cache_read = 0.033
+input = 0.0825
+output = 0.33
+cache_read = 0.020625
 source_url = "https://openrouter.ai/tencent/hy3"
 checked = "2026-11-18"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -7788,9 +8391,9 @@ name = "Tencent: Hy4 preview"
 aliases = ["tencent/hy4-preview-20260827"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.834
-output = 2.501
-cache_read = 0.042
+input = 0.7506
+output = 2.2509
+cache_read = 0.0378
 source_url = "https://openrouter.ai/tencent/hy4-preview"
 checked = "2026-11-18"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"
@@ -8144,9 +8747,9 @@ name = "Xiaomi: MiMo-V2.5-Pro"
 aliases = ["xiaomi/mimo-v2.5-pro-20260422"]
 status = "listed"
 unit = "USD per 1M tokens"
-input = 0.435
-output = 0.87
-cache_read = 0.0036
+input = 0.48
+output = 1.8
+cache_read = 0.096
 source_url = "https://openrouter.ai/xiaomi/mimo-v2.5-pro"
 checked = "2026-11-18"
 note = "OpenRouter's price for this model (pricing field of https://openrouter.ai/api/v1/models); null means the page lists no price: batch_input, batch_output"

@@ -93,7 +93,8 @@ export function toLitellm(doc) {
       columns(e, t, sfx);
       if (t.long_context) columns(e, t.long_context, `${above(t.long_context.threshold_tokens)}${sfx}`);
     }
-    e.litellm_provider = litellmProvider;
+    // LiteLLM files Claude 4 and later on Bedrock under bedrock_converse.
+    e.litellm_provider = m.provider === 'bedrock' && /^(global\.)?anthropic\./.test(m.model) ? 'bedrock_converse' : litellmProvider;
     e.mode = m.output === null ? 'embedding' : 'chat';
     // Embedding models have no output tokens; LiteLLM's own rows write 0 there.
     if (e.mode === 'embedding' && e.output_cost_per_token === undefined) e.output_cost_per_token = 0;

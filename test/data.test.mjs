@@ -7,7 +7,7 @@ import { parseAnthropic } from '../scripts/parse/anthropic.mjs';
 import { parseOpenAI } from '../scripts/parse/openai.mjs';
 import { parseGemini } from '../scripts/parse/gemini.mjs';
 import { parseDeepSeek } from '../scripts/parse/deepseek.mjs';
-import { parseBedrock, per1kToPer1m } from '../scripts/parse/bedrock.mjs';
+import { parseBedrock, parseBedrockAnthropic, per1kToPer1m } from '../scripts/parse/bedrock.mjs';
 import { parseOpenRouter, perTokenToPer1m } from '../scripts/parse/openrouter.mjs';
 import { ParseError } from '../scripts/parse/common.mjs';
 import { toToml } from '../scripts/toml.mjs';
@@ -15,7 +15,7 @@ import { toRust } from '../scripts/rust.mjs';
 import { generatedFiles } from '../scripts/outputs.mjs';
 import { pricesVersion } from '../scripts/version.mjs';
 import { packageRows, toPython, toTs } from '../scripts/packages.mjs';
-import { SOURCES, MANUAL_SOURCES } from '../scripts/meta.mjs';
+import { ANTHROPIC_IDS, SOURCES, MANUAL_SOURCES } from '../scripts/meta.mjs';
 import { mergeParsed, isDelisted } from '../scripts/merge.mjs';
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -223,7 +223,7 @@ test('openrouter parser reads the model list: per-token prices, overrides, batch
   assert.ok(rows.length > 300);
   assert.deepEqual([at('perplexity/sonar-pro').input, at('perplexity/sonar-pro').output], [3, 15]);
   const r1 = at('deepseek/deepseek-r1-0528');
-  assert.deepEqual([r1.input, r1.output, r1.cache_read], [0.5, 2.15, 0.35]);
+  assert.deepEqual([r1.input, r1.output, r1.cache_read], [0.571, 2.286, null]);
   const terra = at('openai/gpt-6.1-terra-pro');
   assert.deepEqual([terra.batch_input, terra.batch_output], [0.5, 2.5]);
   assert.equal(terra.long_context.threshold_tokens, 271999);
@@ -242,7 +242,9 @@ test('committed prices.json equals what the parsers produce from the saved pages
     ...parseOpenAI(page('openai.md'), 'X').rows,
     ...parseGemini(page('gemini.md'), 'X').rows,
     ...parseDeepSeek(page('deepseek.html'), 'X').rows,
-    ...parseBedrock(page('bedrock.json'), 'X').rows,
+    ...[...parseBedrock(page('bedrock.json'), 'X').rows, ...parseBedrockAnthropic(page('bedrock-anthropic.json'), 'X', parseAnthropic(page('anthropic.md'), 'X').rows).rows].sort((a, b) =>
+      a.model < b.model ? -1 : a.model > b.model ? 1 : 0,
+    ),
     ...parseOpenRouter(page('openrouter.json'), 'X').rows,
   ].map(({ checked, ...r }) => r);
   const committed = prices.models.filter((m) => m.provider in SOURCES && !isDelisted(m)).map(({ checked, ...r }) => r);
@@ -295,4 +297,34 @@ test('the Python and npm package data are regenerated from prices.json', () => {
   assert.match(toPython(prices, 'sha256:0'), /^ROWS: Tuple\[Dict\[str, Any\], \.\.\.\] = \($/m);
   assert.match(toTs(prices, 'sha256:0'), /^export const ROWS: readonly RawRow\[\] = \[$/m);
   assert.throws(() => packageRows({ models: [{ ...prices.models[0], input: 1e-7 }] }), /not a plain decimal/);
+});
+
+test('bedrock parser reads Claude from the foundation-models price list: regional and global rows', () => {
+  const anthropic = parseAnthropic(page('anthropic.md'), 'X').rows;
+  const { rows, unknown } = parseBedrockAnthropic(page('bedrock-anthropic.json'), '2026-11-18', anthropic);
+  assert.deepEqual(unknown, []);
+  const at = (model) => rows.find((r) => r.model === model);
+  // Claude Sonnet 4.5 on Bedrock: $3.30 / $16.50 regional, $3 / $15 global (per 1M tokens).
+  const regional = at('anthropic.claude-sonnet-4-5-20250929-v1:0');
+  assert.deepEqual([regional.input, regional.output, regional.cache_read, regional.batch_input, regional.batch_output], [3.3, 16.5, 0.33, 1.65, 8.25]);
+  assert.deepEqual(regional.cache_write, { '5m': 4.125, '1h': 6.6 });
+  assert.ok(regional.aliases.includes('us.anthropic.claude-sonnet-4-5-20250929-v1:0'));
+  assert.ok(regional.aliases.includes('jp.anthropic.claude-sonnet-4-5-20250929-v1:0'));
+  const global = at('global.anthropic.claude-sonnet-4-5-20250929-v1:0');
+  assert.deepEqual([global.input, global.output, global.aliases], [3, 15, []]);
+  // Every global row is the Anthropic list price, for every rate both sides list.
+  const ids = new Map(Object.entries(ANTHROPIC_IDS).map(([name, v]) => [name, v.model]));
+  for (const g of rows.filter((r) => r.model.startsWith('global.'))) {
+    const a = anthropic.find((r) => r.model === ids.get(g.name.replace(/ \(global\)$/, '')));
+    assert.ok(a, g.name);
+    for (const f of ['input', 'output', 'cache_read', 'batch_input', 'batch_output']) if (g[f] !== null) assert.equal(g[f], a[f], `${g.name} ${f}`);
+  }
+  // Long-context prices take the threshold from the Anthropic row.
+  const haiku = at('anthropic.claude-haiku-5-5');
+  assert.equal(haiku.long_context.threshold_tokens, anthropic.find((r) => r.model === 'claude-haiku-5-5').long_context.threshold_tokens);
+  assert.deepEqual([haiku.long_context.input, haiku.long_context.output], [0.55, 2.75]);
+  assert.ok(rows.every((r) => r.provider === 'bedrock' && r.source_url === 'https://aws.amazon.com/bedrock/pricing/'));
+  assert.ok(!rows.some((r) => /mythos/i.test(r.model)));
+  // Without the Anthropic rows a long-context row cannot be built.
+  assert.throws(() => parseBedrockAnthropic(page('bedrock-anthropic.json'), 'X', []), /threshold/);
 });

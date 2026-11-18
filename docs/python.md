@@ -53,10 +53,12 @@ unless the snapshot has its own row), `-latest` ids, Bedrock ids
 (`models/`, `openai/`, `together_ai/`, ...).
 
 **Which rows are searched.** Only the rows that provider sells, so `openai/gpt-oss-120b` on
-Groq gets Groq's price, never Together AI's. Vertex AI, Bedrock and Azure have no rows of their
-own; they fall back to the list price of the model maker they resell (Vertex: Google and
-Anthropic, Bedrock: Anthropic, Azure: OpenAI), and the returned row's `provider` says whose
-price it is. OpenRouter falls back to every model maker.
+Groq gets Groq's price, never Together AI's. Bedrock and OpenRouter have rows of their own
+(Bedrock's Claude rows give its regional and global prices, see [hosts.md](hosts.md)); Vertex
+AI and Azure have none. For a model without a row there, they fall back to the list price of
+the model maker they resell (Vertex: Google and Anthropic, Bedrock: Anthropic, Azure: OpenAI),
+and the returned row's `provider` says whose price it is. OpenRouter falls back to every model
+maker.
 
 **When it returns `None`.** The provider name is unknown, or the table has no price for that
 model there (`lookup_provider("groq", "llama-3.3-70b-versatile")`,

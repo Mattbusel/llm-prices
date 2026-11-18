@@ -491,15 +491,22 @@ export function providerRows(provider) {
 /**
  * Finds `model` as sold by `provider` (a {@link Provider} or a name such as `'groq'`,
  * `'together_ai'` or `'vertex_ai'`), with the same id handling as {@link lookup}. When the
- * provider has no row for it, the rows of its {@link fallbackProviders} are tried, so Claude on
- * Bedrock gets Anthropic's row. `null` when the name is not a known provider or the table has
- * no price for the model there.
+ * provider has no row for it, the rows of its {@link fallbackProviders} are tried, so a Claude
+ * id Bedrock does not list gets Anthropic's row. Bedrock's own Claude rows (its regional and
+ * global prices) match their exact Bedrock ids. `null` when the name is not a known provider or
+ * the table has no price for the model there.
  */
 export function lookupProvider(provider, model) {
     const p = parseProvider(provider);
     if (p === null)
         return null;
-    const lower = asciiLower(String(model).trim());
+    let lower = asciiLower(String(model).trim());
+    const self = idHint(lower);
+    if (self && self[0] === p && self[1]) {
+        // The id names this provider (`bedrock/us.anthropic.claude-...`): look up the rest, so
+        // exact-id rows such as Bedrock's Claude rows still match.
+        model = lower = self[1];
+    }
     const host = idHint(lower)?.[0];
     if (host !== undefined && HOSTS.has(host) && host !== p && !fallbackProviders(host).includes(p)) {
         // The id names another host or platform, which sells at its own price. Only this
@@ -542,9 +549,18 @@ const PREFIXES = [
     'us.anthropic.',
     'eu.anthropic.',
     'apac.anthropic.',
+    'jp.anthropic.',
+    'au.anthropic.',
+    'ca.anthropic.',
     'global.anthropic.',
     'anthropic.',
 ];
+/** Bedrock's Claude rows (`anthropic.claude-...`, `global.anthropic.claude-...`) match only
+ * their exact ids. A Claude id in another spelling keeps Anthropic's list price. */
+function exactOnly(p) {
+    const m = asciiLower(p.model);
+    return p.provider === 'bedrock' && (m.startsWith('anthropic.') || m.startsWith('global.anthropic.'));
+}
 const asciiLower = (s) => s.replace(/[A-Z]/g, (c) => String.fromCharCode(c.charCodeAt(0) + 32));
 const eqCi = (a, b) => a.length === b.length && asciiLower(a) === asciiLower(b);
 const isDigits = (s) => /^[0-9]*$/.test(s);
@@ -609,14 +625,14 @@ function normalize(lower) {
     return s.replace('@', '-');
 }
 function resolve(id, keep) {
-    const rows = PRICES.filter(keep);
     const lower = asciiLower(String(id).trim());
-    const exact = rows.find((p) => ids(p).some((m) => eqCi(m, lower)));
+    const exact = PRICES.find((p) => keep(p) && ids(p).some((m) => eqCi(m, lower)));
     if (exact)
         return exact;
     const s = normalize(lower);
     if (!s)
         return null;
+    const rows = PRICES.filter((p) => keep(p) && !exactOnly(p));
     const strippedEq = (want) => rows.find((p) => ids(p).some((m) => eqCi(stripPrefix(m), want)));
     const found = strippedEq(s);
     if (found)
@@ -671,6 +687,10 @@ export function lookup(model) {
         return resolve(lower, (p) => !PLATFORMS.has(p.provider) && carries(p, prefix)) ?? exact(lower, (p) => PLATFORMS.has(p.provider));
     }
     // Without a provider path, Bedrock and OpenRouter rows, which resell other makers' models, are
-    // only found by their exact id, so `gpt-4` never takes OpenRouter's `openai/gpt-4`.
-    return resolve(lower, (p) => !PLATFORMS.has(p.provider)) ?? exact(lower, (p) => PLATFORMS.has(p.provider));
+    // only found by their exact id, so `gpt-4` never takes OpenRouter's `openai/gpt-4`. An exact
+    // Bedrock id comes first: `us.anthropic.claude-sonnet-4-5-20250929-v1:0` is Bedrock's regional
+    // price, not Anthropic's list price.
+    return (exact(lower, (p) => p.provider === 'bedrock') ??
+        resolve(lower, (p) => !PLATFORMS.has(p.provider)) ??
+        exact(lower, (p) => PLATFORMS.has(p.provider)));
 }

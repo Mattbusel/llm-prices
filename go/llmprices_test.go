@@ -65,7 +65,8 @@ func TestLookups(t *testing.T) {
 		t.Errorf("claude-opus-5-5 input = %v", got)
 	}
 	for id, want := range map[string]string{
-		"us.anthropic.claude-sonnet-4-20250514-v1:0": "claude-sonnet-4-20250514",
+		"us.anthropic.claude-sonnet-4-20250514-v1:0": "anthropic.claude-sonnet-4-20250514-v1:0",
+		"us.anthropic.claude-sonnet-4-20250514-v2:0": "claude-sonnet-4-20250514",
 		"claude-opus-4-1@20250805":                   "claude-opus-4-1-20250805",
 		"claude-haiku-4-5-20251001":                  "claude-haiku-4-5",
 		"deepseek-v4-flash":                          "deepseek-flash",
@@ -117,6 +118,34 @@ func undated(id string) string {
 
 func same(a, b Price) bool { return a.Provider == b.Provider && a.Model == b.Model }
 
+// bedrockClaude returns Bedrock's own Claude row when form (without a bedrock/ path) is one of
+// its exact ids: those ids get Bedrock's regional or global price, not Anthropic's list price.
+func bedrockClaude(form string) (Price, bool) {
+	f := strings.TrimPrefix(strings.ToLower(form), "bedrock/")
+	for _, q := range Bedrock.Rows() {
+		if !strings.HasPrefix(q.Model, "anthropic.") && !strings.HasPrefix(q.Model, "global.anthropic.") {
+			continue
+		}
+		for _, m := range ids(&q) {
+			if strings.EqualFold(m, f) {
+				return q, true
+			}
+		}
+	}
+	return Price{}, false
+}
+
+// expected is the row a form of p's id should reach: p, or Bedrock's Claude row for an exact
+// Bedrock id.
+func expected(form string, p Price) Price {
+	if p.Provider == "anthropic" {
+		if q, ok := bedrockClaude(form); ok {
+			return q
+		}
+	}
+	return p
+}
+
 func TestAnthropicIDForms(t *testing.T) {
 	for _, p := range Anthropic.Rows() {
 		for _, id := range ids(&p) {
@@ -129,16 +158,17 @@ func TestAnthropicIDForms(t *testing.T) {
 				base, base + "-20990101", "anthropic/" + base + "-20990101", base + "-latest",
 				base + "@" + date, "vertex_ai/" + base + "@" + date,
 			}
-			for _, region := range []string{"", "us.", "eu.", "apac.", "global."} {
+			for _, region := range []string{"", "us.", "eu.", "apac.", "jp.", "au.", "ca.", "global."} {
 				forms = append(forms, region+"anthropic."+id+"-v1:0", region+"anthropic."+id+"-v2:0")
 			}
 			for _, form := range forms {
-				if got, ok := Lookup(form); !ok || !same(got, p) {
-					t.Errorf("Lookup(%q) = %s, want %s", form, got.Model, p.Model)
+				if got, ok := Lookup(form); !ok || !same(got, expected(form, p)) {
+					t.Errorf("Lookup(%q) = %s, want %s", form, got.Model, expected(form, p).Model)
 				}
 			}
-			if got, ok := Bedrock.Lookup("us.anthropic." + id + "-v1:0"); !ok || !same(got, p) {
-				t.Errorf("Bedrock.Lookup(%q) = %s", id, got.Model)
+			form := "us.anthropic." + id + "-v1:0"
+			if got, ok := Bedrock.Lookup(form); !ok || !same(got, expected(form, p)) {
+				t.Errorf("Bedrock.Lookup(%q) = %s", form, got.Model)
 			}
 			if got, ok := LookupProvider("vertex_ai", base+"@"+date); !ok || !same(got, p) {
 				t.Errorf("vertex_ai %q = %s", base+"@"+date, got.Model)
@@ -152,6 +182,14 @@ func TestEveryIDResolvesUnderItsProvider(t *testing.T) {
 		for _, id := range ids(&p) {
 			for _, form := range []string{id, strings.ToUpper(id), id + "-2099-01-01"} {
 				got, ok := LookupProvider(p.Provider, form)
+				if q, isClaude := bedrockClaude(id); isClaude && same(q, p) && form == id+"-2099-01-01" {
+					// Bedrock's Claude rows only match their exact ids; other spellings get
+					// Anthropic's list price.
+					if ok && got.Provider != "anthropic" {
+						t.Errorf("LookupProvider(%q, %q) = %s/%s, want Anthropic's row or nothing", p.Provider, form, got.Provider, got.Model)
+					}
+					continue
+				}
 				if !ok || !same(got, p) {
 					t.Errorf("LookupProvider(%q, %q) = %s/%s, want %s", p.Provider, form, got.Provider, got.Model, p.Model)
 				}
@@ -195,7 +233,8 @@ func TestProviderLookupKeepsHostsApart(t *testing.T) {
 		{"perplexity", "sonar", "perplexity"},
 		{"together", "moonshotai/Kimi-K3", "together"},
 		{"fireworks", "accounts/fireworks/models/kimi-k3", "fireworks"},
-		{"bedrock", "global.anthropic.claude-opus-4-5-20251101-v1:0", "anthropic"},
+		{"bedrock", "global.anthropic.claude-opus-4-5-20251101-v1:0", "bedrock"},
+		{"bedrock", "claude-opus-4-5", "anthropic"},
 	} {
 		if p, ok := LookupProvider(c[0], c[1]); !ok || p.Provider != c[2] {
 			t.Errorf("LookupProvider(%q, %q).Provider = %q, want %q", c[0], c[1], p.Provider, c[2])
@@ -221,8 +260,10 @@ func TestCostCallbackCases(t *testing.T) {
 		{"together", "openai/gpt-oss-120b", "together", "openai/gpt-oss-120b", 0.15, 0.6},
 		{"fireworks", "accounts/fireworks/models/gpt-oss-120b", "fireworks", "accounts/fireworks/models/gpt-oss-120b", 0.15, 0.6},
 		{"cohere", "command-r-plus-08-2024", "cohere", "command-r-plus-08-2024", 2.5, 10},
-		{"bedrock", "anthropic.claude-haiku-4-5-20251001-v1:0", "anthropic", "claude-haiku-4-5", 1, 5},
-		{"bedrock_converse", "us.anthropic.claude-sonnet-4-20250514-v1:0", "anthropic", "claude-sonnet-4-20250514", 3, 15},
+		{"bedrock", "anthropic.claude-haiku-4-5-20251001-v1:0", "bedrock", "anthropic.claude-haiku-4-5-20251001-v1:0", 1.1, 5.5},
+		{"bedrock", "global.anthropic.claude-haiku-4-5-20251001-v1:0", "bedrock", "global.anthropic.claude-haiku-4-5-20251001-v1:0", 1, 5},
+		{"bedrock", "claude-haiku-4-5", "anthropic", "claude-haiku-4-5", 1, 5},
+		{"bedrock_converse", "us.anthropic.claude-sonnet-4-20250514-v1:0", "bedrock", "anthropic.claude-sonnet-4-20250514-v1:0", 3, 15},
 		{"azure_openai", "gpt-4o-mini", "openai", "gpt-4o-mini", 0.15, 0.6},
 	} {
 		p, ok := LookupProvider(c.provider, c.model)
@@ -488,7 +529,8 @@ func TestFirstPartyPrefixesStillResolve(t *testing.T) {
 		{"deepseek/deepseek-chat", "deepseek"},
 		{"mistral/mistral-large-latest", "mistral"},
 		{"xai/grok-4.7", "xai"},
-		{"bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0", "anthropic"},
+		{"bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0", "bedrock"},
+		{"bedrock/us.anthropic.claude-sonnet-4-20250514-v2:0", "anthropic"},
 		{"vertex_ai/gemini-2.5-pro", "google"},
 		{"azure/gpt-4o", "openai"},
 		{"openrouter/anthropic/claude-sonnet-4-6", "anthropic"},
@@ -532,5 +574,49 @@ func TestPlatformRowsOnlyAnswerTheirExactID(t *testing.T) {
 	p, ok := Lookup("bedrock/us.deepseek.r1-v1:0")
 	if !ok || f(p.Input) != 1.35 || f(p.Output) != 5.4 {
 		t.Errorf("bedrock DeepSeek-R1: %v %v", p.Input, p.Output)
+	}
+}
+
+func TestBedrockClaudeRegionalAndGlobalPrices(t *testing.T) {
+	// AWS price list: regional endpoints (in-Region id, geographic profiles) are 10% above the
+	// global profile for Claude Sonnet 4.5 and later; the global profile is Anthropic's list price.
+	regional := mustLookup(t, "us.anthropic.claude-sonnet-4-5-20250929-v1:0")
+	if regional.Provider != "bedrock" || f(regional.Input) != 3.3 || f(regional.Output) != 16.5 || f(regional.CacheRead) != 0.33 {
+		t.Errorf("regional row %s/%s %v/%v", regional.Provider, regional.Model, f(regional.Input), f(regional.Output))
+	}
+	for _, profile := range []string{"eu.", "jp.", "au.", ""} {
+		if got := mustLookup(t, profile+"anthropic.claude-sonnet-4-5-20250929-v1:0"); !same(got, regional) {
+			t.Errorf("%s profile = %s", profile, got.Model)
+		}
+	}
+	global := mustLookup(t, "global.anthropic.claude-sonnet-4-5-20250929-v1:0")
+	maker, _ := LookupProvider("anthropic", "claude-sonnet-4-5")
+	if global.Provider != "bedrock" || f(global.Input) != f(maker.Input) || f(global.Output) != f(maker.Output) {
+		t.Errorf("global row %s %v/%v vs %v/%v", global.Provider, f(global.Input), f(global.Output), f(maker.Input), f(maker.Output))
+	}
+}
+
+func TestBedrockClaudeRowsOnlyMatchExactIDs(t *testing.T) {
+	for _, c := range [][3]string{
+		{"", "apac.anthropic.claude-sonnet-4-5-20250929-v1:0", "anthropic"},
+		{"bedrock", "claude-sonnet-4-6", "anthropic"},
+		{"", "bedrock/claude-sonnet-4-6", "anthropic"},
+		{"anthropic", "us.anthropic.claude-sonnet-4-6", "anthropic"},
+		{"", "US.ANTHROPIC.CLAUDE-SONNET-4-6", "bedrock"},
+		{"bedrock", "bedrock/us.anthropic.claude-sonnet-4-6", "bedrock"},
+		{"", "jp.anthropic.claude-opus-4-1-20250805-v1:0", "anthropic"},
+		{"", "jp.anthropic.claude-sonnet-4-5-20250929-v1:0", "bedrock"},
+		{"", "ca.anthropic.claude-opus-4-1-20250805-v1:0", "anthropic"},
+	} {
+		var p Price
+		var ok bool
+		if c[0] == "" {
+			p, ok = Lookup(c[1])
+		} else {
+			p, ok = LookupProvider(c[0], c[1])
+		}
+		if !ok || p.Provider != c[2] {
+			t.Errorf("%q %q: %s/%s, want %s", c[0], c[1], p.Provider, p.Model, c[2])
+		}
 	}
 }

@@ -30,7 +30,7 @@ fallback, never treat it as zero.
 | Call | What it does |
 |---|---|
 | `Lookup(model) (Price, bool)` | Finds a model across every provider: aliases, any ASCII case, dated snapshots (`gpt-4o-2024-08-06` finds `gpt-4o` unless the snapshot has its own row), `-latest` ids, Bedrock ids (`us.anthropic.claude-sonnet-4-20250514-v1:0`), Vertex `@date` ids and provider prefixes (`models/`, `openai/`, `together_ai/`, `accounts/fireworks/models/`, ...). |
-| `LookupProvider(provider, model) (Price, bool)` | Only the rows that provider sells, so `openai/gpt-oss-120b` on Groq gets Groq's price. Vertex AI, Bedrock, Azure and OpenRouter fall back to the model maker's list price; the row's `Provider` says whose price it is. |
+| `LookupProvider(provider, model) (Price, bool)` | Only the rows that provider sells, so `openai/gpt-oss-120b` on Groq gets Groq's price. Bedrock (including its regional and global Claude rows, see [hosts.md](hosts.md)) and OpenRouter have rows of their own; for a model without one, Vertex AI, Bedrock, Azure and OpenRouter fall back to the model maker's list price. The row's `Provider` says whose price it is. |
 | `Cost(model, in, out)` / `CostProvider(provider, model, in, out)` | Standard cost in USD of one request (long-context prices above the threshold). |
 | `Price.CostUsage(Usage) (CostBreakdown, bool)` | Cost of one response with cache reads, 5m and 1h cache writes and the Batch API, split by token kind. |
 | `Price.InputPerToken()`, `Price.OutputPerToken()` | USD per token, for code that keeps per-token prices. |

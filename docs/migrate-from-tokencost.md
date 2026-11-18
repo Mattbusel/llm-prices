@@ -95,8 +95,9 @@ TOKEN_COSTS["gpt-4"]["source"]   # https://web.archive.org/web/20261102160440/ht
   `us.anthropic.claude-...-v1:0`) and Vertex ids reach the right row. An id with a
   third-party host path (`accounts/fireworks/models/`, `together_ai/`, `groq/`, `bedrock/`,
   `vertex_ai/`, `azure/`, `openrouter/`) is priced at that host's own row, or at the maker's
-  list price only where the platform charges it (Claude on Bedrock and Vertex, OpenAI models
-  on Azure). Otherwise it raises `KeyError` like any unknown model: Fireworks' price for
+  list price only where the platform charges it (Claude on Vertex, a Claude id Bedrock does
+  not list, OpenAI models on Azure). Bedrock's own Claude ids get Bedrock's regional or global
+  price (`anthropic.claude-sonnet-4-6` is $3.30 per 1M input tokens, `global.anthropic.claude-sonnet-4-6` $3). Otherwise it raises `KeyError` like any unknown model: Fireworks' price for
   `deepseek-r1` is not DeepSeek's, so the table does not guess it.
 - **Non-OpenAI message counts.** For Gemini, DeepSeek, Mistral and the other non-OpenAI models
   in the table, `count_message_tokens` returns a tiktoken estimate and logs a warning, where

@@ -166,7 +166,10 @@ def test_ids_resolve_like_llm_prices_lookup():
     # Dated, prefixed and Bedrock ids reach the same row as the bare id.
     base = tc.calculate_cost_by_tokens(1_000_000, "claude-sonnet-4-6", "input")
     assert base == Decimal("3")
-    assert tc.calculate_cost_by_tokens(1_000_000, "anthropic.claude-sonnet-4-6", "input") == base
+    assert tc.calculate_cost_by_tokens(1_000_000, "anthropic/claude-sonnet-4-6", "input") == base
+    # An exact Bedrock id is Bedrock's regional price (10% above the global profile).
+    assert tc.calculate_cost_by_tokens(1_000_000, "anthropic.claude-sonnet-4-6", "input") == Decimal("3.3")
+    assert tc.calculate_cost_by_tokens(1_000_000, "global.anthropic.claude-sonnet-4-6", "input") == base
     assert tc.calculate_cost_by_tokens(1_000_000, "gpt-4o-2024-08-06", "output") == Decimal("10")
     assert tc.calculate_cost_by_tokens(1_000_000, "gemini/gemini-2.5-pro", "input") == Decimal("1.25")
     assert tc.calculate_cost_by_tokens(1_000_000, "gemini-2.5-pro", "input") == Decimal("1.25")

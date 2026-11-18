@@ -172,3 +172,22 @@ MIT ([LICENSE](../LICENSE)), for every package in this repository. llm-prices is
 Matthew Busel, who keeps the table current with the providers' pages and answers issues at
 https://github.com/Mattbusel/llm-prices/issues. A wrong price is fixed once the provider's
 official page shows the correct one; open an issue with the page link.
+
+What a reviewer can check without trusting anyone (as of 2026-11-18):
+
+- **Release record.** The crate has been on crates.io since 2026-10-23 (13 versions) and the
+  Python package on PyPI since 2026-11-15 (10 versions); each release is listed in
+  [CHANGELOG.md](../CHANGELOG.md) with the SHA-256 of the table it ships, and GitHub releases
+  attach that `prices.json`.
+- **Data provenance.** Every row has `source_url` and `checked`. The pages the parsers read are
+  saved under [test/pages](../test/pages), and CI fails when the committed table differs from
+  what the parsers produce from them, so each number can be traced to page text.
+- **Refresh job.** [.github/workflows/refresh.yml](../.github/workflows/refresh.yml) runs daily,
+  opens a pull request when a price changes and an issue when a page can no longer be read;
+  its runs are public under the repository's Actions tab.
+- **CI.** Every push runs the Rust (MSRV 1.70 and stable, clippy, docs), Python (3.9, 3.11, 3.12 and 3.13,
+  `mypy --strict`), Go (vet, race detector, gofmt, fuzzing) and JavaScript suites, plus a
+  check that every generated data file matches `prices.json`.
+
+Removing it later is the reverse of adding it: the integration is one lookup call behind an
+extra or a feature, so deleting the extra and the call leaves the project as it was.

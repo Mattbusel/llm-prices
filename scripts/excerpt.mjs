@@ -1,7 +1,7 @@
 // Cuts each provider page down to the parts the parsers read, for test/pages.
 
 import { GEMINI_TEXT_MODELS } from './meta.mjs';
-import { excerptBedrock } from './parse/bedrock.mjs';
+import { excerptBedrock, excerptBedrockAnthropic } from './parse/bedrock.mjs';
 import { excerptOpenRouter } from './parse/openrouter.mjs';
 
 const note = (url, date) => `<!-- Excerpt of ${url} fetched ${date}, kept only for parser tests. -->\n`;
@@ -43,12 +43,15 @@ export function excerpt(provider, text, date) {
   }
   if (provider === 'deepseek') {
     // From the pricing table to the next section heading (keeps the footnotes under the table).
+    // The end is the first <h1>-<h6> after the table, whatever it says: the heading after the
+    // table was "Search & Fetch Pricing" and became "Search & Fetch API Pricing" on 2026-11-18.
     const t0 = text.indexOf('<table');
-    const n1 = text.search(/Search (&amp;|&) Fetch Pricing/);
-    if (t0 < 0 || n1 < t0) throw new Error('excerpt: deepseek table not found');
-    return note('https://api-docs.deepseek.com/quick_start/pricing', date) + '<html><body>' + text.slice(t0, text.lastIndexOf('<', n1)) + '</body></html>\n';
+    const h = t0 < 0 ? -1 : text.slice(t0).search(/<h[1-6][\s>]/);
+    if (t0 < 0 || h < 0) throw new Error('excerpt: deepseek table not found');
+    return note('https://api-docs.deepseek.com/quick_start/pricing', date) + '<html><body>' + text.slice(t0, t0 + h) + '</body></html>\n';
   }
   if (provider === 'bedrock') return excerptBedrock(text);
+  if (provider === 'bedrock-anthropic') return excerptBedrockAnthropic(text);
   if (provider === 'openrouter') return excerptOpenRouter(text);
   throw new Error(`excerpt: unknown provider ${provider}`);
 }

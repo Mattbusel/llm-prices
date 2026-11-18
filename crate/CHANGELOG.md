@@ -3,6 +3,66 @@
 All notable changes to the `llm-prices` crate. Versions follow semver: price-data-only
 updates are patch releases, new API is a minor release.
 
+## [1.8.0] - 2026-11-18
+
+### Changed: Claude on Amazon Bedrock is priced at Bedrock's own rates
+
+AWS bills Claude on Bedrock at two prices: regional endpoints (the in-Region model id and the
+geographic inference profiles `us.`, `eu.`, `apac.`, `jp.`, `au.`, `ca.`) and the global
+cross-Region profile (`global.`). For Claude Haiku 4.5, Sonnet 4.5, Opus 4.5 and every later
+model the regional price is 10% above the global one; Anthropic's pricing page says Bedrock sets these prices itself. Until
+1.7.2 every Bedrock Claude id took Anthropic's list price, so a `us.` or in-Region call to
+those models came out about 9% low (Sonnet 4.5: $3 / $15 instead of $3.30 / $16.50 per
+1M tokens). A reviewer of a downstream pull request pointed out the regional prices in the AWS
+price list.
+
+- 33 new `bedrock` rows for 17 Claude models, read daily from the AWS Price List API
+  (AmazonBedrockFoundationModels offer file, us-east-1): one regional row (foundation-model id,
+  bedrock-mantle id and every geographic profile the model card lists) and one global row
+  (`global.anthropic....`) per model, with cache-read, 5-minute and 1-hour cache-write and batch
+  prices where AWS lists them. Ids come from the Bedrock model cards. The global rows equal
+  Anthropic's list prices (a test checks it); the price list has the same Claude prices in all
+  six Regions checked.
+- An exact Bedrock id now finds Bedrock's row: `lookup("us.anthropic.claude-sonnet-4-6")` is
+  $3.30 input, `lookup("global.anthropic.claude-sonnet-4-6")` $3.00, and the returned row's
+  `provider` is `bedrock`. These rows match only their exact ids (any ASCII case, with or
+  without `bedrock/`); every other spelling of a Claude id (`claude-sonnet-4-6`,
+  `bedrock/claude-sonnet-4-6`, a profile a model card does not list) keeps Anthropic's list
+  price, and `lookup_provider("anthropic", ...)` always returns Anthropic's row. Code that
+  checked `price.provider == "anthropic"` for a Bedrock id gets `"bedrock"` now.
+- `jp.`, `au.` and `ca.` inference profile prefixes are recognized (they returned nothing
+  before).
+- The GitHub Action no longer compares a hard-coded price next to a Bedrock Claude id with
+  Anthropic's row: by default such ids are skipped, and with `providers: bedrock` they are
+  compared with Bedrock's own row.
+- `litellm.json`: the new rows use LiteLLM's keys (`anthropic.claude-...`, `us.anthropic.claude-...`,
+  `global.anthropic.claude-...`) and `litellm_provider: bedrock_converse`.
+
+Same change in every package: Rust crate, Python package, npm package, root module and Go
+module `go/v0.4.0`. The OpenTelemetry Collector processor still pins `go/v0.3.0`; its conformance
+case for a Bedrock fallback now uses Claude Opus 4, which has no Bedrock row, so it passes on
+both.
+
+### Changed: prices (table `sha256:959dc0ad506ff66fc7b112ea10e77455d67dbd9d0f6592f3f11dd788c7d2da64`)
+
+- OpenRouter: the price changes its model API reports on 2026-11-18 (for example
+  `deepseek/deepseek-r1-0528` $0.50 / $2.15 to $0.571 / $2.286 with no cache-read price,
+  `minimax/minimax-m3.1-flash` $0.15 / $0.60 to $0.075 / $0.30, `xiaomi/mimo-v2.5-pro`
+  $0.435 / $0.87 to $0.48 / $1.80).
+
+### Fixed
+
+- The daily refresh no longer fails on DeepSeek. DeepSeek renamed the heading after its pricing
+  table from "Search & Fetch Pricing" to "Search & Fetch API Pricing" on 2026-11-18; the
+  excerpt step looked for the old text and would have reported the page as unreadable. It now
+  ends the excerpt at the first heading after the table. DeepSeek's prices did not change.
+
+### Docs
+
+- [docs/hosts.md](docs/hosts.md): the Claude-on-Bedrock rows, how they are matched, and what
+  is left out. [docs/integrate.md](docs/integrate.md): what a reviewer can check (release
+  record, data provenance, refresh job, CI) and how to remove the integration.
+
 ## [1.7.2] - 2026-11-18
 
 ### Changed: prices (table `sha256:16750e481602ea77ca061b5f6d84e951017347c6d2d8e28f8bf4c6b3538ce048`)

@@ -27,10 +27,24 @@ def shared_id(p: Price, id: str) -> bool:
     return any(q.provider != p.provider and any(m.lower() == id.lower() for m in ids(q)) for q in all_prices())
 
 
+def bedrock_claude(form: str):
+    """Bedrock's own Claude row when ``form`` (without a ``bedrock/`` path) is one of its exact
+    ids: those ids get Bedrock's regional or global price, not Anthropic's list price."""
+    f = form.lower()
+    if f.startswith("bedrock/"):
+        f = f[len("bedrock/") :]
+    for q in all_prices():
+        if q.provider == "bedrock" and q.model.lower().split(".", 1)[0] in ("anthropic", "global"):
+            if any(m.lower() == f for m in ids(q)):
+                return q
+    return None
+
+
 def assert_resolves(form: str, p: Price) -> None:
     found = lookup(form)
     assert found is not None, f"{form!r} did not resolve (expected {p.model})"
-    assert found.model == p.model, f"{form!r} resolved to the wrong row"
+    want = bedrock_claude(form) if p.provider == "anthropic" else None
+    assert found.model == (want or p).model, f"{form!r} resolved to the wrong row"
 
 
 def assert_resolves_under_provider(form: str, p: Price) -> None:
@@ -48,7 +62,8 @@ def test_every_row_has_a_source_and_date():
 
 def test_lookups():
     assert lookup("claude-opus-5-5").input == 4.0
-    assert lookup("us.anthropic.claude-sonnet-4-20250514-v1:0").model == "claude-sonnet-4-20250514"
+    assert lookup("us.anthropic.claude-sonnet-4-20250514-v1:0").model == "anthropic.claude-sonnet-4-20250514-v1:0"
+    assert lookup("us.anthropic.claude-sonnet-4-20250514-v2:0").model == "claude-sonnet-4-20250514"
     assert lookup("claude-opus-4-1@20250805").model == "claude-opus-4-1-20250805"
     assert lookup("claude-haiku-4-5-20251001").model == "claude-haiku-4-5"
     assert lookup("models/gemini-2.5-pro").output == 10.0
@@ -148,16 +163,17 @@ def test_provider_prefixes_resolve():
                 # The prefix names the provider, so plain lookup finds this exact row even
                 # when another host sells the same id.
                 if prefix not in ("openrouter/", "us.anthropic.", "models/"):
-                    assert lookup(form) is p, form
+                    assert lookup(form) is (bedrock_claude(form) if p.provider == "anthropic" else None) or p, form
 
 
 def test_bedrock_ids_resolve_for_anthropic_rows():
     for p in (p for p in all_prices() if p.provider == "anthropic"):
         for id in ids(p):
-            for region in ("", "us.", "eu.", "apac.", "global."):
+            for region in ("", "us.", "eu.", "apac.", "jp.", "au.", "ca.", "global."):
                 assert_resolves(f"{region}anthropic.{id}-v1:0", p)
                 assert_resolves(f"{region}anthropic.{id}-v2:0", p)
-                assert lookup_provider(Provider.BEDROCK, f"{region}anthropic.{id}-v1:0") is p
+                form = f"{region}anthropic.{id}-v1:0"
+                assert lookup_provider(Provider.BEDROCK, form) is (bedrock_claude(form) or p)
 
 
 def test_vertex_at_date_resolves_for_anthropic_rows():
@@ -203,7 +219,13 @@ def test_every_dated_row_is_still_its_own_answer():
     for p in all_prices():
         for id in ids(p):
             if p.provider in PLATFORM_ROWS:
-                assert lookup(f"{p.provider}/{id}-2099-01-01") is p, id
+                found = lookup(f"{p.provider}/{id}-2099-01-01")
+                if bedrock_claude(id) is p:
+                    # Bedrock's Claude rows only match their exact ids; other spellings get
+                    # Anthropic's list price.
+                    assert found is None or found.provider == "anthropic", id
+                else:
+                    assert found is p, id
             else:
                 assert_resolves(f"{id}-2099-01-01", p)
 
@@ -262,7 +284,8 @@ def test_provider_doc_examples():
     p = Provider.TOGETHER.lookup("moonshotai/Kimi-K3")
     assert (p.provider, p.input) == ("together", 3.0)
     assert Provider.FIREWORKS.lookup("accounts/fireworks/models/kimi-k3") is not None
-    assert Provider.BEDROCK.lookup("global.anthropic.claude-opus-4-5-20251101-v1:0").provider == "anthropic"
+    assert Provider.BEDROCK.lookup("global.anthropic.claude-opus-4-5-20251101-v1:0").provider == "bedrock"
+    assert Provider.BEDROCK.lookup("claude-opus-4-5").provider == "anthropic"
     assert Provider.GROQ.lookup("claude-opus-4-5") is None
     assert all(p.provider == "groq" for p in Provider.GROQ.rows())
     assert "openai/gpt-oss-120b" in [p.model for p in all_prices() if p.provider == "groq"]
@@ -358,8 +381,10 @@ def test_provider_names_that_are_not_strings():
         ("together", "openai/gpt-oss-120b", "together", "openai/gpt-oss-120b", (0.15, 0.6)),
         ("fireworks", "accounts/fireworks/models/gpt-oss-120b", "fireworks", "accounts/fireworks/models/gpt-oss-120b", (0.15, 0.6)),
         ("cohere", "command-r-plus-08-2024", "cohere", "command-r-plus-08-2024", (2.5, 10.0)),
-        ("bedrock", "anthropic.claude-haiku-4-5-20251001-v1:0", "anthropic", "claude-haiku-4-5", (1.0, 5.0)),
-        ("bedrock_converse", "us.anthropic.claude-sonnet-4-20250514-v1:0", "anthropic", "claude-sonnet-4-20250514", (3.0, 15.0)),
+        ("bedrock", "anthropic.claude-haiku-4-5-20251001-v1:0", "bedrock", "anthropic.claude-haiku-4-5-20251001-v1:0", (1.1, 5.5)),
+        ("bedrock", "global.anthropic.claude-haiku-4-5-20251001-v1:0", "bedrock", "global.anthropic.claude-haiku-4-5-20251001-v1:0", (1.0, 5.0)),
+        ("bedrock", "claude-haiku-4-5", "anthropic", "claude-haiku-4-5", (1.0, 5.0)),
+        ("bedrock_converse", "us.anthropic.claude-sonnet-4-20250514-v1:0", "bedrock", "anthropic.claude-sonnet-4-20250514-v1:0", (3.0, 15.0)),
         ("azure_openai", "gpt-4o-mini", "openai", "gpt-4o-mini", (0.15, 0.6)),
     ],
 )
@@ -399,3 +424,58 @@ def test_delisted_rows_still_price():
         p = lookup(model)
         assert p is not None and p.status == "retired", model
         assert "no longer on the pricing page" in (p.note or "")
+
+
+# -- Claude on Amazon Bedrock -------------------------------------------------------------------
+
+
+def test_bedrock_claude_regional_and_global_prices():
+    # AWS price list: regional endpoints (in-Region id, geographic profiles) are 10% above the
+    # global profile for Claude Sonnet 4.5 and later; the global profile is Anthropic's list price.
+    regional = lookup("us.anthropic.claude-sonnet-4-5-20250929-v1:0")
+    assert (regional.provider, regional.input, regional.output, regional.cache_read) == ("bedrock", 3.3, 16.5, 0.33)
+    assert dict(regional.cache_write) == {"5m": 4.125, "1h": 6.6}
+    assert (regional.batch_input, regional.batch_output) == (1.65, 8.25)
+    for profile in ("eu.", "jp.", "au.", ""):
+        assert lookup(f"{profile}anthropic.claude-sonnet-4-5-20250929-v1:0") is regional, profile
+    glob = lookup("global.anthropic.claude-sonnet-4-5-20250929-v1:0")
+    assert (glob.provider, glob.input, glob.output) == ("bedrock", 3.0, 15.0)
+    anthropic = lookup_provider("anthropic", "claude-sonnet-4-5")
+    for f in ("input", "output", "cache_read", "batch_input", "batch_output"):
+        assert getattr(glob, f) == getattr(anthropic, f), f
+    # Claude Sonnet 4 has the same price on both endpoint kinds.
+    assert lookup("us.anthropic.claude-sonnet-4-20250514-v1:0").input == 3.0
+
+
+def test_bedrock_claude_cost_differs_by_endpoint():
+    us = lookup("us.anthropic.claude-haiku-4-5-20251001-v1:0").cost(1_000_000, 1_000_000)
+    glob = lookup("global.anthropic.claude-haiku-4-5-20251001-v1:0").cost(1_000_000, 1_000_000)
+    assert (round(us, 6), round(glob, 6)) == (6.6, 6.0)
+
+
+def test_bedrock_claude_long_context_takes_anthropic_threshold():
+    p = lookup("us.anthropic.claude-haiku-5-5")
+    maker = lookup_provider("anthropic", "claude-haiku-5-5")
+    assert p.provider == "bedrock" and p.long_context is not None and maker.long_context is not None
+    assert p.long_context.threshold_tokens == maker.long_context.threshold_tokens
+    assert (p.long_context.input, p.long_context.output) == (0.55, 2.75)
+
+
+def test_bedrock_claude_rows_only_match_exact_ids():
+    # A Claude id that is not one of Bedrock's ids keeps Anthropic's list price, also under
+    # the bedrock provider: profiles a model card does not list, plain Anthropic ids, and the
+    # anthropic provider itself.
+    assert lookup("apac.anthropic.claude-sonnet-4-5-20250929-v1:0").provider == "anthropic"
+    assert lookup_provider("bedrock", "claude-sonnet-4-6").provider == "anthropic"
+    assert lookup("bedrock/claude-sonnet-4-6").provider == "anthropic"
+    assert lookup_provider("anthropic", "us.anthropic.claude-sonnet-4-6").provider == "anthropic"
+    assert lookup("claude-sonnet-4-6").provider == "anthropic"
+    # The bedrock/ path and any ASCII case reach the same rows.
+    assert lookup("bedrock/us.anthropic.claude-sonnet-4-6") is lookup("US.ANTHROPIC.CLAUDE-SONNET-4-6")
+    assert lookup_provider("bedrock", "bedrock/us.anthropic.claude-sonnet-4-6").input == 3.3
+
+
+def test_new_geographic_profile_prefixes():
+    for prefix in ("jp.", "au.", "ca."):
+        p = lookup(f"{prefix}anthropic.claude-opus-4-1-20250805-v1:0")
+        assert p is not None and p.input == 15.0, prefix

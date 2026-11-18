@@ -268,9 +268,10 @@ export declare function providerRows(provider: Provider | string): Price[];
 /**
  * Finds `model` as sold by `provider` (a {@link Provider} or a name such as `'groq'`,
  * `'together_ai'` or `'vertex_ai'`), with the same id handling as {@link lookup}. When the
- * provider has no row for it, the rows of its {@link fallbackProviders} are tried, so Claude on
- * Bedrock gets Anthropic's row. `null` when the name is not a known provider or the table has
- * no price for the model there.
+ * provider has no row for it, the rows of its {@link fallbackProviders} are tried, so a Claude
+ * id Bedrock does not list gets Anthropic's row. Bedrock's own Claude rows (its regional and
+ * global prices) match their exact Bedrock ids. `null` when the name is not a known provider or
+ * the table has no price for the model there.
  */
 export declare function lookupProvider(provider: Provider | string, model: string): Price | null;
 /**

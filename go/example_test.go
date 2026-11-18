@@ -16,15 +16,15 @@ func ExampleLookupProvider() {
 	p, _ := llmprices.LookupProvider("groq", "openai/gpt-oss-120b")
 	fmt.Println(p.Provider, *p.Input, *p.Output)
 
-	// Bedrock has no rows of its own: Claude on Bedrock gets Anthropic's list price.
-	p, _ = llmprices.LookupProvider("bedrock_converse", "us.anthropic.claude-sonnet-4-20250514-v1:0")
-	fmt.Println(p.Provider, p.Model)
+	// Claude on Bedrock: Bedrock's own price for a regional endpoint (AWS price list).
+	p, _ = llmprices.LookupProvider("bedrock_converse", "us.anthropic.claude-sonnet-4-6")
+	fmt.Println(p.Provider, *p.Input)
 
 	_, ok := llmprices.LookupProvider("ollama", "llama3")
 	fmt.Println(ok)
 	// Output:
 	// groq 0.15 0.6
-	// anthropic claude-sonnet-4-20250514
+	// bedrock 3.3
 	// false
 }
 

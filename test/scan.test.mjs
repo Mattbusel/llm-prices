@@ -25,7 +25,14 @@ function drift(name) {
 test('model ids resolve across prefixes, Bedrock ids, Vertex dates and undated Anthropic ids', () => {
   assert.equal(resolveModel(index, 'claude-opus-5-5').model, 'claude-opus-5-5');
   assert.equal(resolveModel(index, 'anthropic/claude-opus-5-5').model, 'claude-opus-5-5');
-  assert.equal(resolveModel(index, 'us.anthropic.claude-sonnet-4-20250514-v1:0').model, 'claude-sonnet-4-20250514');
+  // A Bedrock id quotes Bedrock's price, which has its own rows: skipped unless bedrock is
+  // among the chosen providers, and then compared with Bedrock's row, not Anthropic's.
+  assert.equal(resolveModel(index, 'us.anthropic.claude-sonnet-4-20250514-v1:0'), null);
+  const withBedrock = buildIndex(prices, ['anthropic', 'bedrock']);
+  assert.equal(resolveModel(withBedrock, 'us.anthropic.claude-sonnet-4-5-20250929-v1:0').input, 3.3);
+  assert.equal(resolveModel(withBedrock, 'global.anthropic.claude-sonnet-4-5-20250929-v1:0').input, 3);
+  // A Bedrock spelling Bedrock does not list still reaches Anthropic's row.
+  assert.equal(resolveModel(index, 'us.anthropic.claude-sonnet-4-20250514-v2:0').model, 'claude-sonnet-4-20250514');
   assert.equal(resolveModel(index, 'claude-opus-4-1@20250805').model, 'claude-opus-4-1-20250805');
   assert.equal(resolveModel(index, 'claude-sonnet-4-5').model, 'claude-sonnet-4-5-20250929');
   assert.equal(resolveModel(index, 'claude-haiku-4-5-20251001').model, 'claude-haiku-4-5');

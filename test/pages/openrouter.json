@@ -787,9 +787,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000015",
-    "completion": "0.0000006",
-    "input_cache_read": "0.000000015",
+    "prompt": "0.000000075",
+    "completion": "0.0000003",
+    "input_cache_read": "0.0000000075",
     "overrides": [
      {
       "utc_start": 1500,
@@ -2104,9 +2104,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000051",
-    "completion": "0.000000567",
-    "input_cache_read": "0.000000018"
+    "prompt": "0.0000000507",
+    "completion": "0.0000002028",
+    "input_cache_read": "0.000000001014"
    }
   },
   {
@@ -2422,9 +2422,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000834",
-    "completion": "0.000002501",
-    "input_cache_read": "0.000000042",
+    "prompt": "0.0000007506",
+    "completion": "0.0000022509",
+    "input_cache_read": "0.0000000378",
     "overrides": [
      {
       "utc_start": 0,
@@ -3631,9 +3631,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000132",
-    "completion": "0.000000528",
-    "input_cache_read": "0.000000033",
+    "prompt": "0.0000000825",
+    "completion": "0.00000033",
+    "input_cache_read": "0.000000020625",
     "overrides": [
      {
       "utc_start": 0,
@@ -3823,9 +3823,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000007",
+    "prompt": "0.0000006",
     "completion": "0.00000375",
-    "input_cache_read": "0.00000017"
+    "input_cache_read": "0.00000018"
    }
   },
   {
@@ -4628,9 +4628,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000435",
-    "completion": "0.00000087",
-    "input_cache_read": "0.0000000036"
+    "prompt": "0.00000048",
+    "completion": "0.0000018",
+    "input_cache_read": "0.000000096"
    }
   },
   {
@@ -4760,9 +4760,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000000765",
-    "completion": "0.000000255",
-    "input_cache_read": "0.0000000425"
+    "prompt": "0.00000009",
+    "completion": "0.0000003",
+    "input_cache_read": "0.00000005"
    }
   },
   {
@@ -7132,9 +7132,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000005",
-    "completion": "0.00000215",
-    "input_cache_read": "0.00000035"
+    "prompt": "0.000000571",
+    "completion": "0.000002286"
    }
   },
   {

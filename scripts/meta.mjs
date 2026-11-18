@@ -23,6 +23,10 @@ export const SOURCES = {
   bedrock: {
     page: 'https://aws.amazon.com/bedrock/pricing/',
     fetch: 'https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonBedrock/current/us-east-1/index.json',
+    // Claude on Bedrock is billed through a second offer file, AmazonBedrockFoundationModels,
+    // which has separate meters for the global cross-Region profile and for regional
+    // endpoints (in-Region ids and the geographic us./eu./jp./au./ca./apac. profiles).
+    fetchAnthropic: 'https://pricing.us-east-1.amazonaws.com/offers/v1.0/aws/AmazonBedrockFoundationModels/current/us-east-1/index.json',
   },
   // OpenRouter's own model list API, which is what https://openrouter.ai/models shows and bills.
   openrouter: {
@@ -192,4 +196,54 @@ export const BEDROCK_SKIP = [
   '|Nova Sonic',
   '|Nova Sonic 2.0',
   '|',
+];
+
+// Claude on Amazon Bedrock (AmazonBedrockFoundationModels price list, keyed by its `model`
+// attribute). Ids come from each model's card under
+// https://docs.aws.amazon.com/bedrock/latest/userguide/model-cards.html (`card` is the slug after
+// model-card-): `model` is the foundation-model id, `aliases` the bedrock-mantle id and the
+// geographic inference profiles the card lists (us., eu., apac., jp., au., ca.), which bill at the
+// regional price; `global` is the global cross-Region profile, which bills at the global price.
+// The price list carries the same Claude prices in every Region checked (us-east-1, us-west-2,
+// eu-central-1, ap-northeast-1, ap-southeast-2, ca-central-1 on 2026-11-18), and this table
+// reads us-east-1. Claude Mythos models are left out, as in ANTHROPIC_IDS.
+export const BEDROCK_ANTHROPIC_IDS = {
+  'Claude Fable 5': { model: 'anthropic.claude-fable-5', aliases: ["us.anthropic.claude-fable-5"], global: "global.anthropic.claude-fable-5", card: 'anthropic-claude-fable-5' },
+  'Claude Fable 5.1': { model: 'anthropic.claude-fable-5-1', aliases: ["us.anthropic.claude-fable-5-1"], global: "global.anthropic.claude-fable-5-1", card: 'anthropic-claude-fable-5-1' },
+  'Claude Fable 5.2': { model: 'anthropic.claude-fable-5-2', aliases: ["us.anthropic.claude-fable-5-2"], global: "global.anthropic.claude-fable-5-2", card: 'anthropic-claude-fable-5-2' },
+  'Claude Haiku 4.5': { model: 'anthropic.claude-haiku-4-5-20251001-v1:0', aliases: ["anthropic.claude-haiku-4-5", "au.anthropic.claude-haiku-4-5-20251001-v1:0", "eu.anthropic.claude-haiku-4-5-20251001-v1:0", "jp.anthropic.claude-haiku-4-5-20251001-v1:0", "us.anthropic.claude-haiku-4-5-20251001-v1:0"], global: "global.anthropic.claude-haiku-4-5-20251001-v1:0", card: 'anthropic-claude-haiku-4-5' },
+  'Claude Haiku 5.5': { model: 'anthropic.claude-haiku-5-5', aliases: ["au.anthropic.claude-haiku-5-5", "ca.anthropic.claude-haiku-5-5", "eu.anthropic.claude-haiku-5-5", "jp.anthropic.claude-haiku-5-5", "us.anthropic.claude-haiku-5-5"], global: "global.anthropic.claude-haiku-5-5", card: 'anthropic-claude-haiku-5-5' },
+  'Claude Opus 4.1': { model: 'anthropic.claude-opus-4-1-20250805-v1:0', aliases: ["us.anthropic.claude-opus-4-1-20250805-v1:0"], global: null, card: 'anthropic-claude-opus-4-1' },
+  'Claude Opus 4.5': { model: 'anthropic.claude-opus-4-5-20251101-v1:0', aliases: ["eu.anthropic.claude-opus-4-5-20251101-v1:0", "us.anthropic.claude-opus-4-5-20251101-v1:0"], global: "global.anthropic.claude-opus-4-5-20251101-v1:0", card: 'anthropic-claude-opus-4-5' },
+  'Claude Opus 4.6': { model: 'anthropic.claude-opus-4-6-v1', aliases: ["au.anthropic.claude-opus-4-6-v1", "eu.anthropic.claude-opus-4-6-v1", "us.anthropic.claude-opus-4-6-v1"], global: "global.anthropic.claude-opus-4-6-v1", card: 'anthropic-claude-opus-4-6' },
+  'Claude Opus 4.7': { model: 'anthropic.claude-opus-4-7', aliases: ["au.anthropic.claude-opus-4-7", "eu.anthropic.claude-opus-4-7", "jp.anthropic.claude-opus-4-7", "us.anthropic.claude-opus-4-7"], global: "global.anthropic.claude-opus-4-7", card: 'anthropic-claude-opus-4-7' },
+  'Claude Opus 4.8': { model: 'anthropic.claude-opus-4-8', aliases: ["au.anthropic.claude-opus-4-8", "eu.anthropic.claude-opus-4-8", "jp.anthropic.claude-opus-4-8", "us.anthropic.claude-opus-4-8"], global: "global.anthropic.claude-opus-4-8", card: 'anthropic-claude-opus-4-8' },
+  'Claude Opus 5': { model: 'anthropic.claude-opus-5', aliases: ["au.anthropic.claude-opus-5", "eu.anthropic.claude-opus-5", "us.anthropic.claude-opus-5"], global: "global.anthropic.claude-opus-5", card: 'anthropic-claude-opus-5' },
+  'Claude Opus 5.5': { model: 'anthropic.claude-opus-5-5', aliases: ["au.anthropic.claude-opus-5-5", "eu.anthropic.claude-opus-5-5", "jp.anthropic.claude-opus-5-5", "us.anthropic.claude-opus-5-5"], global: "global.anthropic.claude-opus-5-5", card: 'anthropic-claude-opus-5-5' },
+  'Claude Sonnet 4': { model: 'anthropic.claude-sonnet-4-20250514-v1:0', aliases: ["apac.anthropic.claude-sonnet-4-20250514-v1:0", "eu.anthropic.claude-sonnet-4-20250514-v1:0", "us.anthropic.claude-sonnet-4-20250514-v1:0"], global: "global.anthropic.claude-sonnet-4-20250514-v1:0", card: 'anthropic-claude-sonnet-4' },
+  'Claude Sonnet 4.5': { model: 'anthropic.claude-sonnet-4-5-20250929-v1:0', aliases: ["au.anthropic.claude-sonnet-4-5-20250929-v1:0", "eu.anthropic.claude-sonnet-4-5-20250929-v1:0", "jp.anthropic.claude-sonnet-4-5-20250929-v1:0", "us.anthropic.claude-sonnet-4-5-20250929-v1:0"], global: "global.anthropic.claude-sonnet-4-5-20250929-v1:0", card: 'anthropic-claude-sonnet-4-5' },
+  'Claude Sonnet 4.6': { model: 'anthropic.claude-sonnet-4-6', aliases: ["au.anthropic.claude-sonnet-4-6", "eu.anthropic.claude-sonnet-4-6", "jp.anthropic.claude-sonnet-4-6", "us.anthropic.claude-sonnet-4-6"], global: "global.anthropic.claude-sonnet-4-6", card: 'anthropic-claude-sonnet-4-6' },
+  'Claude Sonnet 5': { model: 'anthropic.claude-sonnet-5', aliases: ["au.anthropic.claude-sonnet-5", "eu.anthropic.claude-sonnet-5", "us.anthropic.claude-sonnet-5"], global: "global.anthropic.claude-sonnet-5", card: 'anthropic-claude-sonnet-5' },
+  'Claude Sonnet 5.5': { model: 'anthropic.claude-sonnet-5-5', aliases: ["au.anthropic.claude-sonnet-5-5", "ca.anthropic.claude-sonnet-5-5", "eu.anthropic.claude-sonnet-5-5", "us.anthropic.claude-sonnet-5-5"], global: "global.anthropic.claude-sonnet-5-5", card: 'anthropic-claude-sonnet-5-5' },
+};
+
+// Claude names in that price list that are left out on purpose: retired models with no model
+// card, Claude 3 Haiku (its Bedrock price is Anthropic's list price, which the Anthropic row
+// already gives), and the limited-availability Mythos models.
+export const BEDROCK_ANTHROPIC_SKIP = [
+  'Claude 2.0',
+  'Claude 2.1',
+  'Claude 3 Haiku',
+  'Claude 3 Opus',
+  'Claude 3 Sonnet',
+  'Claude 3.5 Haiku',
+  'Claude 3.5 Sonnet',
+  'Claude 3.5 Sonnet v2',
+  'Claude 3.7 Sonnet',
+  'Claude Instant',
+  'Claude Mythos 5',
+  'Claude Mythos 5.1',
+  'Claude Mythos 5.2',
+  'Claude Mythos Preview',
+  'Claude Opus 4',
 ];

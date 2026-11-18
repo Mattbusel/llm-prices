@@ -44,7 +44,7 @@ from ._core import (
 #: by ``from llm_prices import *``, where it would hide the builtin ``all``.
 all = all_prices
 
-__version__ = "1.7.2"
+__version__ = "1.8.0"
 
 __all__ = [
     "GENERATED",

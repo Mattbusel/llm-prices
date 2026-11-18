@@ -165,11 +165,14 @@ rather than priced at someone else's list price. With no provider at all the mod
 looked up.
 
 **Cloud-hosted models.** A model served by a cloud platform the table has no row for (Claude on
-Bedrock or Vertex AI, OpenAI models on Azure) is priced at the model maker's own list price. The
-span then gets `llm_prices.price.fallback = true` and the matched row in `llm_prices.price.row`
-(for example `anthropic/claude-sonnet-4-20250514`), so the approximation is visible. The cloud's
-own bill can differ: regional and data-zone endpoints on these platforms are priced above the
-global list price, and committed-use discounts are not in any public table.
+Vertex AI, OpenAI models on Azure, a Claude id Bedrock does not list) is priced at the model
+maker's own list price. The span then gets `llm_prices.price.fallback = true` and the matched
+row in `llm_prices.price.row` (for example `anthropic/claude-opus-4-20250514`), so the
+approximation is visible. The cloud's own bill can differ: regional and data-zone endpoints on
+these platforms are priced above the global list price, and committed-use discounts are not in
+any public table. Claude on Bedrock under one of Bedrock's own ids
+(`us.anthropic.claude-sonnet-4-6`, `global.anthropic.claude-sonnet-4-6`) is priced from
+Bedrock's rows since llm-prices 1.8.0 (Go module `go/v0.4.0`), with no fallback flag.
 
 **Embeddings.** A span with no output tokens (embeddings) is priced on its input, cache reads
 and batch input, also on rows that list no output price. Output tokens on a row with no output

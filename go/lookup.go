@@ -108,6 +108,11 @@ func (p Provider) Lookup(model string) (Price, bool) {
 func (p Provider) lookupIndex(table []Price, model string) int {
 	name := string(p)
 	lower := asciiLower(strings.TrimSpace(model))
+	if self, rest, ok := idHint(lower); ok && self == p && rest != "" {
+		// The id names this provider (bedrock/us.anthropic.claude-...): look up the rest, so
+		// exact-id rows such as Bedrock's Claude rows still match.
+		model, lower = rest, rest
+	}
 	if host, _, ok := idHint(lower); ok && hosts[host] && host != p && !contains(fallbacks[host], p) {
 		// The id names another host or platform, which sells at its own price. Only this
 		// provider's own ids that start with the same path match (OpenRouter lists
@@ -153,6 +158,11 @@ func lookupIndex(table []Price, model string) int {
 			return i
 		}
 		return exact(table, lower, func(r *Price) bool { return platforms[r.Provider] })
+	}
+	// An exact Bedrock id comes first: us.anthropic.claude-sonnet-4-5-20250929-v1:0 is
+	// Bedrock's regional price, not Anthropic's list price.
+	if i := exact(table, lower, func(r *Price) bool { return r.Provider == string(Bedrock) }); i >= 0 {
+		return i
 	}
 	if i := resolve(table, lower, func(r *Price) bool { return !platforms[r.Provider] }); i >= 0 {
 		return i
@@ -244,8 +254,19 @@ var prefixes = []string{
 	"us.anthropic.",
 	"eu.anthropic.",
 	"apac.anthropic.",
+	"jp.anthropic.",
+	"au.anthropic.",
+	"ca.anthropic.",
 	"global.anthropic.",
 	"anthropic.",
+}
+
+// exactOnly reports whether r is one of Bedrock's Claude rows (anthropic.claude-...,
+// global.anthropic.claude-...), which match only their exact ids. A Claude id in another
+// spelling keeps Anthropic's list price.
+func exactOnly(r *Price) bool {
+	m := asciiLower(r.Model)
+	return r.Provider == string(Bedrock) && (strings.HasPrefix(m, "anthropic.") || strings.HasPrefix(m, "global.anthropic."))
 }
 
 func asciiLower(s string) string {
@@ -370,6 +391,13 @@ func resolve(table []Price, id string, keep func(*Price) bool) int {
 	if s == "" {
 		return -1
 	}
+	fuzzy := rows[:0:0]
+	for _, i := range rows {
+		if !exactOnly(&table[i]) {
+			fuzzy = append(fuzzy, i)
+		}
+	}
+	rows = fuzzy
 	strippedEq := func(want string) int {
 		for _, i := range rows {
 			for _, m := range ids(&table[i]) {

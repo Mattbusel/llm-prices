@@ -97,8 +97,10 @@ def test_the_same_model_at_two_hosts_keeps_two_prices():
         ("deepseek/deepseek-chat", "deepseek"),
         ("mistral/mistral-large-latest", "mistral"),
         ("xai/grok-4.7", "xai"),
-        # Platforms that charge the maker's list price keep resolving to the maker's row.
-        ("bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0", "anthropic"),
+        # Platforms that charge the maker's list price keep resolving to the maker's row; an
+        # exact Bedrock Claude id gets Bedrock's own row.
+        ("bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0", "bedrock"),
+        ("bedrock/us.anthropic.claude-sonnet-4-20250514-v2:0", "anthropic"),
         ("vertex_ai/gemini-2.5-pro", "google"),
         ("vertex_ai/claude-opus-4-1@20250805", "anthropic"),
         ("azure/gpt-4o", "openai"),
@@ -161,7 +163,7 @@ def test_lookup_provider_does_not_cross_hosts():
         ("bedrock/amazon.nova-pro-v1:0", "bedrock", (0.8, 3.2)),
         ("bedrock/meta.llama4-maverick-17b-instruct-v1:0", "bedrock", (0.24, 0.97)),
         # OpenRouter's own price from its model list.
-        ("openrouter/deepseek/deepseek-r1-0528", "openrouter", (0.5, 2.15)),
+        ("openrouter/deepseek/deepseek-r1-0528", "openrouter", (0.571, 2.286)),
         ("openrouter/perplexity/sonar-pro", "openrouter", (3.0, 15.0)),
         # Perplexity's Agent API price for the models it serves.
         ("perplexity/sonar", "perplexity", (0.25, 2.5)),

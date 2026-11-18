@@ -823,16 +823,25 @@ class Provider(str, Enum):
     def lookup(self, model: str) -> Optional[Price]:
         """Finds ``model`` among the rows this provider sells, with the same id handling as
         :func:`lookup`. When the provider has no row for it, the rows of its
-        :meth:`fallback_providers` are tried, so Claude on Bedrock gets Anthropic's row.
-        ``None`` when neither has the model.
+        :meth:`fallback_providers` are tried, so a Claude id Bedrock does not list gets
+        Anthropic's row. ``None`` when neither has the model.
 
-        >>> Provider.BEDROCK.lookup("global.anthropic.claude-opus-4-5-20251101-v1:0").provider
+        >>> Provider.BEDROCK.lookup("global.anthropic.claude-opus-4-5-20251101-v1:0").input
+        5.0
+        >>> Provider.BEDROCK.lookup("us.anthropic.claude-opus-4-5-20251101-v1:0").input
+        5.5
+        >>> Provider.BEDROCK.lookup("claude-opus-4-5").provider
         'anthropic'
         >>> Provider.GROQ.lookup("claude-opus-4-5") is None
         True
         """
         name = self.value
         lower = _ascii_lower(model.strip())
+        hint = _id_hint(lower)
+        if hint is not None and hint[0] is self and hint[1]:
+            # The id names this provider (``bedrock/us.anthropic.claude-...``): look up the rest,
+            # so exact-id rows such as Bedrock's Claude rows still match.
+            model = lower = hint[1]
         host = _host_hint(lower)
         if host is not None and host is not self and self not in host.fallback_providers():
             # The id names another host or platform, which sells at its own price. Only this
@@ -941,6 +950,9 @@ _PREFIXES = (
     "us.anthropic.",
     "eu.anthropic.",
     "apac.anthropic.",
+    "jp.anthropic.",
+    "au.anthropic.",
+    "ca.anthropic.",
     "global.anthropic.",
     "anthropic.",
 )
@@ -1006,6 +1018,12 @@ def _carries(p: Price, prefix: str) -> bool:
     return any(_ascii_lower(m).startswith(prefix) for m in _ids(p))
 
 
+def _exact_only(p: Price) -> bool:
+    """Bedrock's Claude rows (``anthropic.claude-...``, ``global.anthropic.claude-...``) match
+    only their exact ids. A Claude id in another spelling keeps Anthropic's list price."""
+    return p.provider == "bedrock" and (_ascii_lower(p.model).startswith("anthropic.") or _ascii_lower(p.model).startswith("global.anthropic."))
+
+
 def _exact(lower: str, keep: Callable[[Price], bool]) -> Optional[Price]:
     """The first kept row whose id or an alias is ``lower``, ignoring ASCII case."""
     for p in _PRICES:
@@ -1023,6 +1041,7 @@ def _resolve(id: str, keep: Callable[[Price], bool]) -> Optional[Price]:
     s = _normalize_id(lower)
     if not s:
         return None
+    rows = [p for p in rows if not _exact_only(p)]
 
     def stripped_eq(want: str) -> Optional[Price]:
         for p in rows:
@@ -1100,8 +1119,14 @@ def lookup(model: str) -> Optional[Price]:
         return _resolve(lower, lambda p: p.provider not in _PLATFORMS and _carries(p, prefix)) or _exact(lower, lambda p: p.provider in _PLATFORMS)
     # Without a provider path, the rows of Bedrock and OpenRouter, which resell other makers'
     # models, are only found by their exact id (``deepseek.r1-v1:0``,
-    # ``meta-llama/llama-3.3-70b-instruct``), so ``gpt-4`` never takes OpenRouter's row.
-    return _resolve(lower, lambda p: p.provider not in _PLATFORMS) or _exact(lower, lambda p: p.provider in _PLATFORMS)
+    # ``meta-llama/llama-3.3-70b-instruct``), so ``gpt-4`` never takes OpenRouter's row. An
+    # exact Bedrock id comes first: ``us.anthropic.claude-sonnet-4-5-20250929-v1:0`` is
+    # Bedrock's regional price, not Anthropic's list price.
+    return (
+        _exact(lower, lambda p: p.provider == "bedrock")
+        or _resolve(lower, lambda p: p.provider not in _PLATFORMS)
+        or _exact(lower, lambda p: p.provider in _PLATFORMS)
+    )
 
 
 def lookup_provider(provider: Union[str, Provider], model: str) -> Optional[Price]:
@@ -1141,8 +1166,12 @@ def lookup_provider(provider: Union[str, Provider], model: str) -> Optional[Pric
     >>> p = lookup_provider("google_genai", "gemini-2.5-flash")
     >>> p.input, p.output
     (0.3, 2.5)
-    >>> lookup_provider("bedrock", "us.anthropic.claude-sonnet-4-20250514-v1:0").model
-    'claude-sonnet-4-20250514'
+    >>> lookup_provider("bedrock", "us.anthropic.claude-sonnet-4-6").input  # Bedrock's regional price
+    3.3
+    >>> lookup_provider("bedrock", "global.anthropic.claude-sonnet-4-6").input  # global profile
+    3.0
+    >>> lookup_provider("bedrock", "claude-sonnet-4-6").provider  # not a Bedrock id: list price
+    'anthropic'
     >>> lookup_provider("ollama", "llama3") is None
     True
     """

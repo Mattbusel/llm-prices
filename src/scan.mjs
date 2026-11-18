@@ -2,7 +2,7 @@
 // Node standard library only. See README "How matching works" for the rules.
 
 const PREFIX = /^(?:(?:models|anthropic|openai|google|gemini|vertex_ai|vertex|bedrock|azure|openrouter|deepseek|litellm)\/)+/;
-const BEDROCK = /^(?:(?:us|eu|apac|au|jp|global)\.)?anthropic\./;
+const BEDROCK = /^(?:(?:us|eu|apac|au|jp|ca|global)\.)?anthropic\./;
 const DATE8 = /-(20\d{6})$/;
 
 // Providers whose rows the daily refresh re-reads. The other rows in prices.json were checked

@@ -22,11 +22,33 @@ fn shared_id(p: &Price, id: &str) -> bool {
     all().iter().any(|q| q.provider != p.provider && ids(q).any(|m| m.eq_ignore_ascii_case(id)))
 }
 
+/// Bedrock's own Claude row when `form` (without a `bedrock/` path) is one of its exact ids:
+/// those ids get Bedrock's regional or global price, not Anthropic's list price.
+fn bedrock_claude(form: &str) -> Option<&'static Price> {
+    let f = form.to_ascii_lowercase();
+    let f = f.strip_prefix("bedrock/").unwrap_or(&f).to_string();
+    all().iter().find(|q| {
+        q.provider == "bedrock"
+            && (q.model.starts_with("anthropic.") || q.model.starts_with("global.anthropic."))
+            && ids(q).any(|m| m.eq_ignore_ascii_case(&f))
+    })
+}
+
+/// The row a form of `p`'s id should reach: `p`, or Bedrock's Claude row for an exact Bedrock id.
+fn expected(form: &str, p: &'static Price) -> &'static Price {
+    if p.provider == "anthropic" {
+        bedrock_claude(form).unwrap_or(p)
+    } else {
+        p
+    }
+}
+
 #[track_caller]
-fn assert_resolves(form: &str, p: &Price) {
+fn assert_resolves(form: &str, p: &'static Price) {
+    let want = expected(form, p);
     match lookup(form) {
-        Some(found) => assert_eq!(found.model, p.model, "{form:?} resolved to the wrong row"),
-        None => panic!("{form:?} did not resolve (expected {})", p.model),
+        Some(found) => assert_eq!(found.model, want.model, "{form:?} resolved to the wrong row"),
+        None => panic!("{form:?} did not resolve (expected {})", want.model),
     }
 }
 
@@ -115,7 +137,7 @@ fn provider_prefixes_resolve() {
                 // The prefix names the provider, so plain lookup finds this exact row even
                 // when another host sells the same id.
                 if !matches!(*prefix, "openrouter/" | "us.anthropic." | "models/") {
-                    assert!(std::ptr::eq(lookup(&form).unwrap(), p), "{form}");
+                    assert!(std::ptr::eq(lookup(&form).unwrap(), expected(&form, p)), "{form}");
                 }
             }
         }
@@ -126,10 +148,11 @@ fn provider_prefixes_resolve() {
 fn bedrock_ids_resolve_for_anthropic_rows() {
     for p in all().iter().filter(|p| p.provider == "anthropic") {
         for id in ids(p) {
-            for region in ["", "us.", "eu.", "apac.", "global."] {
-                assert_resolves(&format!("{region}anthropic.{id}-v1:0"), p);
+            for region in ["", "us.", "eu.", "apac.", "jp.", "au.", "ca.", "global."] {
+                let form = format!("{region}anthropic.{id}-v1:0");
+                assert_resolves(&form, p);
                 assert_resolves(&format!("{region}anthropic.{id}-v2:0"), p);
-                assert!(std::ptr::eq(lookup_provider(Provider::Bedrock, &format!("{region}anthropic.{id}-v1:0")).unwrap(), p));
+                assert!(std::ptr::eq(lookup_provider(Provider::Bedrock, &form).unwrap(), expected(&form, p)));
             }
         }
     }
@@ -186,7 +209,13 @@ fn dated_openai_ids_resolve_to_the_base_row() {
         for id in ids(p) {
             if platform_row(p) {
                 let named = format!("{}/{id}-2099-01-01", p.provider);
-                assert!(lookup(&named).is_some_and(|f| std::ptr::eq(f, p)), "{named}");
+                if bedrock_claude(id).is_some_and(|q| std::ptr::eq(q, p)) {
+                    // Bedrock's Claude rows only match their exact ids; other spellings get
+                    // Anthropic's list price.
+                    assert!(lookup(&named).map_or(true, |f| f.provider == "anthropic"), "{named}");
+                } else {
+                    assert!(lookup(&named).is_some_and(|f| std::ptr::eq(f, p)), "{named}");
+                }
             } else {
                 assert_resolves(&format!("{id}-2099-01-01"), p);
             }
@@ -393,7 +422,8 @@ fn first_party_prefixes_still_resolve() {
         ("deepseek/deepseek-chat", "deepseek"),
         ("mistral/mistral-large-latest", "mistral"),
         ("xai/grok-4.7", "xai"),
-        ("bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0", "anthropic"),
+        ("bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0", "bedrock"),
+        ("bedrock/us.anthropic.claude-sonnet-4-20250514-v2:0", "anthropic"),
         ("vertex_ai/gemini-2.5-pro", "google"),
         ("azure/gpt-4o", "openai"),
     ] {
@@ -428,4 +458,38 @@ fn prices_version_names_a_sha256() {
     let hex = v.strip_prefix("sha256:").expect("sha256: prefix");
     assert_eq!(hex.len(), 64);
     assert!(hex.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)));
+}
+
+#[test]
+fn bedrock_claude_regional_and_global_prices() {
+    // AWS price list: regional endpoints (in-Region id, geographic profiles) are 10% above the
+    // global profile for Claude Sonnet 4.5 and later; the global profile is Anthropic's list price.
+    let regional = lookup("us.anthropic.claude-sonnet-4-5-20250929-v1:0").unwrap();
+    assert_eq!((regional.provider, regional.input, regional.output, regional.cache_read), ("bedrock", Some(3.3), Some(16.5), Some(0.33)));
+    assert_eq!((regional.batch_input, regional.batch_output), (Some(1.65), Some(8.25)));
+    for profile in ["eu.", "jp.", "au.", ""] {
+        assert!(std::ptr::eq(lookup(&format!("{profile}anthropic.claude-sonnet-4-5-20250929-v1:0")).unwrap(), regional), "{profile}");
+    }
+    let global = lookup("global.anthropic.claude-sonnet-4-5-20250929-v1:0").unwrap();
+    assert_eq!((global.provider, global.input, global.output), ("bedrock", Some(3.0), Some(15.0)));
+    let anthropic = lookup_provider("anthropic", "claude-sonnet-4-5").unwrap();
+    assert_eq!((global.input, global.output, global.cache_read), (anthropic.input, anthropic.output, anthropic.cache_read));
+    assert_eq!(lookup("us.anthropic.claude-sonnet-4-20250514-v1:0").unwrap().input, Some(3.0));
+}
+
+#[test]
+fn bedrock_claude_rows_only_match_exact_ids() {
+    assert_eq!(lookup("apac.anthropic.claude-sonnet-4-5-20250929-v1:0").unwrap().provider, "anthropic");
+    assert_eq!(lookup_provider("bedrock", "claude-sonnet-4-6").unwrap().provider, "anthropic");
+    assert_eq!(lookup("bedrock/claude-sonnet-4-6").unwrap().provider, "anthropic");
+    assert_eq!(lookup_provider("anthropic", "us.anthropic.claude-sonnet-4-6").unwrap().provider, "anthropic");
+    assert_eq!(lookup("claude-sonnet-4-6").unwrap().provider, "anthropic");
+    assert!(std::ptr::eq(lookup("bedrock/us.anthropic.claude-sonnet-4-6").unwrap(), lookup("US.ANTHROPIC.CLAUDE-SONNET-4-6").unwrap()));
+    assert_eq!(lookup_provider("bedrock", "bedrock/us.anthropic.claude-sonnet-4-6").unwrap().input, Some(3.3));
+    let p = lookup("us.anthropic.claude-haiku-5-5").unwrap();
+    let maker = lookup_provider("anthropic", "claude-haiku-5-5").unwrap();
+    assert_eq!(p.long_context.unwrap().threshold_tokens, maker.long_context.unwrap().threshold_tokens);
+    for prefix in ["jp.", "au.", "ca."] {
+        assert_eq!(lookup(&format!("{prefix}anthropic.claude-opus-4-1-20250805-v1:0")).unwrap().input, Some(15.0), "{prefix}");
+    }
 }

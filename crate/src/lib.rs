@@ -13,7 +13,7 @@
 //! let p = llm_prices::lookup("claude-sonnet-5-5").unwrap();
 //! assert_eq!(p.input, Some(2.0));
 //! assert_eq!(p.cache_read, Some(0.10));
-//! // Dated ids, Bedrock ids and provider prefixes resolve to the same row.
+//! // Dated ids and provider prefixes resolve to the same row.
 //! assert!(llm_prices::lookup("anthropic/claude-sonnet-5-5").is_some());
 //! assert!(llm_prices::lookup("claude-sonnet-4-5").is_some());
 //! // So do OpenAI snapshot ids and -latest aliases.
@@ -728,7 +728,22 @@ const PREFIXES: &[&str] = &[
 ];
 
 /// Bedrock's vendor prefix with an optional cross-region inference profile.
-const BEDROCK_PREFIXES: &[&str] = &["us.anthropic.", "eu.anthropic.", "apac.anthropic.", "global.anthropic.", "anthropic."];
+const BEDROCK_PREFIXES: &[&str] = &[
+    "us.anthropic.",
+    "eu.anthropic.",
+    "apac.anthropic.",
+    "jp.anthropic.",
+    "au.anthropic.",
+    "ca.anthropic.",
+    "global.anthropic.",
+    "anthropic.",
+];
+
+/// Bedrock's Claude rows (`anthropic.claude-...`, `global.anthropic.claude-...`) match only
+/// their exact ids. A Claude id in another spelling keeps Anthropic's list price.
+pub(crate) fn exact_only(p: &Price) -> bool {
+    p.provider == "bedrock" && (strip_ci(p.model, "anthropic.").is_some() || strip_ci(p.model, "global.anthropic.").is_some())
+}
 
 /// `s` without a leading `prefix`, ignoring ASCII case.
 fn strip_ci<'a>(s: &'a str, prefix: &str) -> Option<&'a str> {
@@ -812,12 +827,14 @@ fn exact(lower: &str, keep: &dyn Fn(&Price) -> bool) -> Option<&'static Price> {
 /// 3. the base row of a `-latest`, `-YYYYMMDD` or `-YYYY-MM-DD` id;
 /// 4. a dated row whose undated form is the id (`claude-sonnet-4-5` finds
 ///    `claude-sonnet-4-5-20250929`).
+///
+/// Steps 2 to 4 skip Bedrock's Claude rows, which only match their exact ids ([`exact_only`]).
 pub(crate) fn resolve(id: &str, keep: &dyn Fn(&Price) -> bool) -> Option<&'static Price> {
-    let rows = || all().iter().filter(|p| keep(p));
     let lower = id.trim().to_ascii_lowercase();
-    if let Some(p) = rows().find(|p| ids(p).any(|m| m.eq_ignore_ascii_case(&lower))) {
+    if let Some(p) = all().iter().filter(|p| keep(p)).find(|p| ids(p).any(|m| m.eq_ignore_ascii_case(&lower))) {
         return Some(p);
     }
+    let rows = || all().iter().filter(|p| keep(p) && !exact_only(p));
     let s = normalize(&lower);
     if s.is_empty() {
         return None;
@@ -883,6 +900,9 @@ pub(crate) fn resolve(id: &str, keep: &dyn Fn(&Price) -> bool) -> Option<&'stati
 /// assert!(lookup("accounts/fireworks/models/deepseek-r1").is_none());
 /// // Bedrock's own price for DeepSeek-R1 (AWS price list, us-east-1).
 /// assert_eq!(lookup("bedrock/us.deepseek.r1-v1:0").unwrap().input, Some(1.35));
+/// // Claude on Bedrock: regional endpoints and the global profile bill differently.
+/// assert_eq!(lookup("us.anthropic.claude-sonnet-4-6").unwrap().input, Some(3.3));
+/// assert_eq!(lookup("global.anthropic.claude-sonnet-4-6").unwrap().input, Some(3.0));
 /// ```
 pub fn lookup(id: &str) -> Option<&'static Price> {
     let lower = id.trim().to_ascii_lowercase();
@@ -903,8 +923,12 @@ pub fn lookup(id: &str) -> Option<&'static Price> {
             .or_else(|| exact(&lower, &|p| provider::is_platform(p.provider)));
     }
     // Without a provider path, Bedrock and OpenRouter rows, which resell other makers' models,
-    // are only found by their exact id, so `gpt-4` never takes OpenRouter's `openai/gpt-4`.
-    resolve(&lower, &|p| !provider::is_platform(p.provider)).or_else(|| exact(&lower, &|p| provider::is_platform(p.provider)))
+    // are only found by their exact id, so `gpt-4` never takes OpenRouter's `openai/gpt-4`. An
+    // exact Bedrock id comes first: `us.anthropic.claude-sonnet-4-5-20250929-v1:0` is Bedrock's
+    // regional price, not Anthropic's list price.
+    exact(&lower, &|p| p.provider == "bedrock")
+        .or_else(|| resolve(&lower, &|p| !provider::is_platform(p.provider)))
+        .or_else(|| exact(&lower, &|p| provider::is_platform(p.provider)))
 }
 
 #[cfg(test)]
@@ -923,7 +947,8 @@ mod tests {
     #[test]
     fn lookups() {
         assert_eq!(lookup("claude-opus-5-5").unwrap().input, Some(4.0));
-        assert_eq!(lookup("us.anthropic.claude-sonnet-4-20250514-v1:0").unwrap().model, "claude-sonnet-4-20250514");
+        assert_eq!(lookup("us.anthropic.claude-sonnet-4-20250514-v1:0").unwrap().model, "anthropic.claude-sonnet-4-20250514-v1:0");
+        assert_eq!(lookup("us.anthropic.claude-sonnet-4-20250514-v2:0").unwrap().model, "claude-sonnet-4-20250514");
         assert_eq!(lookup("claude-opus-4-1@20250805").unwrap().model, "claude-opus-4-1-20250805");
         assert_eq!(lookup("claude-haiku-4-5-20251001").unwrap().model, "claude-haiku-4-5");
         assert_eq!(lookup("models/gemini-2.5-pro").unwrap().output, Some(10.0));

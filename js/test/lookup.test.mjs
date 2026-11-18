@@ -10,10 +10,25 @@ const ids = (p) => [p.model, ...p.aliases];
 const undated = (id) => id.match(/^(.*)-(20\d{6})$/)?.[1] ?? id;
 const sharedId = (p, id) => all().some((q) => q.provider !== p.provider && ids(q).some((m) => m.toLowerCase() === id.toLowerCase()));
 
+// Bedrock's own Claude row when `form` (without a `bedrock/` path) is one of its exact ids:
+// those ids get Bedrock's regional or global price, not Anthropic's list price.
+function bedrockClaude(form) {
+  const f = form.toLowerCase().replace(/^bedrock\//, '');
+  return (
+    all().find(
+      (q) => q.provider === 'bedrock' && (q.model.startsWith('anthropic.') || q.model.startsWith('global.anthropic.')) && ids(q).some((m) => m.toLowerCase() === f),
+    ) ?? null
+  );
+}
+
+// The row a form of `p`'s id should reach: `p`, or Bedrock's Claude row for an exact Bedrock id.
+const expected = (form, p) => (p.provider === 'anthropic' ? (bedrockClaude(form) ?? p) : p);
+
 function assertResolves(form, p) {
   const found = lookup(form);
-  assert.ok(found, `${JSON.stringify(form)} did not resolve (expected ${p.model})`);
-  assert.equal(found.model, p.model, `${JSON.stringify(form)} resolved to the wrong row`);
+  const want = expected(form, p);
+  assert.ok(found, `${JSON.stringify(form)} did not resolve (expected ${want.model})`);
+  assert.equal(found.model, want.model, `${JSON.stringify(form)} resolved to the wrong row`);
 }
 
 function assertResolvesUnderProvider(form, p) {
@@ -32,7 +47,8 @@ test('every row has a source and a date', () => {
 
 test('lookups', () => {
   assert.equal(lookup('claude-opus-5-5').input, 4);
-  assert.equal(lookup('us.anthropic.claude-sonnet-4-20250514-v1:0').model, 'claude-sonnet-4-20250514');
+  assert.equal(lookup('us.anthropic.claude-sonnet-4-20250514-v1:0').model, 'anthropic.claude-sonnet-4-20250514-v1:0');
+  assert.equal(lookup('us.anthropic.claude-sonnet-4-20250514-v2:0').model, 'claude-sonnet-4-20250514');
   assert.equal(lookup('claude-opus-4-1@20250805').model, 'claude-opus-4-1-20250805');
   assert.equal(lookup('claude-haiku-4-5-20251001').model, 'claude-haiku-4-5');
   assert.equal(lookup('models/gemini-2.5-pro').output, 10);
@@ -128,7 +144,7 @@ test('provider prefixes resolve', () => {
           continue;
         }
         assertResolves(form, p);
-        if (!['openrouter/', 'us.anthropic.', 'models/'].includes(prefix)) assert.equal(lookup(form), p, form);
+        if (!['openrouter/', 'us.anthropic.', 'models/'].includes(prefix)) assert.equal(lookup(form), expected(form, p), form);
       }
     }
   }
@@ -137,10 +153,11 @@ test('provider prefixes resolve', () => {
 test('Bedrock ids resolve for Anthropic rows', () => {
   for (const p of all().filter((p) => p.provider === 'anthropic')) {
     for (const id of ids(p)) {
-      for (const region of ['', 'us.', 'eu.', 'apac.', 'global.']) {
-        assertResolves(`${region}anthropic.${id}-v1:0`, p);
+      for (const region of ['', 'us.', 'eu.', 'apac.', 'jp.', 'au.', 'ca.', 'global.']) {
+        const form = `${region}anthropic.${id}-v1:0`;
+        assertResolves(form, p);
         assertResolves(`${region}anthropic.${id}-v2:0`, p);
-        assert.equal(lookupProvider(Provider.Bedrock, `${region}anthropic.${id}-v1:0`), p);
+        assert.equal(lookupProvider(Provider.Bedrock, form), expected(form, p));
       }
     }
   }
@@ -187,8 +204,13 @@ test('dated OpenAI ids resolve to the base row', () => {
   assert.equal(lookup('gpt-4o').input, 2.5);
   for (const p of all()) {
     for (const id of ids(p)) {
-      if (platformRow(p)) assert.equal(lookup(`${p.provider}/${id}-2099-01-01`), p, id);
-      else assertResolves(`${id}-2099-01-01`, p);
+      if (platformRow(p)) {
+        const found = lookup(`${p.provider}/${id}-2099-01-01`);
+        // Bedrock's Claude rows only match their exact ids; other spellings get Anthropic's
+        // list price.
+        if (bedrockClaude(id) === p) assert.ok(found === null || found.provider === 'anthropic', id);
+        else assert.equal(found, p, id);
+      } else assertResolves(`${id}-2099-01-01`, p);
     }
   }
 });
@@ -244,7 +266,8 @@ test('provider doc examples', () => {
   const p = lookupProvider(Provider.Together, 'moonshotai/Kimi-K3');
   assert.deepEqual([p.provider, p.input], ['together', 3]);
   assert.ok(lookupProvider(Provider.Fireworks, 'accounts/fireworks/models/kimi-k3'));
-  assert.equal(lookupProvider(Provider.Bedrock, 'global.anthropic.claude-opus-4-5-20251101-v1:0').provider, 'anthropic');
+  assert.equal(lookupProvider(Provider.Bedrock, 'global.anthropic.claude-opus-4-5-20251101-v1:0').provider, 'bedrock');
+  assert.equal(lookupProvider(Provider.Bedrock, 'claude-opus-4-5').provider, 'anthropic');
   assert.equal(lookupProvider(Provider.Groq, 'claude-opus-4-5'), null);
   assert.ok(providerRows('groq').every((p) => p.provider === 'groq'));
   assert.ok(providerRows('groq').some((p) => p.model === 'openai/gpt-oss-120b'));
@@ -388,7 +411,8 @@ test('first-party prefixes still resolve', () => {
     ['deepseek/deepseek-chat', 'deepseek'],
     ['mistral/mistral-large-latest', 'mistral'],
     ['xai/grok-4.7', 'xai'],
-    ['bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0', 'anthropic'],
+    ['bedrock/us.anthropic.claude-sonnet-4-20250514-v1:0', 'bedrock'],
+    ['bedrock/us.anthropic.claude-sonnet-4-20250514-v2:0', 'anthropic'],
     ['vertex_ai/gemini-2.5-pro', 'google'],
     ['azure/gpt-4o', 'openai'],
   ]) {
@@ -411,4 +435,25 @@ test('lookupProvider does not cross hosts', () => {
   assert.equal(lookupProvider('groq', 'fireworks_ai/accounts/fireworks/models/gpt-oss-120b'), null);
   assert.equal(lookupProvider('openrouter', 'groq/openai/gpt-oss-120b'), null);
   assert.equal(lookupProvider('openai', 'azure/gpt-4.1')?.provider, 'openai');
+});
+
+test('Claude on Bedrock: regional and global prices', () => {
+  // AWS price list: regional endpoints (in-Region id, geographic profiles) are 10% above the
+  // global profile for Claude Sonnet 4.5 and later; the global profile is Anthropic's list price.
+  const regional = lookup('us.anthropic.claude-sonnet-4-5-20250929-v1:0');
+  assert.deepEqual([regional.provider, regional.input, regional.output, regional.cache_read], ['bedrock', 3.3, 16.5, 0.33]);
+  for (const profile of ['eu.', 'jp.', 'au.', '']) assert.equal(lookup(`${profile}anthropic.claude-sonnet-4-5-20250929-v1:0`), regional, profile);
+  const global = lookup('global.anthropic.claude-sonnet-4-5-20250929-v1:0');
+  const maker = lookupProvider('anthropic', 'claude-sonnet-4-5');
+  assert.deepEqual([global.provider, global.input, global.output], ['bedrock', maker.input, maker.output]);
+});
+
+test('Claude on Bedrock: rows only match exact ids', () => {
+  assert.equal(lookup('apac.anthropic.claude-sonnet-4-5-20250929-v1:0').provider, 'anthropic');
+  assert.equal(lookupProvider('bedrock', 'claude-sonnet-4-6').provider, 'anthropic');
+  assert.equal(lookup('bedrock/claude-sonnet-4-6').provider, 'anthropic');
+  assert.equal(lookupProvider('anthropic', 'us.anthropic.claude-sonnet-4-6').provider, 'anthropic');
+  assert.equal(lookup('bedrock/us.anthropic.claude-sonnet-4-6'), lookup('US.ANTHROPIC.CLAUDE-SONNET-4-6'));
+  assert.equal(lookupProvider('bedrock', 'bedrock/us.anthropic.claude-sonnet-4-6').input, 3.3);
+  for (const prefix of ['jp.', 'au.', 'ca.']) assert.equal(lookup(`${prefix}anthropic.claude-opus-4-1-20250805-v1:0`)?.input, 15, prefix);
 });

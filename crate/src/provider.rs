@@ -194,15 +194,26 @@ impl Provider {
     /// assert_eq!((p.provider, p.input), ("together", Some(3.0)));
     /// // Same model on Fireworks, under Fireworks' id.
     /// assert!(Provider::Fireworks.lookup("accounts/fireworks/models/kimi-k3").is_some());
-    /// // Claude on Bedrock is priced from Anthropic's row.
-    /// let claude = Provider::Bedrock.lookup("global.anthropic.claude-opus-4-5-20251101-v1:0").unwrap();
-    /// assert_eq!(claude.provider, "anthropic");
+    /// // Claude on Bedrock: Bedrock's own price for each endpoint kind (AWS price list).
+    /// let global = Provider::Bedrock.lookup("global.anthropic.claude-opus-4-5-20251101-v1:0").unwrap();
+    /// assert_eq!((global.provider, global.input), ("bedrock", Some(5.0)));
+    /// let regional = Provider::Bedrock.lookup("us.anthropic.claude-opus-4-5-20251101-v1:0").unwrap();
+    /// assert_eq!(regional.input, Some(5.5));
+    /// // A Claude id Bedrock does not list falls back to Anthropic's row.
+    /// assert_eq!(Provider::Bedrock.lookup("claude-opus-4-5").unwrap().provider, "anthropic");
     /// // Groq does not serve Claude.
     /// assert!(Provider::Groq.lookup("claude-opus-4-5").is_none());
     /// ```
     pub fn lookup(self, model: &str) -> Option<&'static Price> {
         let name = self.as_str();
         let lower = model.trim().to_ascii_lowercase();
+        // The id names this provider (`bedrock/us.anthropic.claude-...`): look up the rest, so
+        // exact-id rows such as Bedrock's Claude rows still match.
+        let (model, lower) = match id_hint(&lower) {
+            Some((p, rest)) if p == self && !rest.is_empty() => (rest.to_string(), rest.to_string()),
+            _ => (model.to_string(), lower),
+        };
+        let model = model.as_str();
         if let Some((host, _)) = id_hint(&lower) {
             if host.is_host() && host != self && !host.fallback_providers().contains(&self) {
                 // The id names another host or platform, which sells at its own price. Only
