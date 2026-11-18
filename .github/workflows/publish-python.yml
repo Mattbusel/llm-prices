@@ -48,3 +48,7 @@ jobs:
           name: python-dist
           path: dist/
       - uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          # PEP 740 provenance attestations, signed with this workflow OIDC identity
+          # (the default under trusted publishing; stated here so it stays on).
+          attestations: true
