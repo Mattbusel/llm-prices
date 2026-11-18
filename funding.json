@@ -1,0 +1,90 @@
+{
+  "$schema": "https://fundingjson.org/schema/v1.1.0.json",
+  "version": "v1.1.0",
+  "entity": {
+    "type": "organisation",
+    "role": "owner",
+    "name": "Matthew Busel / Tensorust LLC",
+    "email": "mattbusel@tensorust.com",
+    "description": "Tensorust LLC is a New York company owned and run by Matthew Busel, who writes and maintains its open source libraries: fin-primitives (exact-decimal trading indicators for Rust and Python), llm-prices (a dated, source-cited LLM API price table), us-restricted-parties (US restricted-party lists as daily machine-readable releases) and sbom-attest (build-time SBOMs and provenance for Rust and C/C++). Funding pays for maintainer time: releases, bug fixes, security work, documentation and keeping data current. More at https://tensorust.com",
+    "webpageUrl": {
+      "url": "https://github.com/Mattbusel"
+    }
+  },
+  "projects": [
+    {
+      "guid": "llm-prices",
+      "name": "llm-prices",
+      "description": "Dated, source-cited LLM API price table for Anthropic, OpenAI, Gemini, DeepSeek, Mistral, xAI, Groq, Together, Fireworks, Cohere, Amazon Bedrock, OpenRouter and Perplexity, per 1M tokens. Every row records the date it was checked and the provider page it came from. Ships as a Rust crate, a Python package, a JS module and a Go package with provider-aware model-id lookup and exact decimal costs, plus a GitHub Action that fails CI when prices hard-coded in a repo drift from the table.",
+      "webpageUrl": {
+        "url": "https://github.com/Mattbusel/llm-prices"
+      },
+      "repositoryUrl": {
+        "url": "https://github.com/Mattbusel/llm-prices"
+      },
+      "licenses": [
+        "spdx:MIT"
+      ],
+      "tags": [
+        "llm",
+        "pricing",
+        "ai",
+        "cost",
+        "developer-tools",
+        "github-actions",
+        "rust",
+        "python",
+        "javascript"
+      ]
+    }
+  ],
+  "funding": {
+    "channels": [
+      {
+        "guid": "github-sponsors",
+        "type": "payment-provider",
+        "address": "https://github.com/sponsors/Mattbusel",
+        "description": "One-time or monthly sponsorship through GitHub Sponsors."
+      },
+      {
+        "guid": "bank-transfer",
+        "type": "bank",
+        "address": "",
+        "description": "Direct bank transfer to Tensorust LLC (US business account). Email mattbusel@tensorust.com for wire details and an invoice."
+      },
+      {
+        "guid": "tensorust-shop",
+        "type": "other",
+        "address": "https://shop.tensorust.com",
+        "description": "Buy Tensorust data products and support. Revenue from the shop funds maintenance of these open source projects."
+      }
+    ],
+    "plans": [
+      {
+        "guid": "sponsor",
+        "status": "active",
+        "name": "Sponsor the maintainer",
+        "description": "Any amount, one-time or monthly, through GitHub Sponsors. Pays for maintainer time on releases, bug fixes and issue triage.",
+        "amount": 0,
+        "currency": "USD",
+        "frequency": "monthly",
+        "channels": [
+          "github-sponsors"
+        ]
+      },
+      {
+        "guid": "company-support",
+        "status": "active",
+        "name": "Company support",
+        "description": "For teams that rely on the price table: fund faster update checks, new providers or a hosted feed. Pay by invoice or through the Tensorust shop.",
+        "amount": 0,
+        "currency": "USD",
+        "frequency": "one-time",
+        "channels": [
+          "bank-transfer",
+          "tensorust-shop"
+        ]
+      }
+    ]
+  }
+}
