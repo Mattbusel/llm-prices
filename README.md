@@ -1,6 +1,6 @@
-# llm-prices
+# llm-prices: a hardcoded price table is a bug on a timer
 
-Your agent's cost math is wrong the day a provider changes prices. This fails your CI before your users notice.
+Every LLM price pasted into code starts going stale the day it is pasted, and nothing tells you. In one agent workflow tool, 12 rows were wrong, most of them a 2/8 placeholder copied from model to model, so its default model's output was billed at $8 per 1M tokens instead of $12 ([merged fix](https://github.com/microsoft/conductor/pull/645)). In a 9.3K-star agent framework, every model newer than its table fell back to a $1/$3 default, so a gpt-5.5 call was booked at $0.115 instead of $0.65 and the budget saw less than a fifth of the real spend ([merged fix](https://github.com/MervinPraison/PraisonAI/pull/6433)). This repo fails your CI the day the prices in your code drift from the provider's page.
 
 `llm-prices` is two things:
 
