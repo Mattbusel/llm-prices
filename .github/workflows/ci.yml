@@ -50,6 +50,8 @@ jobs:
             js/src/data.ts
             python/src/llm_prices/_data.py
             python/src/llm_prices/litellm.json
+            # Stale prices on purpose: the costcheck fixtures and its doc example.
+            costcheck/**
 
   python:
     strategy:

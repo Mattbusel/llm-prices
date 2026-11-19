@@ -26,6 +26,8 @@
 //! ```
 
 #![allow(clippy::needless_range_loop)]
+// The `re!` macro compiles each regex once into a static; the lint cannot see through it.
+#![allow(unknown_lints, clippy::regex_creation_in_loops)]
 
 pub mod check;
 pub mod fallback;
