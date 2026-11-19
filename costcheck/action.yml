@@ -1,0 +1,100 @@
+name: 'LLM cost check'
+description: 'Fails CI when your LLM cost tracking is wrong: stale hard-coded prices, default prices for unknown models, missing cache pricing. Error in % and $ with file:line.'
+author: 'Matthew Busel'
+branding:
+  icon: 'alert-octagon'
+  color: 'red'
+
+inputs:
+  paths:
+    description: 'Globs to scan, comma or newline separated. Default: the whole repo.'
+    required: false
+    default: '**'
+  exclude:
+    description: 'Globs to skip, comma or newline separated. node_modules, target, dist, build, vendor and .git are always skipped.'
+    required: false
+    default: ''
+  providers:
+    description: 'Providers to check: anthropic, openai, google, deepseek (default), any other provider in llm-prices, or all.'
+    required: false
+    default: ''
+  fail-on:
+    description: 'Issue kinds that fail the job: drift, fallback, cache, missing, or never. Default: drift,fallback,cache.'
+    required: false
+    default: 'drift,fallback,cache'
+  tolerance:
+    description: 'Relative difference allowed before a price counts as wrong. 0.01 means 1%.'
+    required: false
+    default: '0.01'
+  include-tests:
+    description: 'Also scan test files and Rust #[cfg(test)] modules (true/false).'
+    required: false
+    default: 'false'
+  show-matches:
+    description: 'Also list every hard-coded price that is correct (true/false).'
+    required: false
+    default: 'false'
+  working-directory:
+    description: 'Directory to scan. Default: the workspace root.'
+    required: false
+    default: ''
+  version:
+    description: 'llm-costcheck version to install from crates.io.'
+    required: false
+    default: '0.1.0'
+
+outputs:
+  drift-count:
+    description: 'Models whose hard-coded prices differ from the provider pages.'
+    value: ${{ steps.check.outputs.drift-count }}
+  fallback-count:
+    description: 'Default prices used for unknown models.'
+    value: ${{ steps.check.outputs.fallback-count }}
+  cache-count:
+    description: 'Models priced without a cache-read price.'
+    value: ${{ steps.check.outputs.cache-count }}
+  missing-count:
+    description: 'Models used without a price.'
+    value: ${{ steps.check.outputs.missing-count }}
+  prices-found:
+    description: 'Hard-coded prices found for known models.'
+    value: ${{ steps.check.outputs.prices-found }}
+  worst-error:
+    description: 'The largest cost error found, as a signed percentage.'
+    value: ${{ steps.check.outputs.worst-error }}
+
+runs:
+  using: 'composite'
+  steps:
+    - uses: actions/cache@v4
+      with:
+        path: |
+          ~/.cargo/bin/llm-costcheck
+          ~/.cargo/bin/llm-costcheck.exe
+        key: llm-costcheck-${{ runner.os }}-${{ inputs.version }}
+    - name: Install llm-costcheck
+      shell: bash
+      run: |
+        if ! "$HOME/.cargo/bin/llm-costcheck" --version >/dev/null 2>&1; then
+          cargo install llm-costcheck --version "${{ inputs.version }}" --quiet
+        fi
+    - name: Fetch today's prices
+      shell: bash
+      run: |
+        # The newest dated table from the llm-prices repo; the copy shipped with this action is
+        # the fallback when the network is closed.
+        if ! curl -fsSL --max-time 20 -o "$RUNNER_TEMP/llm-prices.json" https://raw.githubusercontent.com/Mattbusel/llm-prices/main/prices.json; then
+          cp "${{ github.action_path }}/../prices.json" "$RUNNER_TEMP/llm-prices.json"
+        fi
+    - id: check
+      shell: bash
+      env:
+        INPUT_PATHS: ${{ inputs.paths }}
+        INPUT_EXCLUDE: ${{ inputs.exclude }}
+        INPUT_PROVIDERS: ${{ inputs.providers }}
+        INPUT_FAIL_ON: ${{ inputs.fail-on }}
+        INPUT_TOLERANCE: ${{ inputs.tolerance }}
+        INPUT_INCLUDE_TESTS: ${{ inputs.include-tests }}
+        INPUT_SHOW_MATCHES: ${{ inputs.show-matches }}
+        INPUT_WORKING_DIRECTORY: ${{ inputs.working-directory }}
+      run: '"$HOME/.cargo/bin/llm-costcheck" --prices "$RUNNER_TEMP/llm-prices.json" --format github'

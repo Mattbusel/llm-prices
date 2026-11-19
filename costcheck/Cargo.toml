@@ -1,0 +1,23 @@
+[package]
+name = "llm-costcheck"
+version = "0.1.0"
+edition = "2021"
+rust-version = "1.74"
+description = "Your LLM cost tracking is wrong and nothing tells you. Finds hard-coded model prices, silent fallback prices for unknown models and missing cache pricing, diffs them against llm-prices, and fails CI with the error in percent and dollars."
+license = "MIT"
+repository = "https://github.com/Mattbusel/llm-prices"
+homepage = "https://github.com/Mattbusel/llm-prices/tree/main/costcheck"
+documentation = "https://docs.rs/llm-costcheck"
+readme = "README.md"
+keywords = ["llm", "pricing", "cost", "ci", "openai"]
+categories = ["command-line-utilities", "development-tools"]
+include = ["src/**", "tests/**", "README.md", "CHANGELOG.md", "LICENSE"]
+
+[[bin]]
+name = "llm-costcheck"
+path = "src/main.rs"
+
+[dependencies]
+llm-prices = { version = "1.8", path = "../crate" }
+regex = { version = "1.10", default-features = false, features = ["std", "perf", "unicode-perl", "unicode-case"] }
+serde_json = "1"

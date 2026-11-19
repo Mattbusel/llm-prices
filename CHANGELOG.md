@@ -6,6 +6,21 @@ repository as a whole. The packages have their own changelogs:
 The Go module is tagged `go/vX.Y.Z` and listed here.
 The `v1` tag moves to every 1.x release.
 
+## [Unreleased] - 2026-11-19
+
+### Added: llm-costcheck and the November 2026 cost-tracking report
+
+- `costcheck/`: the `llm-costcheck` crate (0.1.0 on crates.io) and a composite GitHub Action
+  (`uses: Mattbusel/llm-prices/costcheck@main`). It fails CI on stale hard-coded prices, default
+  prices for unknown models (a $0 default included) and missing cache-read prices, with the
+  error in percent and dollars at file:line. Why it fails closed by default: every one of these
+  bugs produces a number that looks fine on a dashboard, so a warning is the same as silence.
+- `reports/2026-11-cost-tracking.md`: the 30 most-starred agent frameworks and LLM
+  observability tools scanned at pinned commits, with a receipt for every finding and credit for
+  the projects that are correct.
+- CI: a `costcheck` job (tests, fmt, clippy, MSRV, and a self-check that the fixtures fail and
+  the crate's own tables pass).
+
 ## [1.8.0] - 2026-11-18
 
 Claude on Bedrock at Bedrock's own prices, a DeepSeek refresh fix and a price update. Crate,

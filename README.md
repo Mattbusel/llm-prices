@@ -7,6 +7,20 @@ Every LLM price pasted into code starts going stale the day it is pasted, and no
 1. **A price table** ([prices.json](prices.json), [prices.toml](prices.toml)) for Anthropic, OpenAI, Google Gemini and DeepSeek. Every row names the official pricing page it was read from and the date it was checked. A parser in this repo rebuilds the table from those pages, and a daily job opens a pull request when a number changes.
 2. **A GitHub Action** that scans your code for model ids sitting next to hard-coded prices, compares them with the table, and fails the build when they differ.
 
+## llm-costcheck: fail CI when your cost tracking is wrong
+
+[`costcheck/`](costcheck) is a Rust CLI and GitHub Action built on this table. It finds hard-coded prices that differ from the provider pages, default prices silently used for unknown models (including $0), and models priced without their cache-read price, and fails the build with the error in percent and dollars at file:line.
+
+```sh
+cargo install llm-costcheck && llm-costcheck
+```
+
+```yaml
+- uses: Mattbusel/llm-prices/costcheck@main
+```
+
+We ran it on the 30 most-starred agent frameworks and LLM observability tools: [reports/2026-11-cost-tracking.md](reports/2026-11-cost-tracking.md). Six book a current model at the wrong price; one books every model it does not know at $0, so its budget cap never fires.
+
 ## Usage
 
 `.github/workflows/llm-prices.yml`:

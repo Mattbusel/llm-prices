@@ -137,6 +137,30 @@ jobs:
           rustup toolchain install 1.70 --profile minimal
           cargo +1.70 check --lib
 
+  costcheck:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: costcheck
+    steps:
+      - uses: actions/checkout@v5
+      - run: cargo test
+      - run: cargo fmt --check
+      - name: clippy on a pinned toolchain
+        run: |
+          rustup toolchain install 1.99.0 --profile minimal --component clippy
+          cargo +1.99.0 clippy --all-targets -- -D warnings
+      - name: fails on the stale fixtures, passes on this repo's own tables
+        run: |
+          cargo build --release
+          bin="$(cargo metadata --format-version 1 --no-deps | jq -r .target_directory)/release/llm-costcheck"
+          if "$bin" tests/fixtures --include-tests --prices ../prices.json; then echo "expected a failure"; exit 1; fi
+          "$bin" ../crate --prices ../prices.json --fail-on drift
+      - name: MSRV (rust-version in Cargo.toml)
+        run: |
+          rustup toolchain install 1.74 --profile minimal
+          cargo +1.74 check --lib
+
   go:
     strategy:
       matrix:
