@@ -1,4 +1,4 @@
-<!-- Excerpt of https://platform.claude.com/docs/en/about-claude/pricing fetched 2026-11-18, kept only for parser tests. -->
+<!-- Excerpt of https://platform.claude.com/docs/en/about-claude/pricing fetched 2026-11-20, kept only for parser tests. -->
 ## Model pricing
 
 The following table shows pricing for all Claude models:
@@ -49,7 +49,13 @@ Claude 4.7 and later models and Claude Mythos Preview use a newer tokenizer that
 
 For Claude 4.6 and later models, specifying US-only inference through the `inference_geo` parameter incurs a 1.1x multiplier on all token pricing categories, including input tokens, output tokens, cache writes, and cache reads. On Claude Haiku 5.5, the multiplier also applies to the higher prices for prompts over 100,000 tokens (see [Long context pricing](https://platform.claude.com/docs/en/about-claude/pricing#long-context-pricing)). Global routing (the default) uses standard pricing.
 
-This applies to the Claude API (first-party), Claude Platform on AWS, and Claude Models on Google Cloud (Anthropic managed). On Claude in Microsoft Foundry, the same 1.1x multiplier applies to deployments that use the US Data Zone Standard deployment type (see [Inference geography](https://platform.claude.com/docs/en/about-claude/pricing#foundry-inference-geography)). Partner-operated platforms, Claude Models on Google Cloud (Google managed) and Amazon Bedrock, have independent regional pricing. See [Amazon Bedrock pricing](https://aws.amazon.com/bedrock/pricing/) and [Google Cloud pricing](https://cloud.google.com/vertex-ai/generative-ai/pricing#claude-models) for details. Earlier models do not support the `inference_geo` parameter and always use standard pricing; requests that include the parameter on these models return a 400 error.
+Whether the 1.1x multiplier applies depends on the platform:
+
+* **Claude API (first-party), Claude Platform on AWS, and Claude Models on Google Cloud (Anthropic managed):** The multiplier applies.
+* **Claude in Microsoft Foundry:** The multiplier applies to deployments that use the US Data Zone Standard deployment type (see [Inference geography](https://platform.claude.com/docs/en/about-claude/pricing#foundry-inference-geography)).
+* **Claude Models on Google Cloud (Google managed) and Amazon Bedrock:** These partner-operated platforms have independent regional pricing. For their price lists, see the [Cloud platform pricing](https://platform.claude.com/docs/en/about-claude/pricing#cloud-platform-pricing) section.
+
+Models earlier than Claude 4.6 don’t support the `inference_geo` parameter and always use standard pricing. On these models, a request that includes the parameter returns a 400 error.
 
 For more information, see [Data residency](https://platform.claude.com/docs/en/manage-claude/data-residency).
 
