@@ -1,4 +1,4 @@
-<!-- Excerpt of https://ai.google.dev/gemini-api/docs/pricing fetched 2026-11-18, kept only for parser tests. -->
+<!-- Excerpt of https://ai.google.dev/gemini-api/docs/pricing fetched 2026-11-27, kept only for parser tests. -->
 
 ## Gemini 4 Carbon  {% id="gemini-4-carbon" %}
 
@@ -938,6 +938,12 @@ engineering, autonomous agents, and complex enterprise workflows.
   {% /tab %}
 
 {% /tabs %}
+
+{% sup %}*{% /sup %} A customer-submitted request to Gemini may result in one or
+more queries to Google Search. You will be charged for each individual search
+query performed.
+
+{% sup %}**{% /sup %} Can be tested in Google AI Studio.
 
 ## Gemini 3.6 Flash  {% id="gemini-3.6-flash" %}
 

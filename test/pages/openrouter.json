@@ -2,6 +2,152 @@
  "note": "Excerpt of https://openrouter.ai/api/v1/models, kept only for parser tests.",
  "data": [
   {
+   "id": "inclusionai/lingsante-3.1-air-vl",
+   "canonical_slug": "inclusionai/lingsante-3.1-air-vl-20261126",
+   "name": "inclusionAI: LingSante 3.1 Air VL",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.00000006",
+    "completion": "0.00000018",
+    "input_cache_read": "0.000000012"
+   }
+  },
+  {
+   "id": "upstage/solar-mini-4-5",
+   "canonical_slug": "upstage/solar-mini-4-5-20261125",
+   "name": "Upstage: Solar Mini 4.5 (Preview)",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.00000001",
+    "completion": "0.00000004",
+    "input_cache_read": "0.000000001"
+   }
+  },
+  {
+   "id": "upstage/solar-pro-4-contributor",
+   "canonical_slug": "upstage/solar-pro-4-contributor-20261125",
+   "name": "Upstage: Solar Pro 4 Contributor",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.00000009",
+    "completion": "0.00000036",
+    "input_cache_read": "0.000000018"
+   }
+  },
+  {
+   "id": "xiaomi/mimo-v2.6-flash-mopd",
+   "canonical_slug": "xiaomi/mimo-v2.6-flash-mopd-20260927",
+   "name": "Xiaomi: MiMo-V2.6-Flash-MOPD",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.0000005",
+    "completion": "0.000001",
+    "input_cache_read": "0.00000005"
+   }
+  },
+  {
+   "id": "thinkingmachines/inkling-2-mini",
+   "canonical_slug": "thinkingmachines/inkling-2-mini-20261120",
+   "name": "Thinking Machines: Inkling 2 Mini",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.00000006",
+    "completion": "0.00000024",
+    "input_cache_read": "0.000000012"
+   }
+  },
+  {
+   "id": "radixark/daisyrose-27b",
+   "canonical_slug": "radixark/daisyrose-27b-20261120",
+   "name": "RadixArk: DaisyRose 27B",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.00000015",
+    "completion": "0.000001875",
+    "input_cache_read": "0.0000000375"
+   }
+  },
+  {
+   "id": "mistralai/pixtral-large-2502",
+   "canonical_slug": "mistralai/pixtral-large-2502",
+   "name": "Mistral: Pixtral Large 2502",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.000002",
+    "completion": "0.000006"
+   }
+  },
+  {
+   "id": "google/gemini-4-neon",
+   "canonical_slug": "google/gemini-4-neon-20261118",
+   "name": "Google: Gemini 4 Neon",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.000003",
+    "completion": "0.000015",
+    "image": "0.000003",
+    "audio": "0.000003",
+    "input_audio_cache": "0.00000015",
+    "web_search": "0.014",
+    "internal_reasoning": "0.000015",
+    "input_cache_read": "0.00000015",
+    "input_cache_write": "0.0000000833333333333333"
+   }
+  },
+  {
+   "id": "google/gemini-4-neon:batch",
+   "canonical_slug": "google/gemini-4-neon-20261118",
+   "name": "Google: Gemini 4 Neon (batch)",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.0000015",
+    "completion": "0.0000075",
+    "image": "0.0000015",
+    "audio": "0.0000015",
+    "input_audio_cache": "0.000000075",
+    "web_search": "0.014",
+    "internal_reasoning": "0.0000075",
+    "input_cache_read": "0.000000075",
+    "input_cache_write": "0.0000000833333333333333"
+   }
+  },
+  {
    "id": "openai/gpt-6.2-astra-pro",
    "canonical_slug": "openai/gpt-6.2-astra-pro-20261117",
    "name": "OpenAI: GPT-6.2 Astra Pro",
@@ -241,17 +387,18 @@
    }
   },
   {
-   "id": "inclusionai/ling-3.2-flash:free",
+   "id": "inclusionai/ling-3.2-flash",
    "canonical_slug": "inclusionai/ling-3.2-flash-20261113",
-   "name": "inclusionAI: Ling 3.2 Flash (free)",
+   "name": "inclusionAI: Ling 3.2 Flash",
    "architecture": {
     "output_modalities": [
      "text"
     ]
    },
    "pricing": {
-    "prompt": "0",
-    "completion": "0"
+    "prompt": "0.0000003",
+    "completion": "0.0000009",
+    "input_cache_read": "0.00000006"
    }
   },
   {
@@ -392,23 +539,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000003",
-    "completion": "0.000001",
+    "prompt": "0.00000015",
+    "completion": "0.0000005",
     "input_cache_read": "0.00000003"
-   }
-  },
-  {
-   "id": "thinkingmachines/inkling-2-small:free",
-   "canonical_slug": "thinkingmachines/inkling-2-small-20261107",
-   "name": "Thinking Machines: Inkling 2 Small (free)",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0",
-    "completion": "0"
    }
   },
   {
@@ -610,9 +743,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000006",
+    "prompt": "0.00000007",
     "completion": "0.0000005",
-    "input_cache_read": "0.000000003"
+    "input_cache_read": "0.00000003"
    }
   },
   {
@@ -818,9 +951,90 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000036",
-    "completion": "0.0000005",
-    "input_cache_read": "0.00000001"
+    "prompt": "0.00000015",
+    "completion": "0.0000006",
+    "input_cache_read": "0.000000003",
+    "overrides": [
+     {
+      "utc_days": [
+       "saturday",
+       "sunday"
+      ],
+      "prompt": "0.00000015",
+      "completion": "0.0000006",
+      "input_cache_read": "0.000000003"
+     },
+     {
+      "utc_days": [
+       "monday",
+       "tuesday",
+       "wednesday",
+       "thursday",
+       "friday"
+      ],
+      "utc_start": 0,
+      "utc_end": 100,
+      "prompt": "0.00000015",
+      "completion": "0.0000006",
+      "input_cache_read": "0.000000003"
+     },
+     {
+      "utc_days": [
+       "monday",
+       "tuesday",
+       "wednesday",
+       "thursday",
+       "friday"
+      ],
+      "utc_start": 100,
+      "utc_end": 400,
+      "prompt": "0.0000003",
+      "completion": "0.0000012",
+      "input_cache_read": "0.000000006"
+     },
+     {
+      "utc_days": [
+       "monday",
+       "tuesday",
+       "wednesday",
+       "thursday",
+       "friday"
+      ],
+      "utc_start": 400,
+      "utc_end": 600,
+      "prompt": "0.00000015",
+      "completion": "0.0000006",
+      "input_cache_read": "0.000000003"
+     },
+     {
+      "utc_days": [
+       "monday",
+       "tuesday",
+       "wednesday",
+       "thursday",
+       "friday"
+      ],
+      "utc_start": 600,
+      "utc_end": 1000,
+      "prompt": "0.0000003",
+      "completion": "0.0000012",
+      "input_cache_read": "0.000000006"
+     },
+     {
+      "utc_days": [
+       "monday",
+       "tuesday",
+       "wednesday",
+       "thursday",
+       "friday"
+      ],
+      "utc_start": 1000,
+      "utc_end": 0,
+      "prompt": "0.00000015",
+      "completion": "0.0000006",
+      "input_cache_read": "0.000000003"
+     }
+    ]
    }
   },
   {
@@ -833,9 +1047,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000036",
-    "completion": "0.00000015",
-    "input_cache_read": "0.000000003"
+    "prompt": "0.000000035",
+    "completion": "0.000000149",
+    "input_cache_read": "0.0000000029"
    }
   },
   {
@@ -937,7 +1151,7 @@
    },
    "pricing": {
     "prompt": "0.00000015",
-    "completion": "0.0000005",
+    "completion": "0.00000047",
     "input_cache_read": "0.00000002"
    }
   },
@@ -956,21 +1170,6 @@
    }
   },
   {
-   "id": "unbiased/pareto-26.10",
-   "canonical_slug": "unbiased/pareto-26.10-20261015",
-   "name": "Pareto 26.10",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.0000008",
-    "completion": "0.0000032",
-    "input_cache_read": "0.00000003"
-   }
-  },
-  {
    "id": "~unbiased/pareto-latest",
    "canonical_slug": "~unbiased/pareto-latest",
    "name": "Pareto Latest",
@@ -980,24 +1179,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000008",
-    "completion": "0.0000032",
-    "input_cache_read": "0.00000003"
-   }
-  },
-  {
-   "id": "unbiased/pareto-26.9",
-   "canonical_slug": "unbiased/pareto-26.9-20260917",
-   "name": "Pareto 26.9",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.0000025",
-    "completion": "0.0000075",
-    "input_cache_read": "0.00000025"
+    "prompt": "-1",
+    "completion": "-1"
    }
   },
   {
@@ -1214,24 +1397,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000045",
-    "completion": "0.000000135",
-    "input_cache_read": "0.000000009"
-   }
-  },
-  {
-   "id": "unbiased/pareto-26.10-preview",
-   "canonical_slug": "unbiased/pareto-26.10-preview-20260929",
-   "name": "Pareto 26.10 Preview",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.0000008",
-    "completion": "0.0000032",
-    "input_cache_read": "0.00000003"
+    "prompt": "0.000000075",
+    "completion": "0.000000225",
+    "input_cache_read": "0.000000015"
    }
   },
   {
@@ -1785,7 +1953,7 @@
   {
    "id": "x-ai/grok-4.7",
    "canonical_slug": "x-ai/grok-4.7-20260916",
-   "name": "SpaceXAI: Grok 4.7",
+   "name": "SpaceXSI: Grok 4.7",
    "architecture": {
     "output_modalities": [
      "text"
@@ -1809,7 +1977,7 @@
   {
    "id": "x-ai/grok-4.7:batch",
    "canonical_slug": "x-ai/grok-4.7-20260916",
-   "name": "SpaceXAI: Grok 4.7 (batch)",
+   "name": "SpaceXSI: Grok 4.7 (batch)",
    "architecture": {
     "output_modalities": [
      "text"
@@ -1886,7 +2054,7 @@
    },
    "pricing": {
     "prompt": "0.0000000999",
-    "completion": "0.000008",
+    "completion": "0.000005",
     "input_cache_read": "0.0000000999"
    }
   },
@@ -2104,9 +2272,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000000507",
-    "completion": "0.0000002028",
-    "input_cache_read": "0.000000001014"
+    "prompt": "0.000000051",
+    "completion": "0.000000567",
+    "input_cache_read": "0.000000018"
    }
   },
   {
@@ -2119,9 +2287,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000112",
-    "completion": "0.000000336",
-    "input_cache_read": "0.00000000336"
+    "prompt": "0.00000005",
+    "completion": "0.00000015",
+    "input_cache_read": "0.000000004"
    }
   },
   {
@@ -2315,7 +2483,7 @@
    "pricing": {
     "prompt": "0.00000125",
     "completion": "0.00000425",
-    "web_search": "0.0025",
+    "web_search": "0.01",
     "input_cache_read": "0.00000015"
    }
   },
@@ -2453,8 +2621,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000000399",
-    "completion": "0.0000000784",
+    "prompt": "0.0000000356",
+    "completion": "0.0000000815",
     "input_cache_read": "0.00000003"
    }
   },
@@ -2498,9 +2666,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000024",
-    "completion": "0.000000069",
-    "input_cache_read": "0.00000001"
+    "prompt": "0.000000023",
+    "completion": "0.000000068",
+    "input_cache_read": "0.000000009"
    }
   },
   {
@@ -2529,9 +2697,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000044",
-    "completion": "0.00000132",
-    "input_cache_read": "0.000000014"
+    "prompt": "0.0000002156",
+    "completion": "0.0000006468",
+    "input_cache_read": "0.00000000686"
    }
   },
   {
@@ -2616,9 +2784,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000281",
-    "completion": "0.00000125",
-    "input_cache_read": "0.000000062"
+    "prompt": "0.00000028",
+    "completion": "0.000001249",
+    "input_cache_read": "0.000000061"
    }
   },
   {
@@ -2632,7 +2800,7 @@
    },
    "pricing": {
     "prompt": "0.00000006",
-    "completion": "0.0000022",
+    "completion": "0.00000196",
     "input_cache_read": "0.000000059"
    }
   },
@@ -2649,20 +2817,6 @@
     "prompt": "0.00000016",
     "completion": "0.000002",
     "input_cache_read": "0.00000004"
-   }
-  },
-  {
-   "id": "dots-studio/dots-3-note-preview:free",
-   "canonical_slug": "dots-studio/dots-3-note-preview-20260813",
-   "name": "Dots Studio: Dots3-Note Preview (free)",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0",
-    "completion": "0"
    }
   },
   {
@@ -2746,15 +2900,15 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000111",
-    "completion": "0.00000444",
-    "input_cache_read": "0.000000097"
+    "prompt": "0.0000000999",
+    "completion": "0.000005",
+    "input_cache_read": "0.0000000999"
    }
   },
   {
    "id": "x-ai/grok-4.6",
    "canonical_slug": "x-ai/grok-4.6-20260810",
-   "name": "SpaceXAI: Grok 4.6",
+   "name": "SpaceXSI: Grok 4.6",
    "architecture": {
     "output_modalities": [
      "text"
@@ -2778,7 +2932,7 @@
   {
    "id": "x-ai/grok-4.6:batch",
    "canonical_slug": "x-ai/grok-4.6-20260810",
-   "name": "SpaceXAI: Grok 4.6 (batch)",
+   "name": "SpaceXSI: Grok 4.6 (batch)",
    "architecture": {
     "output_modalities": [
      "text"
@@ -2869,8 +3023,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000035",
-    "completion": "0.0000015",
+    "prompt": "0.0000003",
+    "completion": "0.0000012",
     "input_cache_read": "0.00000004"
    }
   },
@@ -2930,9 +3084,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000000434",
-    "completion": "0.0000003",
-    "input_cache_read": "0.000000035"
+    "prompt": "0.00000004532",
+    "completion": "0.00000013596",
+    "input_cache_read": "0.000000001442"
    }
   },
   {
@@ -2945,9 +3099,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000006",
-    "completion": "0.00000018",
-    "input_cache_read": "0.000000015"
+    "prompt": "0.0000000456",
+    "completion": "0.0000003",
+    "input_cache_read": "0.000000035"
    }
   },
   {
@@ -3159,21 +3313,6 @@
     "web_search": "0.014",
     "internal_reasoning": "0.00000125",
     "input_cache_read": "0.000000015"
-   }
-  },
-  {
-   "id": "meituan/longcat-2.0",
-   "canonical_slug": "meituan/longcat-2.0-20260720",
-   "name": "Meituan: LongCat 2.0",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.0000003",
-    "completion": "0.0000012",
-    "input_cache_read": "0.000000006"
    }
   },
   {
@@ -3544,7 +3683,7 @@
   {
    "id": "x-ai/grok-4.5",
    "canonical_slug": "x-ai/grok-4.5-20260708",
-   "name": "SpaceXAI: Grok 4.5",
+   "name": "SpaceXSI: Grok 4.5",
    "architecture": {
     "output_modalities": [
      "text"
@@ -3770,20 +3909,6 @@
    }
   },
   {
-   "id": "cohere/north-mini-code:free",
-   "canonical_slug": "cohere/north-mini-code-20260617",
-   "name": "Cohere: North Mini Code (free)",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0",
-    "completion": "0"
-   }
-  },
-  {
    "id": "z-ai/glm-5.2",
    "canonical_slug": "z-ai/glm-5.2-20260616",
    "name": "Z.ai: GLM 5.2",
@@ -3793,9 +3918,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000007",
-    "completion": "0.0000068",
-    "input_cache_read": "0.000000006"
+    "prompt": "0.00000062",
+    "completion": "0.00000242",
+    "input_cache_read": "0.00000014"
    }
   },
   {
@@ -3824,8 +3949,8 @@
    },
    "pricing": {
     "prompt": "0.0000006",
-    "completion": "0.00000375",
-    "input_cache_read": "0.00000018"
+    "completion": "0.000003",
+    "input_cache_read": "0.00000012"
    }
   },
   {
@@ -4062,30 +4187,6 @@
    }
   },
   {
-   "id": "x-ai/grok-build-0.1",
-   "canonical_slug": "x-ai/grok-build-0.1-20260520",
-   "name": "SpaceXAI: Grok Build 0.1",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.000001",
-    "completion": "0.000002",
-    "web_search": "0.005",
-    "input_cache_read": "0.0000002",
-    "overrides": [
-     {
-      "min_prompt_tokens": 200000,
-      "prompt": "0.000002",
-      "completion": "0.000004",
-      "input_cache_read": "0.0000004"
-     }
-    ]
-   }
-  },
-  {
    "id": "google/gemini-3.5-flash",
    "canonical_slug": "google/gemini-3.5-flash-20260519",
    "name": "Google: Gemini 3.5 Flash",
@@ -4200,7 +4301,7 @@
   {
    "id": "x-ai/grok-4.3",
    "canonical_slug": "x-ai/grok-4.3-20260430",
-   "name": "SpaceXAI: Grok 4.3",
+   "name": "SpaceXSI: Grok 4.3",
    "architecture": {
     "output_modalities": [
      "text"
@@ -4224,7 +4325,7 @@
   {
    "id": "x-ai/grok-4.3:batch",
    "canonical_slug": "x-ai/grok-4.3-20260430",
-   "name": "SpaceXAI: Grok 4.3 (batch)",
+   "name": "SpaceXSI: Grok 4.3 (batch)",
    "architecture": {
     "output_modalities": [
      "text"
@@ -4463,8 +4564,8 @@
    },
    "pricing": {
     "prompt": "0.0000001",
-    "completion": "0.0000009",
-    "input_cache_read": "0.000000025"
+    "completion": "0.00000089",
+    "input_cache_read": "0.000000035"
    }
   },
   {
@@ -4583,9 +4684,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000009",
-    "completion": "0.0000015",
-    "input_cache_read": "0.00000025"
+    "prompt": "0.00000067445",
+    "completion": "0.0000015651",
+    "input_cache_read": "0.00000021"
    }
   },
   {
@@ -4601,51 +4702,6 @@
     "prompt": "0.00000009",
     "completion": "0.00000018",
     "input_cache_read": "0.000000018"
-   }
-  },
-  {
-   "id": "tencent/hy3-preview",
-   "canonical_slug": "tencent/hy3-preview-20260421",
-   "name": "Tencent: Hy3 preview",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.00000018",
-    "completion": "0.0000006",
-    "input_cache_read": "0.00000006"
-   }
-  },
-  {
-   "id": "xiaomi/mimo-v2.5-pro",
-   "canonical_slug": "xiaomi/mimo-v2.5-pro-20260422",
-   "name": "Xiaomi: MiMo-V2.5-Pro",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.00000048",
-    "completion": "0.0000018",
-    "input_cache_read": "0.000000096"
-   }
-  },
-  {
-   "id": "xiaomi/mimo-v2.5",
-   "canonical_slug": "xiaomi/mimo-v2.5-20260422",
-   "name": "Xiaomi: MiMo-V2.5",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.0000004",
-    "completion": "0.000002",
-    "input_cache_read": "0.00000008"
    }
   },
   {
@@ -4760,9 +4816,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000009",
-    "completion": "0.0000003",
-    "input_cache_read": "0.00000005"
+    "prompt": "0.0000000675",
+    "completion": "0.000000225",
+    "input_cache_read": "0.0000000375"
    }
   },
   {
@@ -4848,7 +4904,7 @@
   {
    "id": "x-ai/grok-4.20-multi-agent",
    "canonical_slug": "x-ai/grok-4.20-multi-agent-20260309",
-   "name": "SpaceXAI: Grok 4.20 Multi-Agent",
+   "name": "SpaceXSI: Grok 4.20 Multi-Agent",
    "architecture": {
     "output_modalities": [
      "text"
@@ -4872,7 +4928,7 @@
   {
    "id": "x-ai/grok-4.20",
    "canonical_slug": "x-ai/grok-4.20-20260309",
-   "name": "SpaceXAI: Grok 4.20",
+   "name": "SpaceXSI: Grok 4.20",
    "architecture": {
     "output_modalities": [
      "text"
@@ -4947,9 +5003,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000021",
-    "completion": "0.00000084",
-    "input_cache_read": "0.000000042"
+    "prompt": "0.0000006",
+    "completion": "0.0000018"
    }
   },
   {
@@ -5032,6 +5087,21 @@
    }
   },
   {
+   "id": "mistralai/mistral-small-2603:batch",
+   "canonical_slug": "mistralai/mistral-small-2603",
+   "name": "Mistral: Mistral Small 4 (batch)",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.000000075",
+    "completion": "0.0000003",
+    "input_cache_read": "0.0000000075"
+   }
+  },
+  {
    "id": "z-ai/glm-5-turbo",
    "canonical_slug": "z-ai/glm-5-turbo-20260315",
    "name": "Z.ai: GLM 5 Turbo",
@@ -5091,9 +5161,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000017",
-    "completion": "0.00000025",
-    "input_cache_read": "0.000000153"
+    "prompt": "0.0000001",
+    "completion": "0.00000025"
    }
   },
   {
@@ -5272,8 +5341,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000003",
-    "completion": "0.0000024"
+    "prompt": "0.00000026",
+    "completion": "0.0000026"
    }
   },
   {
@@ -5490,9 +5559,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000045",
-    "completion": "0.000003",
-    "input_cache_read": "0.00000022"
+    "prompt": "0.0000005",
+    "completion": "0.0000036",
+    "input_cache_read": "0.0000003"
    }
   },
   {
@@ -5505,7 +5574,7 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000295",
+    "prompt": "0.0000003",
     "completion": "0.0000012",
     "input_cache_read": "0.00000006"
    }
@@ -5586,9 +5655,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000005",
-    "completion": "0.0000025",
-    "input_cache_read": "0.00000015"
+    "prompt": "0.0000006",
+    "completion": "0.000003"
    }
   },
   {
@@ -5679,9 +5747,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000004",
-    "completion": "0.00000175",
-    "input_cache_read": "0.00000008"
+    "prompt": "0.0000006",
+    "completion": "0.0000022",
+    "input_cache_read": "0.00000011"
    }
   },
   {
@@ -5921,6 +5989,21 @@
    }
   },
   {
+   "id": "mistralai/ministral-8b-2512:batch",
+   "canonical_slug": "mistralai/ministral-8b-2512",
+   "name": "Mistral: Ministral 3 8B 2512 (batch)",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.000000075",
+    "completion": "0.000000075",
+    "input_cache_read": "0.0000000075"
+   }
+  },
+  {
    "id": "mistralai/ministral-3b-2512",
    "canonical_slug": "mistralai/ministral-3b-2512",
    "name": "Mistral: Ministral 3 3B 2512",
@@ -5948,6 +6031,21 @@
     "prompt": "0.0000005",
     "completion": "0.0000015",
     "input_cache_read": "0.00000005"
+   }
+  },
+  {
+   "id": "mistralai/mistral-large-2512:batch",
+   "canonical_slug": "mistralai/mistral-large-2512",
+   "name": "Mistral: Mistral Large 3 2512 (batch)",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.00000025",
+    "completion": "0.00000075",
+    "input_cache_read": "0.000000025"
    }
   },
   {
@@ -6086,21 +6184,6 @@
     "completion": "0.000002",
     "web_search": "0.01",
     "input_cache_read": "0.00000003"
-   }
-  },
-  {
-   "id": "moonshotai/kimi-k2-thinking",
-   "canonical_slug": "moonshotai/kimi-k2-thinking-20251106",
-   "name": "MoonshotAI: Kimi K2 Thinking",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.0000006",
-    "completion": "0.0000025",
-    "input_cache_read": "0.00000015"
    }
   },
   {
@@ -6553,21 +6636,6 @@
    }
   },
   {
-   "id": "mistralai/mistral-medium-3.1",
-   "canonical_slug": "mistralai/mistral-medium-3.1",
-   "name": "Mistral: Mistral Medium 3.1",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.00000044",
-    "completion": "0.0000022",
-    "input_cache_read": "0.000000044"
-   }
-  },
-  {
    "id": "z-ai/glm-4.5v",
    "canonical_slug": "z-ai/glm-4.5v",
    "name": "Z.ai: GLM 4.5V",
@@ -6688,9 +6756,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000015",
-    "completion": "0.0000006",
-    "input_cache_read": "0.000000075"
+    "prompt": "0.00000005",
+    "completion": "0.00000025",
+    "input_cache_read": "0.00000005"
    }
   },
   {
@@ -6717,9 +6785,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.000000018",
-    "completion": "0.00000009",
-    "input_cache_read": "0.000000009"
+    "prompt": "0.00000003",
+    "completion": "0.00000013",
+    "input_cache_read": "0.00000003"
    }
   },
   {
@@ -6788,6 +6856,21 @@
    }
   },
   {
+   "id": "mistralai/codestral-2508:batch",
+   "canonical_slug": "mistralai/codestral-2508",
+   "name": "Mistral: Codestral 2508 (batch)",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.00000015",
+    "completion": "0.00000045",
+    "input_cache_read": "0.000000015"
+   }
+  },
+  {
    "id": "qwen/qwen3-coder-30b-a3b-instruct",
    "canonical_slug": "qwen/qwen3-coder-30b-a3b-instruct",
    "name": "Qwen: Qwen3 Coder 30B A3B Instruct",
@@ -6797,8 +6880,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000015",
-    "completion": "0.0000006"
+    "prompt": "0.00000007",
+    "completion": "0.00000028"
    }
   },
   {
@@ -6841,9 +6924,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000013",
-    "completion": "0.00000085",
-    "input_cache_read": "0.000000025"
+    "prompt": "0.0000002",
+    "completion": "0.0000011",
+    "input_cache_read": "0.00000003"
    }
   },
   {
@@ -6952,6 +7035,21 @@
    "pricing": {
     "prompt": "0.0000002",
     "completion": "0.0000009"
+   }
+  },
+  {
+   "id": "tngtech/deepseek-r1t2-chimera",
+   "canonical_slug": "tngtech/deepseek-r1t2-chimera",
+   "name": "TNG: DeepSeek R1T2 Chimera",
+   "architecture": {
+    "output_modalities": [
+     "text"
+    ]
+   },
+   "pricing": {
+    "prompt": "0.000001",
+    "completion": "0.000002625",
+    "input_cache_read": "0.00000002"
    }
   },
   {
@@ -7134,21 +7232,6 @@
    "pricing": {
     "prompt": "0.000000571",
     "completion": "0.000002286"
-   }
-  },
-  {
-   "id": "mistralai/mistral-medium-3",
-   "canonical_slug": "mistralai/mistral-medium-3",
-   "name": "Mistral: Mistral Medium 3",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.00000044",
-    "completion": "0.0000022",
-    "input_cache_read": "0.000000044"
    }
   },
   {
@@ -7390,9 +7473,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000029",
-    "completion": "0.00000114",
-    "input_cache_read": "0.00000011"
+    "prompt": "0.00000025",
+    "completion": "0.000001"
    }
   },
   {
@@ -7476,8 +7558,7 @@
    },
    "pricing": {
     "prompt": "0.00000008",
-    "completion": "0.00000045",
-    "input_cache_read": "0.00000004"
+    "completion": "0.00000016"
    }
   },
   {
@@ -7707,9 +7788,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000071",
-    "completion": "0.00000071",
-    "input_cache_read": "0.00000071"
+    "prompt": "0.00000059",
+    "completion": "0.00000079",
+    "input_cache_read": "0.000000295"
    }
   },
   {
@@ -7828,20 +7909,6 @@
    }
   },
   {
-   "id": "meta-llama/llama-3.2-1b-instruct",
-   "canonical_slug": "meta-llama/llama-3.2-1b-instruct",
-   "name": "Meta: Llama 3.2 1B Instruct",
-   "architecture": {
-    "output_modalities": [
-     "text"
-    ]
-   },
-   "pricing": {
-    "prompt": "0.000000027",
-    "completion": "0.000000201"
-   }
-  },
-  {
    "id": "meta-llama/llama-3.2-3b-instruct",
    "canonical_slug": "meta-llama/llama-3.2-3b-instruct",
    "name": "Meta: Llama 3.2 3B Instruct",
@@ -7851,8 +7918,8 @@
     ]
    },
    "pricing": {
-    "prompt": "0.0000000509",
-    "completion": "0.000000335"
+    "prompt": "0.00000005",
+    "completion": "0.00000033"
    }
   },
   {
@@ -7964,8 +8031,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000002",
-    "completion": "0.00000004"
+    "prompt": "0.00000005",
+    "completion": "0.00000008",
+    "input_cache_read": "0.000000025"
    }
   },
   {
@@ -8200,8 +8268,9 @@
     ]
    },
    "pricing": {
-    "prompt": "0.00000008",
-    "completion": "0.00000011"
+    "prompt": "0.0000003",
+    "completion": "0.0000005",
+    "input_cache_read": "0.0000002"
    }
   },
   {
